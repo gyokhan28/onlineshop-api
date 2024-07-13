@@ -1,6 +1,6 @@
 package com.example.online_shop_api.Entity;
 
-import com.project.Onlineshop.Static.JobType;
+import com.example.online_shop_api.Static.JobType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;

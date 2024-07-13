@@ -1,6 +1,6 @@
 package com.example.online_shop_api.Entity;
 
-import com.project.Onlineshop.Entity.Products.Product;
+import com.example.online_shop_api.Entity.Products.Product;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
