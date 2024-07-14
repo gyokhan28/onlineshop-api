@@ -5,10 +5,6 @@ import lombok.Data;
 import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
-
-//@MappedSuperclass
-//@NoArgsConstructor
-//@AllArgsConstructor
 @Data
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
