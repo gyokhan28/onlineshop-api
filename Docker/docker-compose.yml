@@ -1,0 +1,34 @@
+services:
+  mysqldb:
+    image: mysql:latest
+    restart: always
+    ports:
+      - 3306:3306
+    networks:
+      - springapimysql-net
+    environment:
+      - MYSQL_ALLOW_EMPTY_PASSWORD=true
+      #- MYSQL_DATABASE=docker_hw_db
+      #- MYSQL_USER=user_name
+      #- MYSQL_PASSWORD=user_password
+    volumes: 
+      - ./db:/var/lib/mysql
+
+  phpmyadmin:
+    depends_on:
+      - mysqldb
+    image: phpmyadmin
+    restart: always
+    ports:
+      - 8080:80
+    environment:
+      - PMA_ARBITRARY=1
+      - PMA_HOST=mysqldb
+      - PMA_USER=root
+      - PMA_PASSWORD=
+    networks:
+      - springapimysql-net
+
+networks:
+  springapimysql-net:
+    driver: bridge
