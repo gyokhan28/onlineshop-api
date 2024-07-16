@@ -3,10 +3,12 @@ package com.example.online_shop_api.Mapper;
 import com.example.online_shop_api.Dto.Request.EmployeeRequestDto;
 import com.example.online_shop_api.Dto.Response.EmployeeResponseDto;
 import com.example.online_shop_api.Entity.Employee;
+import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.Period;
 
+@Component
 public class EmployeeMapper {
 
     public EmployeeResponseDto toDto(Employee employee) {
