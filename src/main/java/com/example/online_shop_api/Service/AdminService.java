@@ -2,7 +2,7 @@ package com.example.online_shop_api.Service;
 
 import com.example.online_shop_api.Entity.Employee;
 import com.example.online_shop_api.Repository.EmployeeRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -11,28 +11,24 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class AdminService {
 
     private final EmployeeRepository employeeRepository;
-
-    @Autowired
-    public AdminService(EmployeeRepository employeeRepository) {
-        this.employeeRepository = employeeRepository;
-    }
 
     public ResponseEntity<List<Employee>> getAllEmployees() {
         return employeeRepository.findByRole_IdNot(1L);
     }
 
-    public ResponseEntity<Boolean> enableEmployee(Long employeeId){
+    public ResponseEntity<Boolean> enableEmployee(Long employeeId) {
         return ResponseEntity.ok(setEmployeeEnabled(employeeId, true));
     }
 
-    public ResponseEntity<Boolean> disableEmployee(Long employeeId){
+    public ResponseEntity<Boolean> disableEmployee(Long employeeId) {
         return ResponseEntity.ok(setEmployeeEnabled(employeeId, false));
     }
 
-    public boolean setEmployeeEnabled(Long employeeId, boolean enabled){
+    public boolean setEmployeeEnabled(Long employeeId, boolean enabled) {
         Optional<Employee> employeeOptional = employeeRepository.findById(employeeId);
         if (employeeOptional.isPresent()) {
             Employee employee = employeeOptional.get();

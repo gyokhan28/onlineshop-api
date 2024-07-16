@@ -12,8 +12,8 @@ import com.example.online_shop_api.Repository.EmployeeRepository;
 import com.example.online_shop_api.Repository.RoleRepository;
 import com.example.online_shop_api.Static.JobType;
 import com.example.online_shop_api.Static.RoleType;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,20 +24,13 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class EmployeeService {
 
     private final EmployeeRepository employeeRepository;
     private final RoleRepository roleRepository;
     private final EmployeeMapper employeeMapper;
     private final PasswordEncoder encoder;
-
-    @Autowired
-    public EmployeeService(EmployeeRepository employeeRepository, RoleRepository roleRepository, EmployeeMapper employeeMapper, PasswordEncoder encoder) {
-        this.employeeRepository = employeeRepository;
-        this.roleRepository = roleRepository;
-        this.employeeMapper = employeeMapper;
-        this.encoder = encoder;
-    }
 
     public ResponseEntity<List<Employee>> getAllEmployees() {
         return employeeRepository.findByRole_IdNot(1L);
