@@ -5,9 +5,7 @@ import com.example.online_shop_api.Dto.Response.OrderResponseDto;
 import com.example.online_shop_api.Service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/orders")
@@ -19,5 +17,10 @@ public class OrderController {
     @GetMapping("/show")
     public ResponseEntity<OrderResponseDto> showOrders(){
         return orderService.showOrders();
+    }
+
+    @PutMapping("/change-status")
+    public ResponseEntity<Boolean> changeOrderStatus(@RequestParam Long orderId, @RequestParam Long statusId){
+        return orderService.changeOrderStatus(orderId, statusId);
     }
 }
