@@ -17,7 +17,7 @@ public class AdminService {
     private final EmployeeRepository employeeRepository;
 
     public ResponseEntity<List<Employee>> getAllEmployees() {
-        return employeeRepository.findByRole_IdNot(1L);
+        return ResponseEntity.ok(employeeRepository.findByRole_IdNot(1L));
     }
 
     public ResponseEntity<Boolean> enableEmployee(Long employeeId) {
