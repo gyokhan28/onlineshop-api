@@ -6,7 +6,7 @@ import com.example.online_shop_api.Dto.Response.SuccessResponse;
 import com.example.online_shop_api.Entity.Employee;
 import com.example.online_shop_api.Entity.Role;
 import com.example.online_shop_api.Exceptions.*;
-import com.example.online_shop_api.Mapper.EmployeeMapper;
+import com.example.online_shop_api.Mapper.*;
 import com.example.online_shop_api.MyUserDetails;
 import com.example.online_shop_api.Repository.EmployeeRepository;
 import com.example.online_shop_api.Repository.RoleRepository;
@@ -33,7 +33,7 @@ public class EmployeeService {
     private final PasswordEncoder encoder;
 
     public ResponseEntity<List<Employee>> getAllEmployees() {
-        return employeeRepository.findByRole_IdNot(1L);
+        return ResponseEntity.ok(employeeRepository.findByRole_IdNot(1L));
     }
 
     public ResponseEntity<EmployeeRequestDto> getNewEmployee() {
