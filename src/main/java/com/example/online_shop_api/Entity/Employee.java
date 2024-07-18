@@ -1,6 +1,5 @@
 package com.example.online_shop_api.Entity;
 
-import com.example.online_shop_api.Static.JobType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
@@ -48,7 +47,8 @@ public class Employee {
     @Column(unique = true, nullable = true)
     private String phoneNumber;
 
-    @Enumerated(EnumType.STRING)
+    @ManyToOne
+    @JoinColumn(name = "job_type_id")
     private JobType jobType;
 
     @ManyToOne

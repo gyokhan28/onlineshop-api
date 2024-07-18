@@ -3,7 +3,7 @@ package com.example.online_shop_api.Static;
 import lombok.Getter;
 
 @Getter
-public enum JobType {
+public enum JobTypeEnum {
 
     ADMIN(0),
     TEST(1),
@@ -14,7 +14,7 @@ public enum JobType {
 
     private final long id;
 
-    JobType(long id) {
+    JobTypeEnum(long id) {
         this.id = id;
     }
 }
