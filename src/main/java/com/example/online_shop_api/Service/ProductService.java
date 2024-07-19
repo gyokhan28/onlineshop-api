@@ -5,12 +5,16 @@ import com.example.online_shop_api.Dto.Request.ProductRequestDto;
 import com.example.online_shop_api.Repository.BrandRepository;
 import com.example.online_shop_api.Repository.ColorRepository;
 import com.example.online_shop_api.Repository.MaterialRepository;
+import com.example.online_shop_api.Static.ProductCategory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
+
+import static java.time.chrono.JapaneseEra.values;
 
 @Service
 @RequiredArgsConstructor
@@ -25,19 +29,20 @@ public class ProductService {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product type not found");
         }
 
-        AddProductRequest response = new AddProductRequest();
+        AddProductRequest request = new AddProductRequest();
         ProductRequestDto productRequestDto = new ProductRequestDto();
 
-        response.setProductRequestDto(productRequestDto);
-        response.setProductType(productType);
-        addAttributesDependingOnProductType(productType, response);
+        request.setProductRequestDto(productRequestDto);
+        request.setProductType(productType);
+        addAttributesDependingOnProductType(productType, request);
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(request);
     }
 
     private boolean isValidProductType(String productType) {
-        return List.of("FOOD", "DRINK", "SANITARY", "RAILING", "ACCESSORIES", "DECORATION", "OTHERS")
-                .contains(productType.toUpperCase());
+        return Arrays.stream(ProductCategory.values())
+                .map(Enum::name)
+                .anyMatch(name -> name.equalsIgnoreCase(productType.toUpperCase()));
     }
 
     private void addAttributesDependingOnProductType(String productType, AddProductRequest response) {
