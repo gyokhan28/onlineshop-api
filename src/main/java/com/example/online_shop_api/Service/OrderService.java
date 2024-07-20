@@ -7,6 +7,7 @@ import com.example.online_shop_api.Entity.Order;
 import com.example.online_shop_api.Entity.OrderProduct;
 import com.example.online_shop_api.Entity.OrderStatus;
 import com.example.online_shop_api.Entity.User;
+import com.example.online_shop_api.Mapper.OrderMapper;
 import com.example.online_shop_api.Mapper.UserMapper;
 import com.example.online_shop_api.Repository.*;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,14 +29,13 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderStatusRepository orderStatusRepository;
 
-    public ResponseEntity<OrderResponseDto> showOrders() {
-        OrderResponseDto responseDto = new OrderResponseDto();
-        responseDto.setProducts(productRepository.findByIsDeletedFalse());
-        responseDto.setOrderProducts(orderProductRepository.findAll());
-        responseDto.setUsers(userRepository.findAll());
-        responseDto.setOrders(orderRepository.findAll());
-        responseDto.setStatuses(orderStatusRepository.findAll());
-        return ResponseEntity.ok(responseDto);
+    public ResponseEntity<List<OrderResponseDto>> showOrders() {
+        List<OrderResponseDto> responseList = new ArrayList<>();
+        List<Order> orderList = orderRepository.findAll();
+        for(Order o:orderList){
+            responseList.add(OrderMapper.toDto(o));
+        }
+        return ResponseEntity.ok(responseList);
     }
 
     private void setDeliveryDateTimeIfStatusIsDelivered(Order order) {
