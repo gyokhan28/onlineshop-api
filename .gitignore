@@ -35,3 +35,6 @@ build/
 
 ### DB ###
 Docker/db
+
+### STORAGE ###
+Docker/storage

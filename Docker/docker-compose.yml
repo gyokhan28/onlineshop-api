@@ -29,6 +29,21 @@ services:
     networks:
       - springapimysql-net
 
+# This is running on a separate server so that everyone can have access to the same data.
+#  minio:
+#    image: 'bitnami/minio:latest'
+#    ports:
+#      - '9000:9000'
+#      - '9001:9001'
+#    volumes:
+#      - ./storage:/bitnami/minio/data
+#    environment:
+#      - MINIO_ROOT_USER=minio
+#      - MINIO_ROOT_PASSWORD=CHANGE_ME
+#      - MINIO_DEFAULT_BUCKETS=product-images,user-images
+#    networks:
+#      - springapimysql-net
+
 networks:
   springapimysql-net:
     driver: bridge
