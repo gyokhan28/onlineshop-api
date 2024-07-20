@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -31,7 +30,5 @@ public class Order {
     @ManyToOne
     @JoinColumn(name = "status_id")
     private OrderStatus status;
-
-    private BigDecimal price; // will be calculated from the DTO (product * price)
 
 }

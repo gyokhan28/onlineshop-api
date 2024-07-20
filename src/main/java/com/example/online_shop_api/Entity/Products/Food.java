@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @Data
@@ -18,8 +19,8 @@ public class Food extends Product {
     @Column(name = "expiry_date")
     private LocalDate expiryDate;
 
-    public Food(String name, BigDecimal price, int quantity, LocalDate expiryDate, String imageLocation) {
-        super(name, price, quantity, imageLocation);
+    public Food(String name, BigDecimal price, int quantity, LocalDate expiryDate, List<String> imageUrls) {
+        super(name, price, quantity, imageUrls);
         this.expiryDate = expiryDate;
     }
 }
