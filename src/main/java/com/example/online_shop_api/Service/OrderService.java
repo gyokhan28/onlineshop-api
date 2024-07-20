@@ -2,9 +2,12 @@ package com.example.online_shop_api.Service;
 
 import com.example.online_shop_api.Dto.Response.OrderResponseDto;
 import com.example.online_shop_api.Dto.Response.SingleOrderResponseDto;
+import com.example.online_shop_api.Dto.Response.UserResponseDto;
 import com.example.online_shop_api.Entity.Order;
 import com.example.online_shop_api.Entity.OrderProduct;
 import com.example.online_shop_api.Entity.OrderStatus;
+import com.example.online_shop_api.Entity.User;
+import com.example.online_shop_api.Mapper.UserMapper;
 import com.example.online_shop_api.Repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -54,20 +57,20 @@ public class OrderService {
         }
         return ResponseEntity.ok(false);
     }
-
     public ResponseEntity<?> viewSingleOrder(Long orderId) {
         Optional<Order> orderOptional = orderRepository.findById(orderId);
         if (orderOptional.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
         Order order = orderOptional.get();
-        List<OrderProduct> orderProductList = orderProductRepository.findAllByOrderId(order.getId());
+        User user = order.getUser();
+        UserResponseDto userResponseDto = UserMapper.toDto(user);
+
+        List<OrderProduct> orderProductsList = orderProductRepository.findAllByOrderId(orderId);
 
         SingleOrderResponseDto responseDto = new SingleOrderResponseDto();
-        responseDto.setOrder(order);
-        responseDto.setUser(order.getUser());
-        responseDto.setOrderProductList(orderProductList);
-
+        responseDto.setProducts(orderProductsList);
+        responseDto.setUser(userResponseDto);
         return ResponseEntity.ok(responseDto);
     }
 }
