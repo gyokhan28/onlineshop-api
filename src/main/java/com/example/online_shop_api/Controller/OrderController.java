@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/orders")
 @RequiredArgsConstructor
@@ -15,7 +17,7 @@ public class OrderController {
     private final OrderService orderService;
 
     @GetMapping("/show")
-    public ResponseEntity<OrderResponseDto> showOrders() {
+    public ResponseEntity<List<OrderResponseDto>> showOrders() {
         return orderService.showOrders();
     }
 
