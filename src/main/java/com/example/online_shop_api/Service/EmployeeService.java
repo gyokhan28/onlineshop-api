@@ -1,6 +1,7 @@
 package com.example.online_shop_api.Service;
 
 import com.example.online_shop_api.Dto.Request.EmployeeRequestDto;
+import com.example.online_shop_api.Dto.Response.EmployeeResponseDto;
 import com.example.online_shop_api.Dto.Response.ErrorResponse;
 import com.example.online_shop_api.Dto.Response.SuccessResponse;
 import com.example.online_shop_api.Entity.Employee;
@@ -31,16 +32,25 @@ public class EmployeeService {
 
     private final EmployeeRepository employeeRepository;
     private final RoleRepository roleRepository;
-    private final EmployeeMapper employeeMapper;
     private final PasswordEncoder encoder;
     private final JobTypeRepository jobTypeRepository;
 
-    public ResponseEntity<List<Employee>> getAllEmployees() {
-        return ResponseEntity.ok(employeeRepository.findByRole_IdNot(1L));
+    public ResponseEntity<List<EmployeeResponseDto>> getAllEmployees() {
+        try {
+            List<EmployeeResponseDto> employeeResponseDtos = EmployeeMapper.toDtoList(employeeRepository.findAll());
+            return ResponseEntity.ok(employeeResponseDtos);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
 
-    public ResponseEntity<EmployeeRequestDto> getNewEmployee() {
-        return ResponseEntity.ok(new EmployeeRequestDto());
+    public ResponseEntity<List<EmployeeResponseDto>> getAllEmployeesExceptAdmins() {
+        try {
+            List<EmployeeResponseDto> employeeResponseDtos = EmployeeMapper.toDtoList(employeeRepository.findByRole_IdNot(1L));
+            return ResponseEntity.ok(employeeResponseDtos);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
 
     public ResponseEntity<?> registerNewEmployee(EmployeeRequestDto employeeRequestDto, BindingResult bindingResult) {
@@ -82,14 +92,14 @@ public class EmployeeService {
         }
 
         try {
-            Employee employee = employeeMapper.toEntity(employeeRequestDto);
+            Employee employee = EmployeeMapper.toEntity(employeeRequestDto);
             employee.setRole(optionalRole.get());
             employee.setPassword(encoder.encode(employeeRequestDto.getPassword()));
             employee.setJobType(optionalJobType.get());
             //new employee accounts will be disabled -> after admin approval, they will be enabled.
             employee.setEnabled(false);
             employeeRepository.save(employee);
-            employeeMapper.toDto(employee);
+            EmployeeMapper.toDto(employee);
         } catch (Exception exception) {
             throw new ServerErrorException("An internal error occurred. Please try again. " + exception.getMessage());
         }

@@ -1,13 +1,13 @@
 package com.example.online_shop_api.Controller;
 
 import com.example.online_shop_api.Dto.Request.EmployeeRequestDto;
-import com.example.online_shop_api.Entity.Employee;
+import com.example.online_shop_api.Dto.Response.EmployeeResponseDto;
 import com.example.online_shop_api.MyUserDetails;
 import com.example.online_shop_api.Service.EmployeeService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,22 +21,22 @@ public class EmployeeController {
     private final EmployeeService employeeService;
 
     @GetMapping("/get-all")
-    public ResponseEntity<List<Employee>> listAllEmployees(){
+    public ResponseEntity<List<EmployeeResponseDto>> listAllEmployees() {
         return employeeService.getAllEmployees();
     }
 
-    @GetMapping("/register")
-    public ResponseEntity<EmployeeRequestDto> getNewEmployee(){
-        return employeeService.getNewEmployee();
+    @GetMapping("/get-all-except-admins")
+    public ResponseEntity<List<EmployeeResponseDto>> getAllEmployeesExceptAdmins() {
+        return employeeService.getAllEmployeesExceptAdmins();
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> registerNewEmployee(@RequestBody @Valid EmployeeRequestDto employeeRequestDto, BindingResult bindingResult){
+    public ResponseEntity<?> registerNewEmployee(@RequestBody @Valid EmployeeRequestDto employeeRequestDto, BindingResult bindingResult) {
         return employeeService.registerNewEmployee(employeeRequestDto, bindingResult);
     }
 
     @GetMapping("/profile")
-    public ResponseEntity<MyUserDetails> showProfile(Authentication authentication){
+    public ResponseEntity<MyUserDetails> showProfile(Authentication authentication) {
         return employeeService.showEmployeeProfile(authentication);
     }
 
