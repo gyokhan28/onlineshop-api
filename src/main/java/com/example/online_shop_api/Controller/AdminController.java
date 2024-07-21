@@ -19,20 +19,9 @@ public class AdminController {
     public ResponseEntity<List<Employee>> showEmployees(){
         return adminService.getAllEmployees();
     }
-
-    @PutMapping("/enable-employee/{id}")
-    public ResponseEntity<Boolean> enableEmployee(@PathVariable("id") Long employeeId){
-        return adminService.enableEmployee(employeeId);
-    }
-
-    @PutMapping("/disable-employee/{id}")
-    public ResponseEntity<Boolean> disableEmployee(@PathVariable("id") Long employeeId){
-        return adminService.disableEmployee(employeeId);
-    }
-
-    @PutMapping("/update-salary/{id}")
-    public ResponseEntity<Boolean> updateEmployeeSalary(@PathVariable("id") Long id, @RequestParam("salary") String salary){
-        return adminService.updateEmployeeSalary(id, salary);
+    @PutMapping("/update-employee/{id}")
+    public ResponseEntity<Boolean> updateEmployeeSalary(@PathVariable("id") Long id, @RequestParam boolean isEnabled, @RequestParam("salary") String salary){
+        return adminService.updateEmployeeStatusAndSalary(id, isEnabled, salary);
     }
 
 }
