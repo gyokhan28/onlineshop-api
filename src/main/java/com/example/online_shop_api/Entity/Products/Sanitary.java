@@ -10,6 +10,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Entity
 @Data
@@ -27,8 +28,8 @@ public class Sanitary extends Product {
     private Material material;
 
 
-    public Sanitary(String name, BigDecimal price, int quantity, boolean isBiodegradable, boolean isReusable, Material material, String imageLocation) {
-        super(name, price, quantity, imageLocation);
+    public Sanitary(String name, BigDecimal price, int quantity, boolean isBiodegradable, boolean isReusable, Material material, List<String> imageUrls) {
+        super(name, price, quantity, imageUrls);
         this.isBiodegradable = isBiodegradable;
         this.isReusable = isReusable;
         this.material = material;

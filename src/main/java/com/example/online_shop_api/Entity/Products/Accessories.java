@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Entity
 @Getter
@@ -27,8 +28,8 @@ public class Accessories extends Product {
     @JoinColumn(name = "brand_id")
     private Brand brand;
 
-    public Accessories(String name, BigDecimal price, int quantity, Color color, Brand brand, String imageLocation) {
-        super(name, price, quantity, imageLocation);
+    public Accessories(String name, BigDecimal price, int quantity, Color color, Brand brand, List<String> imageUrls) {
+        super(name, price, quantity, imageUrls);
         this.color = color;
         this.brand = brand;
     }

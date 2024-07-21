@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @Data
@@ -16,8 +17,8 @@ public class Drink extends Product {
     @Column(name = "best_before")
     private LocalDate bestBefore;
 
-    public Drink(String name, BigDecimal price, int quantity, LocalDate bestBefore, String imageLocation) {
-        super(name, price, quantity, imageLocation);
+    public Drink(String name, BigDecimal price, int quantity, LocalDate bestBefore, List<String> imageUrls) {
+        super(name, price, quantity, imageUrls);
         this.bestBefore = bestBefore;
     }
 }

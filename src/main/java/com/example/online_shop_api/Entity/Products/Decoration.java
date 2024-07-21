@@ -11,6 +11,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Entity
 @Data
@@ -26,8 +27,8 @@ public class Decoration extends Product {
     @JoinColumn(name = "brand_id")
     private Brand brand;
 
-    public Decoration(String name, BigDecimal price, int quantity, Material material, Brand brand, String imageLocation) {
-        super(name, price, quantity, imageLocation);
+    public Decoration(String name, BigDecimal price, int quantity, Material material, Brand brand, List<String> imageUrls) {
+        super(name, price, quantity, imageUrls);
         this.material = material;
         this.brand = brand;
     }
