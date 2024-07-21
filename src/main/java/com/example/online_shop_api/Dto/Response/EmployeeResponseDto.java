@@ -20,7 +20,7 @@ public class EmployeeResponseDto {
     private int age;
     private BigDecimal salary;
     private String phoneNumber;
-    private Role role;
+    private String role;
     private LocalDateTime createdAt;
     private boolean isEnabled;
     private String jobType;

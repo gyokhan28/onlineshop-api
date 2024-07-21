@@ -7,11 +7,13 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.Period;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class EmployeeMapper {
 
-    public EmployeeResponseDto toDto(Employee employee) {
+    public static EmployeeResponseDto toDto(Employee employee) {
         if (employee == null) {
             return null;
         }
@@ -26,15 +28,24 @@ public class EmployeeMapper {
         employeeResponseDto.setEmail(employee.getEmail());
         employeeResponseDto.setSalary(employee.getSalary());
         employeeResponseDto.setPhoneNumber(employee.getPhoneNumber());
-        employeeResponseDto.setRole(employee.getRole());
+        employeeResponseDto.setRole(employee.getRole().getName());
         employeeResponseDto.setCreatedAt(employee.getCreatedAt());
         employeeResponseDto.setEnabled(employee.isEnabled());
         employeeResponseDto.setAge(calculateAge(employee.getDateOfBirth()));
+        employeeResponseDto.setJobType(employee.getJobType().getName());
 
         return employeeResponseDto;
     }
 
-    public Employee toEntity(EmployeeRequestDto employeeRequestDto) {
+    public static List<EmployeeResponseDto> toDtoList (List<Employee> employeeList) {
+        List<EmployeeResponseDto> employeeResponseDtos = new ArrayList<>();
+        for (Employee e: employeeList) {
+            employeeResponseDtos.add(toDto(e));
+        }
+        return employeeResponseDtos;
+    }
+
+    public static Employee toEntity(EmployeeRequestDto employeeRequestDto) {
         if(employeeRequestDto == null){
             return null;
         }
@@ -56,7 +67,7 @@ public class EmployeeMapper {
         return employee.build();
     }
 
-    public int calculateAge(LocalDate birthDate) {
+    public static int calculateAge(LocalDate birthDate) {
         if (birthDate != null) {
             LocalDate currentDate = LocalDate.now();
             return Period.between(birthDate, currentDate).getYears();
