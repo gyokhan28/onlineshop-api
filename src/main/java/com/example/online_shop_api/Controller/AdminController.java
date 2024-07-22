@@ -21,7 +21,7 @@ public class AdminController {
     }
 
     @PutMapping("/update-employee/{id}")
-    public ResponseEntity<?> updateEmployeeSalary(@PathVariable("id") Long id,
+    public ResponseEntity<String> updateEmployeeSalary(@PathVariable("id") Long id,
                                                   @RequestParam(value = "isEnabled", required = false) Boolean isEnabled,
                                                   @RequestParam(value = "salary", required = false) String salary) {
         return adminService.updateEmployeeStatusAndSalary(id, isEnabled, salary);
