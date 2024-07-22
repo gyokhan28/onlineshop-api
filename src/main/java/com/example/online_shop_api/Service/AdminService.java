@@ -24,20 +24,17 @@ public class AdminService {
     public ResponseEntity<String> updateEmployeeStatusAndSalary(Long employeeId, Boolean isEnabled, String salary) {
         Optional<Employee> optionalEmployee = employeeRepository.findById(employeeId);
 
-        // Get rid of this option to make the method simpler to read
         if (optionalEmployee.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Employee not found");
         }
 
         Employee employee = optionalEmployee.get();
 
-        // Check if there's an actual value passed (in case it's only a salary update)
         if (isEnabled != null) {
             employee.setEnabled(isEnabled);
         }
 
         if (salary != null && !salary.isEmpty()) {
-            // Check if the String passed in as a salary is actually a BigDecimal
             try {
                 BigDecimal salaryValue = new BigDecimal(salary);
                 employee.setSalary(salaryValue);
@@ -47,7 +44,6 @@ public class AdminService {
         }
 
         employeeRepository.save(employee);
-
         return ResponseEntity.ok("Employee updated successfully");
     }
 }
