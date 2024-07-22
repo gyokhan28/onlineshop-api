@@ -1,4 +1,4 @@
-package com.example.online_shop_api.Service;
+package com.example.online_shop_api.Service.Products;
 
 import com.example.online_shop_api.Dto.Request.AddProductRequest;
 import com.example.online_shop_api.Dto.Request.ProductRequestDto;
@@ -6,15 +6,11 @@ import com.example.online_shop_api.Repository.BrandRepository;
 import com.example.online_shop_api.Repository.ColorRepository;
 import com.example.online_shop_api.Repository.MaterialRepository;
 import com.example.online_shop_api.Static.ProductCategory;
+import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
-import java.util.Arrays;
-import java.util.List;
-
-import static java.time.chrono.JapaneseEra.values;
 
 @Service
 @RequiredArgsConstructor

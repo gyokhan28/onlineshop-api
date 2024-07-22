@@ -1,6 +1,6 @@
-package com.example.online_shop_api.Controller;
+package com.example.online_shop_api.Controller.Products;
 
-import com.example.online_shop_api.Service.ProductService;
+import com.example.online_shop_api.Service.Products.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
