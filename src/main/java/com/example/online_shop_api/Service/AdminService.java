@@ -21,7 +21,7 @@ public class AdminService {
         return ResponseEntity.ok(employeeRepository.findByRole_IdNot(1L));
     }
 
-    public ResponseEntity<?> updateEmployeeStatusAndSalary(Long employeeId, Boolean isEnabled, String salary) {
+    public ResponseEntity<String> updateEmployeeStatusAndSalary(Long employeeId, Boolean isEnabled, String salary) {
         Optional<Employee> optionalEmployee = employeeRepository.findById(employeeId);
 
         // Get rid of this option to make the method simpler to read
