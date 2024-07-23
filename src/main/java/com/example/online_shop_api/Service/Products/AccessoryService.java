@@ -9,18 +9,15 @@ import com.example.online_shop_api.Exceptions.ColorNotExistException;
 import com.example.online_shop_api.Repository.BrandRepository;
 import com.example.online_shop_api.Repository.ColorRepository;
 import com.example.online_shop_api.Repository.Products.AccessoriesRepository;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.UUID;
-
 @Service
 @RequiredArgsConstructor
-public class AccessoriesService {
+public class AccessoryService {
   private final AccessoriesRepository accessoriesRepository;
   private final BrandRepository brandRepository;
   private final ColorRepository colorRepository;
@@ -28,23 +25,23 @@ public class AccessoriesService {
 
   public ResponseEntity<List<ProductResponseDto>> getAllAccessories() {
     List<Accessories> accessoriesList = accessoriesRepository.findAll();
-    List<ProductResponseDto> responseList =
+    return ResponseEntity.ok(
         accessoriesList.stream()
             .map(accessory -> modelMapper.map(accessory, ProductResponseDto.class))
-            .toList();
-    return ResponseEntity.ok(responseList);
+            .toList());
   }
 
-  public ResponseEntity<ProductResponseDto> addAccessories(ProductRequestDto request) {
+  public ResponseEntity<ProductResponseDto> addAccessory(ProductRequestDto request) {
     Accessories accessories = modelMapper.map(request, Accessories.class);
 
     checkBrandAndColorExist(accessories);
+    accessories.setImageUrls(List.of(request.getImageLocation()));
 
     accessoriesRepository.save(accessories);
     return ResponseEntity.ok(modelMapper.map(accessories, ProductResponseDto.class));
   }
 
-  public ResponseEntity<ProductResponseDto> updateAccessories(
+  public ResponseEntity<ProductResponseDto> updateAccessory(
       ProductRequestDto request, Long accessoriesId) {
 
     Accessories existingAccessories =
@@ -54,6 +51,7 @@ public class AccessoriesService {
 
     modelMapper.map(request, existingAccessories);
     checkBrandAndColorExist(existingAccessories);
+    existingAccessories.setImageUrls(List.of(request.getImageLocation()));
 
     Accessories updatedAccessories = accessoriesRepository.save(existingAccessories);
 
@@ -61,7 +59,7 @@ public class AccessoriesService {
     return ResponseEntity.ok(responseDto);
   }
 
-  public void deleteAccessories(Long id) {
+  public void deleteAccessory(Long id) {
     Accessories accessories =
         accessoriesRepository.findById(id).orElseThrow(() -> new AccessoriesNotFoundException(id));
     accessoriesRepository.delete(accessories);
