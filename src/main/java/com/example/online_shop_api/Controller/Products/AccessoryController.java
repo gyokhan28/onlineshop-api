@@ -18,7 +18,7 @@ public class AccessoryController {
   private final AccessoryService accessoryService;
 
   @GetMapping("/show")
-  public ResponseEntity<List<ProductResponseDto>> showAllAccessory() {
+  public ResponseEntity<List<ProductResponseDto>> showAllAccessories() {
     return accessoryService.getAllAccessories();
   }
 
