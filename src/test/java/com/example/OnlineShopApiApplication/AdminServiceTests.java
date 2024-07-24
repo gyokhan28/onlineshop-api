@@ -7,6 +7,7 @@ import com.example.online_shop_api.Service.AdminService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.HttpStatus;
@@ -24,6 +25,7 @@ import static org.mockito.Mockito.*;
 @AutoConfigureMockMvc(addFilters = false)
 public class AdminServiceTests {
     private AdminService adminService;
+    @Mock
     private EmployeeRepository employeeRepository;
 
     private Employee testEmployee;
@@ -31,7 +33,6 @@ public class AdminServiceTests {
 
     @BeforeEach
     public void setUp() {
-        employeeRepository = mock(EmployeeRepository.class);
         adminService = new AdminService(employeeRepository);
 
         testRole = new Role();
