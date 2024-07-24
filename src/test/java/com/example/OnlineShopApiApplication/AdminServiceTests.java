@@ -8,32 +8,30 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@AutoConfigureMockMvc(addFilters = false)
 public class AdminServiceTests {
     private AdminService adminService;
     private EmployeeRepository employeeRepository;
-    private BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    private Employee testEmployee, testEmployee2;
+    private Employee testEmployee;
     private Role testRole;
 
     @BeforeEach
     public void setUp() {
         employeeRepository = mock(EmployeeRepository.class);
-        bCryptPasswordEncoder = mock(BCryptPasswordEncoder.class);
         adminService = new AdminService(employeeRepository);
 
         testRole = new Role();
@@ -46,26 +44,25 @@ public class AdminServiceTests {
                 .lastName("Test1")
                 .username("TestUsername")
                 .email("test@mail.bg")
-                .password(bCryptPasswordEncoder.encode("TestPassword"))
+                .password("TestPassword")
                 .isEnabled(false)
-                .role(testRole)
-                .build();
-
-        testEmployee2 = Employee.builder()
-                .id(2L)
-                .firstName("Test2")
-                .lastName("Test2")
-                .username("TestUsername2")
-                .email("test2@mail.bg")
-                .password(bCryptPasswordEncoder.encode("TestPassword2"))
                 .role(testRole)
                 .build();
     }
 
     @Test
     public void testGetAllEmployees() {
+        Employee testEmployee2 = Employee.builder()
+                .id(2L)
+                .firstName("Test2")
+                .lastName("Test2")
+                .username("TestUsername2")
+                .email("test2@mail.bg")
+                .password("TestPassword2")
+                .role(testRole)
+                .build();
 
-        List<Employee> employeeList = Arrays.asList(testEmployee,testEmployee2);
+        List<Employee> employeeList = Arrays.asList(testEmployee, testEmployee2);
 
         when(employeeRepository.findByRole_IdNot(1L)).thenReturn(employeeList);
         ResponseEntity<List<Employee>> response = adminService.getAllEmployees();
@@ -74,13 +71,16 @@ public class AdminServiceTests {
         assertEquals(employeeList, response.getBody());
         assertEquals(2, response.getBody().size());
 
-        verify(employeeRepository).findByRole_IdNot(1L);
+        verify(employeeRepository, times(1)).findByRole_IdNot(1L);
     }
 
     @Test
-    public void testChangeEmployeeToEnabled(){
+    public void testChangeEmployeeToEnabled() {
 
         when(employeeRepository.findById(1L)).thenReturn(Optional.ofNullable(testEmployee));
+
+        assertFalse(testEmployee.isEnabled());
+
         ResponseEntity<String> expectedResponse = ResponseEntity.ok("Employee updated successfully");
         ResponseEntity<String> actualResponse = adminService.updateEmployeeStatusAndSalary(1L, true, null);
 
@@ -89,7 +89,7 @@ public class AdminServiceTests {
     }
 
     @Test
-    public void testChangeEmployeeSalaryGivenIncorrectParameter(){
+    public void testChangeEmployeeSalaryGivenIncorrectParameter() {
 
         when(employeeRepository.findById(1L)).thenReturn(Optional.ofNullable(testEmployee));
         ResponseEntity<String> expectedResponse = ResponseEntity.badRequest().body("Invalid salary format");
@@ -100,7 +100,7 @@ public class AdminServiceTests {
     }
 
     @Test
-    public void testChangeEmployeeSalaryAndStatusWithCorrectParameters(){
+    public void testChangeEmployeeSalaryAndStatusWithCorrectParameters() {
 
         when(employeeRepository.findById(1L)).thenReturn(Optional.ofNullable(testEmployee));
         ResponseEntity<String> expectedResponse = ResponseEntity.ok("Employee updated successfully");
@@ -112,11 +112,11 @@ public class AdminServiceTests {
     }
 
     @Test
-    public void testChangeEmployeeSalaryWithNotExistingEmployee(){
+    public void testChangeEmployeeSalaryWithNotExistingEmployee() {
         ResponseEntity<String> expectedResponse = ResponseEntity.status(HttpStatus.NOT_FOUND).body("Employee not found");
         ResponseEntity<String> actualResponse = adminService.updateEmployeeStatusAndSalary(3L, true, "200");
 
         assertEquals(expectedResponse, actualResponse);
-        verify(employeeRepository,never()).findByRole_IdNot(3L);
+        verify(employeeRepository, never()).findByRole_IdNot(3L);
     }
 }
