@@ -5,6 +5,7 @@ import com.example.online_shop_api.Entity.User;
 import com.example.online_shop_api.Repository.EmployeeRepository;
 import com.example.online_shop_api.Repository.UserRepository;
 import com.example.online_shop_api.Service.PasswordService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -18,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class PasswordServiceTest {
+class PasswordServiceTest {
     @InjectMocks
     private PasswordService passwordService;
     @Mock
@@ -31,22 +32,28 @@ public class PasswordServiceTest {
     private MyUserDetails myUserDetails;
     @Mock
     private Authentication authentication;
+    private User user;
+    private Employee employee;
+
+    @BeforeEach
+    public void setUp() {
+        user = mock(User.class);
+    }
 
     @Test
-    public void testIsUserWithUser() {
+    void testIsUserWithUser() {
         when(myUserDetails.getUser()).thenReturn(new User());
         assertTrue(passwordService.isUser(myUserDetails));
     }
 
     @Test
-    public void testIsUserWithNull() {
+    void testIsUserWithNull() {
         when(myUserDetails.getUser()).thenReturn(null);
         assertFalse(passwordService.isUser(myUserDetails));
     }
 
     @Test
-    public void testIsCurrentPasswordCorrectWithUser() {
-        User user = mock(User.class);
+    void testIsCurrentPasswordCorrectWithUser() {
         when(user.getPassword()).thenReturn("encodedPassword");
         when(myUserDetails.getUser()).thenReturn(user);
         when(bCryptPasswordEncoder.matches("rawPassword", "encodedPassword")).thenReturn(true);
@@ -55,8 +62,8 @@ public class PasswordServiceTest {
     }
 
     @Test
-    public void testIsCurrentPasswordCorrectWithEmployee() {
-        Employee employee = mock(Employee.class);
+    void testIsCurrentPasswordCorrectWithEmployee() {
+        employee = mock(Employee.class);
         when(employee.getPassword()).thenReturn("encodedPassword");
         when(myUserDetails.getEmployee()).thenReturn(employee);
         when(bCryptPasswordEncoder.matches("rawPassword", "encodedPassword")).thenReturn(true);
@@ -65,8 +72,7 @@ public class PasswordServiceTest {
     }
 
     @Test
-    public void testUpdatePasswordForUser() {
-        User user = mock(User.class);
+    void testUpdatePasswordForUser() {
         when(myUserDetails.getUser()).thenReturn(user);
         when(bCryptPasswordEncoder.encode("newPassword")).thenReturn("encodedNewPassword");
 
@@ -77,8 +83,8 @@ public class PasswordServiceTest {
     }
 
     @Test
-    public void testUpdatePasswordForEmployee() {
-        Employee employee = mock(Employee.class);
+    void testUpdatePasswordForEmployee() {
+        employee = mock(Employee.class);
         when(myUserDetails.getEmployee()).thenReturn(employee);
         when(bCryptPasswordEncoder.encode("newPassword")).thenReturn("encodedNewPassword");
 
@@ -89,8 +95,7 @@ public class PasswordServiceTest {
     }
 
     @Test
-    public void testChangePasswordSuccess() {
-        User user = mock(User.class);
+    void testChangePasswordSuccess() {
         when(myUserDetails.getUser()).thenReturn(user);
         when(authentication.getPrincipal()).thenReturn(myUserDetails);
         when(bCryptPasswordEncoder.matches("currentPassword", user.getPassword())).thenReturn(true);
@@ -105,8 +110,7 @@ public class PasswordServiceTest {
     }
 
     @Test
-    public void testChangePasswordIncorrectCurrentPassword() {
-        User user = mock(User.class);
+    void testChangePasswordIncorrectCurrentPassword() {
         when(myUserDetails.getUser()).thenReturn(user);
         when(authentication.getPrincipal()).thenReturn(myUserDetails);
         when(bCryptPasswordEncoder.matches("currentPassword", user.getPassword())).thenReturn(false);
@@ -118,8 +122,7 @@ public class PasswordServiceTest {
     }
 
     @Test
-    public void testChangePasswordMismatchedNewPasswords() {
-        User user = mock(User.class);
+    void testChangePasswordMismatchedNewPasswords() {
         when(myUserDetails.getUser()).thenReturn(user);
         when(authentication.getPrincipal()).thenReturn(myUserDetails);
         when(bCryptPasswordEncoder.matches("currentPassword", user.getPassword())).thenReturn(true);
@@ -131,8 +134,7 @@ public class PasswordServiceTest {
     }
 
     @Test
-    public void testChangePasswordEmptyNewPassword() {
-        User user = mock(User.class);
+    void testChangePasswordEmptyNewPassword() {
         when(myUserDetails.getUser()).thenReturn(user);
         when(authentication.getPrincipal()).thenReturn(myUserDetails);
         when(bCryptPasswordEncoder.matches("currentPassword", user.getPassword())).thenReturn(true);
@@ -144,8 +146,7 @@ public class PasswordServiceTest {
     }
 
     @Test
-    public void testChangePasswordShortNewPassword() {
-        User user = mock(User.class);
+    void testChangePasswordShortNewPassword() {
         when(myUserDetails.getUser()).thenReturn(user);
         when(authentication.getPrincipal()).thenReturn(myUserDetails);
         when(bCryptPasswordEncoder.matches("currentPassword", user.getPassword())).thenReturn(true);
