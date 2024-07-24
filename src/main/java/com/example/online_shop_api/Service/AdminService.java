@@ -1,6 +1,5 @@
 package com.example.online_shop_api.Service;
 
-import com.example.online_shop_api.Dto.Response.ErrorResponse;
 import com.example.online_shop_api.Entity.Employee;
 import com.example.online_shop_api.Repository.EmployeeRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,18 +21,29 @@ public class AdminService {
         return ResponseEntity.ok(employeeRepository.findByRole_IdNot(1L));
     }
 
-    public ResponseEntity<Boolean> updateEmployeeStatusAndSalary(Long employeeId, boolean isEnabled, String salary){
-        Optional<Employee> employeeOptional = employeeRepository.findById(employeeId);
-        if(employeeOptional.isPresent()) {
-            Employee employee = employeeOptional.get();
+    public ResponseEntity<String> updateEmployeeStatusAndSalary(Long employeeId, Boolean isEnabled, String salary) {
+        Optional<Employee> optionalEmployee = employeeRepository.findById(employeeId);
+
+        if (optionalEmployee.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Employee not found");
+        }
+
+        Employee employee = optionalEmployee.get();
+
+        if (isEnabled != null) {
             employee.setEnabled(isEnabled);
-            if(salary != null && !salary.isEmpty()){
+        }
+
+        if (salary != null && !salary.isEmpty()) {
+            try {
                 BigDecimal salaryValue = new BigDecimal(salary);
                 employee.setSalary(salaryValue);
+            } catch (NumberFormatException e) {
+                return ResponseEntity.badRequest().body("Invalid salary format");
             }
-            employeeRepository.save(employee);
-            return ResponseEntity.ok(true);
         }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);
+
+        employeeRepository.save(employee);
+        return ResponseEntity.ok("Employee updated successfully");
     }
 }

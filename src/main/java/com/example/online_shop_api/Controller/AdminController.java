@@ -16,11 +16,14 @@ public class AdminController {
     private final AdminService adminService;
 
     @GetMapping("/show-employees")
-    public ResponseEntity<List<Employee>> showEmployees(){
+    public ResponseEntity<List<Employee>> showEmployees() {
         return adminService.getAllEmployees();
     }
+
     @PutMapping("/update-employee/{id}")
-    public ResponseEntity<Boolean> updateEmployeeSalary(@PathVariable("id") Long id, @RequestParam boolean isEnabled, @RequestParam("salary") String salary){
+    public ResponseEntity<String> updateEmployeeStatusAndSalary(@PathVariable("id") Long id,
+                                                  @RequestParam(value = "isEnabled", required = false) Boolean isEnabled,
+                                                  @RequestParam(value = "salary", required = false) String salary) {
         return adminService.updateEmployeeStatusAndSalary(id, isEnabled, salary);
     }
 

@@ -39,7 +39,7 @@ public class MinioController {
      * @param filename  - File location
      * @return File uploaded successfully: product_1/431b410d-7442-4897-8c33-82212381d002.png
      */
-    @PostMapping(value = "/upload_product_image")
+    @PostMapping(value = "/upload-image")
     public ResponseEntity<String> uploadProductImage(@RequestParam(value = "productId") String productId,
                                                      @RequestParam("fileName") String filename) {
         try {
@@ -66,7 +66,7 @@ public class MinioController {
         }
     }
 
-    @GetMapping("/list_images_for_product_id/{productId}")
+    @GetMapping("/list-image-urls/{productId}")
     public ResponseEntity<?> getFileNames(@PathVariable String productId) throws Exception {
         try {
             return ResponseEntity.ok(minioService.listFilesInDirectory(productId));
@@ -75,7 +75,7 @@ public class MinioController {
         }
     }
 
-    @GetMapping("/list_full_path_images_for_product_id/{productId}")
+    @GetMapping("/list-full-path-images-urls/{productId}")
     public ResponseEntity<?> getFullFileNames(@PathVariable String productId) throws Exception {
         try {
             return ResponseEntity.ok(minioService.listFilesInDirectoryFullPath(productId));
