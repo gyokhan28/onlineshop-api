@@ -3,6 +3,7 @@ package com.example.online_shop_api.Dto.Response;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Data
 public class ProductResponseDto {
@@ -10,5 +11,5 @@ public class ProductResponseDto {
     private String name;
     private BigDecimal price;
     private int quantity;
-    private String imageLocation;
+    private List<String> imageUrls;
 }

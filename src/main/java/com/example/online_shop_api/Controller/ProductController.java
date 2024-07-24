@@ -19,4 +19,14 @@ public class ProductController {
     public ResponseEntity<?> addNewProduct(@RequestParam("productType") String productType) {
         return productService.addNewProduct(productType);
     }
+
+    @GetMapping("/get")
+    public ResponseEntity<?> getProduct(@RequestParam("productId") Long id) throws Exception {
+        return productService.getProduct(id);
+    }
+
+    @GetMapping("/get-all")
+    public ResponseEntity<?> getAllProducts() throws Exception {
+        return productService.getAllProducts();
+    }
 }
