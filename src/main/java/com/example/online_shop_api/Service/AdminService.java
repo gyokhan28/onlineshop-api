@@ -3,6 +3,7 @@ package com.example.online_shop_api.Service;
 import com.example.online_shop_api.Entity.Employee;
 import com.example.online_shop_api.Repository.EmployeeRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -20,37 +21,29 @@ public class AdminService {
         return ResponseEntity.ok(employeeRepository.findByRole_IdNot(1L));
     }
 
-    public ResponseEntity<Boolean> enableEmployee(Long employeeId) {
-        return ResponseEntity.ok(setEmployeeEnabled(employeeId, true));
-    }
+    public ResponseEntity<String> updateEmployeeStatusAndSalary(Long employeeId, Boolean isEnabled, String salary) {
+        Optional<Employee> optionalEmployee = employeeRepository.findById(employeeId);
 
-    public ResponseEntity<Boolean> disableEmployee(Long employeeId) {
-        return ResponseEntity.ok(setEmployeeEnabled(employeeId, false));
-    }
-
-    public boolean setEmployeeEnabled(Long employeeId, boolean enabled) {
-        Optional<Employee> employeeOptional = employeeRepository.findById(employeeId);
-        if (employeeOptional.isPresent()) {
-            Employee employee = employeeOptional.get();
-            employee.setEnabled(enabled);
-            employeeRepository.save(employee);
-            return true;
+        if (optionalEmployee.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Employee not found");
         }
-        return false;
-    }
 
-    public ResponseEntity<Boolean> updateEmployeeSalary(Long employeeId, String salary) {
-        Optional<Employee> employeeOptional = employeeRepository.findById(employeeId);
-        if (employeeOptional.isPresent()) {
-            Employee employee = employeeOptional.get();
-            if (salary != null && !salary.isEmpty()) {
+        Employee employee = optionalEmployee.get();
+
+        if (isEnabled != null) {
+            employee.setEnabled(isEnabled);
+        }
+
+        if (salary != null && !salary.isEmpty()) {
+            try {
                 BigDecimal salaryValue = new BigDecimal(salary);
                 employee.setSalary(salaryValue);
-                employeeRepository.save(employee);
-                return ResponseEntity.ok(true);
+            } catch (NumberFormatException e) {
+                return ResponseEntity.badRequest().body("Invalid salary format");
             }
-            return ResponseEntity.ok(false);
         }
-        return ResponseEntity.ok(false);
+
+        employeeRepository.save(employee);
+        return ResponseEntity.ok("Employee updated successfully");
     }
 }
