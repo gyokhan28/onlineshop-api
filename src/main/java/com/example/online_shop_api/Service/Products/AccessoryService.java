@@ -3,6 +3,7 @@ package com.example.online_shop_api.Service.Products;
 import com.example.online_shop_api.Dto.Request.ProductRequestDto;
 import com.example.online_shop_api.Dto.Response.ProductResponseDto;
 import com.example.online_shop_api.Entity.Products.Accessory;
+import com.example.online_shop_api.Entity.Products.Product;
 import com.example.online_shop_api.Exceptions.AccessoriesNotFoundException;
 import com.example.online_shop_api.Exceptions.BrandNotExistException;
 import com.example.online_shop_api.Exceptions.ColorNotExistException;
@@ -30,10 +31,12 @@ public class AccessoryService {
             .map(accessory -> modelMapper.map(accessory, ProductResponseDto.class))
             .toList());
   }
-//  public ProductResponseDto getById(Long id) {
-//    return  modelMapper.map(accessoriesRepository.findById(id),ProductResponseDto.class).orElseThrow(() -> new AccessoriesNotFoundException(id));
-//
-//  }
+
+  public ProductResponseDto getById(Long id) {
+    Product product =
+        accessoriesRepository.findById(id).orElseThrow(() -> new AccessoriesNotFoundException(id));
+    return modelMapper.map(product, ProductResponseDto.class);
+  }
 
   public ResponseEntity<ProductResponseDto> addAccessory(ProductRequestDto request) {
     Accessory accessories = modelMapper.map(request, Accessory.class);

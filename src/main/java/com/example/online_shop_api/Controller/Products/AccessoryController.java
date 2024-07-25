@@ -23,7 +23,7 @@ public class AccessoryController {
     return accessoryService.getAllAccessories();
   }
 
-  @GetMapping("/{id}")
+  @GetMapping("show/{id}")
   ProductResponseDto getAccessoriesById(@PathVariable(name = "id") Long id){
     return accessoryService.getById(id);
   }
