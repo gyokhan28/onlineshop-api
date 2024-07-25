@@ -11,7 +11,7 @@ import lombok.*;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Accessories extends Product {
+public class Accessory extends Product {
 
   @ManyToOne
   @JoinColumn(name = "color_id")

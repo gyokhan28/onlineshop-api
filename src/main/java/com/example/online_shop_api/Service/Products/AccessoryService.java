@@ -2,7 +2,7 @@ package com.example.online_shop_api.Service.Products;
 
 import com.example.online_shop_api.Dto.Request.ProductRequestDto;
 import com.example.online_shop_api.Dto.Response.ProductResponseDto;
-import com.example.online_shop_api.Entity.Products.Accessories;
+import com.example.online_shop_api.Entity.Products.Accessory;
 import com.example.online_shop_api.Exceptions.AccessoriesNotFoundException;
 import com.example.online_shop_api.Exceptions.BrandNotExistException;
 import com.example.online_shop_api.Exceptions.ColorNotExistException;
@@ -24,15 +24,19 @@ public class AccessoryService {
   private final ModelMapper modelMapper;
 
   public ResponseEntity<List<ProductResponseDto>> getAllAccessories() {
-    List<Accessories> accessoriesList = accessoriesRepository.findAll();
+    List<Accessory> accessoriesList = accessoriesRepository.findAll();
     return ResponseEntity.ok(
         accessoriesList.stream()
             .map(accessory -> modelMapper.map(accessory, ProductResponseDto.class))
             .toList());
   }
+//  public ProductResponseDto getById(Long id) {
+//    return  modelMapper.map(accessoriesRepository.findById(id),ProductResponseDto.class).orElseThrow(() -> new AccessoriesNotFoundException(id));
+//
+//  }
 
   public ResponseEntity<ProductResponseDto> addAccessory(ProductRequestDto request) {
-    Accessories accessories = modelMapper.map(request, Accessories.class);
+    Accessory accessories = modelMapper.map(request, Accessory.class);
 
     checkBrandAndColorExist(accessories);
     accessories.setImageUrls(List.of(request.getImageLocation()));
@@ -44,7 +48,7 @@ public class AccessoryService {
   public ResponseEntity<ProductResponseDto> updateAccessory(
       ProductRequestDto request, Long accessoriesId) {
 
-    Accessories existingAccessories =
+    Accessory existingAccessories =
         accessoriesRepository
             .findById(accessoriesId)
             .orElseThrow(() -> new AccessoriesNotFoundException(accessoriesId));
@@ -53,19 +57,19 @@ public class AccessoryService {
     checkBrandAndColorExist(existingAccessories);
     existingAccessories.setImageUrls(List.of(request.getImageLocation()));
 
-    Accessories updatedAccessories = accessoriesRepository.save(existingAccessories);
+    Accessory updatedAccessories = accessoriesRepository.save(existingAccessories);
 
     ProductResponseDto responseDto = modelMapper.map(updatedAccessories, ProductResponseDto.class);
     return ResponseEntity.ok(responseDto);
   }
 
   public void deleteAccessory(Long id) {
-    Accessories accessories =
+    Accessory accessories =
         accessoriesRepository.findById(id).orElseThrow(() -> new AccessoriesNotFoundException(id));
     accessoriesRepository.delete(accessories);
   }
 
-  private void checkBrandAndColorExist(Accessories accessories) {
+  private void checkBrandAndColorExist(Accessory accessories) {
     boolean brandExists = brandRepository.existsById(accessories.getBrand().getId());
     boolean colorExists = colorRepository.existsById(accessories.getColor().getId());
 

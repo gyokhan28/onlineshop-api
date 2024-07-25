@@ -2,6 +2,7 @@ package com.example.online_shop_api.Controller.Products;
 
 import com.example.online_shop_api.Dto.Request.ProductRequestDto;
 import com.example.online_shop_api.Dto.Response.ProductResponseDto;
+import com.example.online_shop_api.Entity.Products.Accessory;
 import com.example.online_shop_api.Service.Products.AccessoryService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -22,6 +23,11 @@ public class AccessoryController {
     return accessoryService.getAllAccessories();
   }
 
+  @GetMapping("/{id}")
+  ProductResponseDto getAccessoriesById(@PathVariable(name = "id") Long id){
+    return accessoryService.getById(id);
+  }
+
   @PostMapping("/add")
   public ResponseEntity<ProductResponseDto> addNewAccessory(
       @RequestBody @Valid ProductRequestDto requestDto) {
@@ -34,7 +40,7 @@ public class AccessoryController {
     return accessoryService.updateAccessory(requestDto, id);
   }
 
-  @DeleteMapping("delete/{id}")
+  @DeleteMapping("/delete/{id}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void deleteAccessory(@PathVariable("id") Long id) {
     accessoryService.deleteAccessory(id);
