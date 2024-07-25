@@ -23,8 +23,7 @@ import org.springframework.validation.BindingResult;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -114,4 +113,49 @@ public class UserServiceTests {
         verify(addressRepository,times(1)).save(user.getAddress());
         verify(userRepository, times(1)).save(user);
     }
+    @Test
+    void testValidateNewUser_ValidEmailAndUsername() {
+        userRequestDto.setEmail("unique@mail.bg");
+        userRequestDto.setUsername("uniqueuser");
+        userRequestDto.setPassword("pass123");
+        userRequestDto.setRepeatedPassword("pass123");
+
+        when(userRepository.findByEmail("unique@mail.bg")).thenReturn(Optional.empty());
+        when(userRepository.findByUsername("uniqueuser")).thenReturn(Optional.empty());
+
+        assertDoesNotThrow(() -> userService.validateNewUser(userRequestDto));
+    }
+    @Test
+    void testAddNewUser_UserMapperThrowsException() {
+        userRequestDto.setPassword("pass123");
+        userRequestDto.setRepeatedPassword("pass123");
+        when(userMapper.toEntity(userRequestDto)).thenThrow(new RuntimeException("Mapping error"));
+
+        assertThrows(ServerErrorException.class, () -> userService.addNewUser(userRequestDto));
+    }
+    @Test
+    void testRegisterNewUser_ThrowsEmailInUseException() {
+        BindingResult bindingResult = mock(BindingResult.class);
+        when(bindingResult.hasErrors()).thenReturn(false);
+
+        when(userRepository.findByEmail(userRequestDto.getEmail())).thenReturn(Optional.of(new User()));
+
+        ResponseEntity<String> response = userService.registerNewUser(userRequestDto, bindingResult);
+
+        assertEquals(ResponseEntity.badRequest().body("Email already in use. Please use a different email!"), response);
+    }
+
+    @Test
+    void testRegisterNewUser_ThrowsUsernameInUseException() {
+        BindingResult bindingResult = mock(BindingResult.class);
+        when(bindingResult.hasErrors()).thenReturn(false);
+
+        when(userRepository.findByEmail(userRequestDto.getEmail())).thenReturn(Optional.empty());
+        when(userRepository.findByUsername(userRequestDto.getUsername())).thenReturn(Optional.of(new User()));
+
+        ResponseEntity<String> response = userService.registerNewUser(userRequestDto, bindingResult);
+
+        assertEquals(ResponseEntity.badRequest().body("Username already in use. Please use a different username!"), response);
+    }
+
 }
