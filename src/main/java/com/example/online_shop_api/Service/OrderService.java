@@ -28,6 +28,7 @@ public class OrderService {
     private final UserRepository userRepository;
     private final OrderRepository orderRepository;
     private final OrderStatusRepository orderStatusRepository;
+    private final UserMapper userMapper;
 
     public ResponseEntity<List<OrderResponseDto>> showOrders() {
         List<OrderResponseDto> responseList = new ArrayList<>();
@@ -65,7 +66,7 @@ public class OrderService {
         }
         Order order = orderOptional.get();
         User user = order.getUser();
-        UserResponseDto userResponseDto = UserMapper.toDto(user);
+        UserResponseDto userResponseDto = userMapper.toDto(user);
 
         List<OrderProduct> orderProductsList = orderProductRepository.findAllByOrderId(orderId);
 
