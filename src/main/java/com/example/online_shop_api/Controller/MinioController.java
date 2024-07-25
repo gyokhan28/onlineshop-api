@@ -67,7 +67,7 @@ public class MinioController {
     }
 
     @GetMapping("/list-image-urls/{productId}")
-    public ResponseEntity<?> getFileNames(@PathVariable String productId) throws Exception {
+    public ResponseEntity<?> getFileNames(@PathVariable String productId) {
         try {
             return ResponseEntity.ok(minioService.listFilesInDirectory(productId));
         } catch (Exception e) {
@@ -76,7 +76,7 @@ public class MinioController {
     }
 
     @GetMapping("/list-full-path-images-urls/{productId}")
-    public ResponseEntity<?> getFullFileNames(@PathVariable String productId) throws Exception {
+    public ResponseEntity<?> getFullFileNames(@PathVariable String productId) {
         try {
             return ResponseEntity.ok(minioService.listFilesInDirectoryFullPath(productId));
         } catch (Exception e) {
