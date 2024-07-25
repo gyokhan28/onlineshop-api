@@ -61,7 +61,7 @@ public class UserService {
             userRepository.save(user);
             return "Account created successfully!";
         } catch (Exception exception) {
-            throw new ServerErrorException("An internal error occurred. Please try again." + exception.getMessage());
+            throw new ServerErrorException("An internal error occurred. Please try again.");
         }
     }
 
