@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -27,17 +26,29 @@ public class ProductService {
     private final ColorRepository colorRepository;
     private final BrandRepository brandRepository;
     private final ModelMapper modelMapper;
+    private final MinioService minioService;
 
-    public ResponseEntity<?> getProduct(Long id) {
+    public ResponseEntity<?> getProduct(Long id) throws Exception {
         Product product = productRepository.findById(id).orElseThrow(() -> new RuntimeException());
-        return ResponseEntity.ok( modelMapper.map(product,ProductResponseDto.class));
+
+        ProductResponseDto productResponseDto = modelMapper.map(product, ProductResponseDto.class);
+        productResponseDto.setImageUrls(minioService.listFilesInDirectoryFullPath(product.getId().toString()));
+
+        return ResponseEntity.ok(productResponseDto);
     }
 
     public ResponseEntity<List<ProductResponseDto>> getAllProducts() {
-        return ResponseEntity.ok(
-                productRepository.findAll().stream()
-                        .map(product -> modelMapper.map(product, ProductResponseDto.class))
-                        .toList());
+        List<ProductResponseDto> productResponseDtoList = productRepository.findAll().stream().map(product -> {
+                    ProductResponseDto productResponseDto = modelMapper.map(product, ProductResponseDto.class);
+                    try {
+                        productResponseDto.setImageUrls(minioService.listFilesInDirectoryFullPath(product.getId().toString()));
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                    return productResponseDto;
+                })
+                .toList();
+        return ResponseEntity.ok(productResponseDtoList);
     }
 
     public ResponseEntity<?> addNewProduct(String productType) {
