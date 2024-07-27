@@ -11,7 +11,6 @@ import com.example.online_shop_api.Repository.CityRepository;
 import com.example.online_shop_api.Repository.UserRepository;
 import com.example.online_shop_api.Service.UserService;
 import com.example.online_shop_api.Utils.ValidationUtil;
-import org.aspectj.lang.annotation.Before;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -48,6 +47,8 @@ public class UserServiceTests {
     BCryptPasswordEncoder encoder;
     @Mock
     UserMapper userMapper;
+    @Mock
+    ValidationUtil validationUtil;
 
     @BeforeEach
     public void setUp(){
@@ -55,7 +56,7 @@ public class UserServiceTests {
         userRequestDto.setLastName("testLastName");
         userRequestDto.setUsername("testUserName");
         userRequestDto.setPassword("password123");
-        userRequestDto.setRepeatedPassword("password321");
+        userRequestDto.setRepeatedPassword("password123");
         userRequestDto.setEmail("testMail");
         userRequestDto.setCityId(1L);
     }
@@ -230,4 +231,36 @@ public class UserServiceTests {
 
         assertEquals(expectedResponse, actualResponse);
     }
+    @Test
+    void testAddNewUser_UserSaveFails() {
+        userRequestDto.setPassword("pass123");
+        userRequestDto.setRepeatedPassword("pass123");
+        User user = new User();
+        when(userMapper.toEntity(userRequestDto)).thenReturn(user);
+        when(encoder.encode("pass123")).thenReturn("encodedPassword");
+        doThrow(new RuntimeException("User save error")).when(userRepository).save(user);
+
+        assertThrows(ServerErrorException.class, () -> userService.addNewUser(userRequestDto));
+    }
+    @Test
+    void testRegisterNewUser_ValidationErrors() {
+        BindingResult bindingResult = mock(BindingResult.class);
+        when(bindingResult.hasErrors()).thenReturn(false);
+        when(validationUtil.validateNotNullFields(userRequestDto)).thenReturn(Collections.singletonList("firstName was not entered"));
+
+        ResponseEntity<String> response = userService.registerNewUser(userRequestDto, bindingResult);
+
+        assertEquals(ResponseEntity.badRequest().body("firstName was not entered"), response);
+    }
+
+    @Test
+    void testAddNewUser_AddressSaveFails() {
+        userRequestDto.setPassword("pass123");
+        userRequestDto.setRepeatedPassword("pass123");
+        User user = new User();
+        lenient().doThrow(new RuntimeException("Address save error")).when(addressRepository).save(user.getAddress());
+
+        assertThrows(ServerErrorException.class, () -> userService.addNewUser(userRequestDto));
+    }
+
 }

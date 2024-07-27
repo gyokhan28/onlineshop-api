@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ValidationUtil {
-    public static List<String> validateNotNullFields(Object obj) {
+    public List<String> validateNotNullFields(Object obj) {
         List<String> validationErrors = new ArrayList<>();
 
         Field[] fields = obj.getClass().getDeclaredFields();

@@ -29,7 +29,7 @@ public class UserService {
     private final BCryptPasswordEncoder encoder;
     private final UserMapper userMapper;
     private final CityRepository cityRepository;
-
+    private final ValidationUtil validationUtil;
     private boolean isEmailInDB(String email) {
         return userRepository.findByEmail(email).isPresent();
     }
@@ -79,7 +79,7 @@ public class UserService {
         if (bindingResult.hasErrors()) {
             return ResponseEntity.badRequest().body(bindingResult.getAllErrors().toString());
         }
-        List<String> validationErrors = ValidationUtil.validateNotNullFields(userRequestDto);
+        List<String> validationErrors = validationUtil.validateNotNullFields(userRequestDto);
         if (!validationErrors.isEmpty()) {
             return ResponseEntity.badRequest().body(String.join(", ", validationErrors));
         }
