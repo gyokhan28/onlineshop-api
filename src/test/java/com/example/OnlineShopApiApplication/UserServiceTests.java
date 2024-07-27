@@ -10,6 +10,9 @@ import com.example.online_shop_api.Repository.AddressRepository;
 import com.example.online_shop_api.Repository.CityRepository;
 import com.example.online_shop_api.Repository.UserRepository;
 import com.example.online_shop_api.Service.UserService;
+import com.example.online_shop_api.Utils.ValidationUtil;
+import org.aspectj.lang.annotation.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -21,6 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.validation.BindingResult;
 
+import java.util.Collections;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -45,6 +49,16 @@ public class UserServiceTests {
     @Mock
     UserMapper userMapper;
 
+    @BeforeEach
+    public void setUp(){
+        userRequestDto.setFirstName("testFirstName");
+        userRequestDto.setLastName("testLastName");
+        userRequestDto.setUsername("testUserName");
+        userRequestDto.setPassword("password123");
+        userRequestDto.setRepeatedPassword("password321");
+        userRequestDto.setEmail("testMail");
+        userRequestDto.setCityId(1L);
+    }
     @Test
     void testValidateNewUser_EmailInUse() {
         userRequestDto.setEmail("test@mail.bg");
@@ -173,7 +187,6 @@ public class UserServiceTests {
         BindingResult bindingResult = mock(BindingResult.class);
         when(bindingResult.hasErrors()).thenReturn(false);
 
-        userRequestDto.setPassword("password123");
         userRequestDto.setRepeatedPassword("password321");
 
         assertThrows(PasswordsNotMatchingException.class, () -> userService.validateNewUser(userRequestDto));
