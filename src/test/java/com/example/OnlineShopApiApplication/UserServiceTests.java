@@ -2,13 +2,12 @@ package com.example.OnlineShopApiApplication;
 
 import com.example.online_shop_api.Dto.Request.UserRequestDto;
 import com.example.online_shop_api.Entity.Address;
+import com.example.online_shop_api.Entity.City;
 import com.example.online_shop_api.Entity.User;
-import com.example.online_shop_api.Exceptions.EmailInUseException;
-import com.example.online_shop_api.Exceptions.PasswordsNotMatchingException;
-import com.example.online_shop_api.Exceptions.ServerErrorException;
-import com.example.online_shop_api.Exceptions.UsernameInUseException;
+import com.example.online_shop_api.Exceptions.*;
 import com.example.online_shop_api.Mapper.UserMapper;
 import com.example.online_shop_api.Repository.AddressRepository;
+import com.example.online_shop_api.Repository.CityRepository;
 import com.example.online_shop_api.Repository.UserRepository;
 import com.example.online_shop_api.Service.UserService;
 import org.junit.jupiter.api.Test;
@@ -18,13 +17,10 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.ObjectError;
 
-import java.util.Collections;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -40,6 +36,8 @@ public class UserServiceTests {
     private UserRequestDto userRequestDto;
     @Mock
     UserRepository userRepository;
+    @Mock
+    CityRepository cityRepository;
     @Mock
     AddressRepository addressRepository;
     @Mock
@@ -104,12 +102,14 @@ public class UserServiceTests {
         userRequestDto.setUsername("testuser");
         userRequestDto.setPassword("pass123");
         userRequestDto.setRepeatedPassword("pass123");
+        userRequestDto.setCityId(1L);
 
         User user = new User();
         user.setAddress(new Address());
 
         when(userMapper.toEntity(userRequestDto)).thenReturn(user);
         when(encoder.encode(userRequestDto.getPassword())).thenReturn("encodedPassword");
+        when(cityRepository.findById(1L)).thenReturn(Optional.of(new City()));
 
         ResponseEntity<String> response = userService.registerNewUser(userRequestDto, bindingResult);
 
@@ -125,9 +125,11 @@ public class UserServiceTests {
         userRequestDto.setUsername("uniqueuser");
         userRequestDto.setPassword("pass123");
         userRequestDto.setRepeatedPassword("pass123");
+        userRequestDto.setCityId(1L);
 
         when(userRepository.findByEmail("unique@mail.bg")).thenReturn(Optional.empty());
         when(userRepository.findByUsername("uniqueuser")).thenReturn(Optional.empty());
+        when(cityRepository.findById(1L)).thenReturn(Optional.of(new City()));
 
         assertDoesNotThrow(() -> userService.validateNewUser(userRequestDto));
     }
@@ -196,6 +198,23 @@ public class UserServiceTests {
         });
 
         assertEquals("An internal error occurred. Please try again.", thrownException.getMessage());
+    }
 
+    @Test
+    void testAddNewUser_ThrowsCityNotFoundException(){
+        BindingResult bindingResult = mock(BindingResult.class);
+        when(bindingResult.hasErrors()).thenReturn(false);
+
+        userRequestDto.setEmail("test@mail.bg");
+        userRequestDto.setUsername("testuser");
+        userRequestDto.setPassword("password123");
+        userRequestDto.setRepeatedPassword("password123");
+
+        assertThrows(CityNotFoundException.class, () -> userService.validateNewUser(userRequestDto));
+
+        ResponseEntity<String> actualResponse = userService.registerNewUser(userRequestDto, bindingResult);
+        ResponseEntity<String> expectedResponse = ResponseEntity.badRequest().body("City doesn't exist");
+
+        assertEquals(expectedResponse, actualResponse);
     }
 }
