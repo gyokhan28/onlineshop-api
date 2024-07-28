@@ -43,7 +43,6 @@ public class UserService {
     private final CityRepository cityRepository;
     private final ValidationUtil validationUtil;
     private final OrderRepository orderRepository;
-    private final OrderStatusRepository orderStatusRepository;
     private final OrderProductRepository orderProductRepository;
     private final ProductService productService;
 
@@ -110,35 +109,29 @@ public class UserService {
     }
 
     public ResponseEntity<UserProfileResponse> viewProfile(Authentication authentication) {
+        User user = getCurrentUser(authentication);
         UserProfileResponse response = new UserProfileResponse();
-        MyUserDetails userDetails = (MyUserDetails) authentication.getPrincipal();
-        User user = userDetails.getUser();
         response.setUserResponseDto(userMapper.toDto(user));
-        List<OrderResponseDto> orderResponseDtoList = new ArrayList<>();
-        List<Order> currentUserOrders = orderRepository.findOrdersByUserIdAndStatusNotBasket(user.getId());
-        if (!currentUserOrders.isEmpty()) {
-            for (Order o : currentUserOrders) {
-                orderResponseDtoList.add(OrderMapper.toDto(o));
-            }
-            response.setOrderList(orderResponseDtoList);
-        }
+        List<OrderResponseDto> orderResponseDtoList = getUserOrders(user);
+        response.setOrderList(orderResponseDtoList);
         return ResponseEntity.ok(response);
     }
 
-    public ResponseEntity<BasketResponse> getBasket(Authentication authentication) {
-        MyUserDetails userDetails = (MyUserDetails) authentication.getPrincipal();
-        User user = userDetails.getUser();
-        BasketResponse basketResponse = new BasketResponse(new ArrayList<>(), BigDecimal.ZERO);
+    private List<OrderResponseDto> getUserOrders(User user) {
+        List<Order> currentUserOrders = orderRepository.findOrdersByUserIdAndStatusNotBasket(user.getId());
+        return currentUserOrders.stream()
+                .map(OrderMapper::toDto)
+                .collect(Collectors.toList());
+    }
 
-        Order basketOrder = productService.getBasketOrder(user);
+    private User getCurrentUser(Authentication authentication) {
+        MyUserDetails myUserDetails = (MyUserDetails) authentication.getPrincipal();
+        return myUserDetails.getUser();
+    }
 
-        if (basketOrder == null) {
-            return ResponseEntity.ok(basketResponse);
-        }
-
+    private List<ProductResponseDto> getBasketProducts(Order basketOrder) {
         List<OrderProduct> products = orderProductRepository.findAllByOrderId(basketOrder.getId());
-
-        List<ProductResponseDto> basketProducts = products.stream()
+        return products.stream()
                 .map(p -> {
                     Product product = p.getProduct();
                     ProductResponseDto responseProduct = ProductMapper.toDto(product);
@@ -147,14 +140,26 @@ public class UserService {
                     return responseProduct;
                 })
                 .collect(Collectors.toList());
+    }
 
-        basketResponse.setProducts(basketProducts);
-
-        BigDecimal totalPrice = products.stream()
-                .map(p -> p.getProduct().getPrice().multiply(BigDecimal.valueOf(p.getQuantity())))
+    private BigDecimal calculateTotalPrice(List<ProductResponseDto> basketProducts) {
+        return basketProducts.stream()
+                .map(ProductResponseDto::getSubtotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
 
-        basketResponse.setTotalPrice(totalPrice);
+    public ResponseEntity<BasketResponse> getBasket(Authentication authentication) {
+        User user = getCurrentUser(authentication);
+        BasketResponse basketResponse = new BasketResponse(new ArrayList<>(), BigDecimal.ZERO);
+
+        Order basketOrder = productService.getBasketOrder(user);
+
+        if (basketOrder != null) {
+            List<ProductResponseDto> basketProducts = getBasketProducts(basketOrder);
+            BigDecimal totalPrice = calculateTotalPrice(basketProducts);
+            basketResponse.setProducts(basketProducts);
+            basketResponse.setTotalPrice(totalPrice);
+        }
 
         return ResponseEntity.ok(basketResponse);
     }
