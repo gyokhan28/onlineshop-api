@@ -9,7 +9,6 @@ import com.example.online_shop_api.Entity.JobType;
 import com.example.online_shop_api.Entity.Role;
 import com.example.online_shop_api.Exceptions.*;
 import com.example.online_shop_api.Mapper.EmployeeMapper;
-//import com.example.online_shop_api.MyUserDetails;
 import com.example.online_shop_api.Repository.EmployeeRepository;
 import com.example.online_shop_api.Repository.JobTypeRepository;
 import com.example.online_shop_api.Repository.RoleRepository;
@@ -18,8 +17,6 @@ import com.example.online_shop_api.Static.RoleType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-//import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
 
