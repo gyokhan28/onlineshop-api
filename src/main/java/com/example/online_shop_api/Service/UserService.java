@@ -1,21 +1,16 @@
 package com.example.online_shop_api.Service;
 
 import com.example.online_shop_api.Dto.Request.UserRequestDto;
-import com.example.online_shop_api.Dto.Response.BasketResponse;
-import com.example.online_shop_api.Dto.Response.OrderResponseDto;
-import com.example.online_shop_api.Dto.Response.ProductResponseDto;
-import com.example.online_shop_api.Dto.Response.UserProfileResponse;
-import com.example.online_shop_api.Entity.Order;
-import com.example.online_shop_api.Entity.OrderProduct;
+import com.example.online_shop_api.Dto.Response.*;
+import com.example.online_shop_api.Entity.*;
 import com.example.online_shop_api.Entity.Products.Product;
-import com.example.online_shop_api.Entity.Role;
-import com.example.online_shop_api.Entity.User;
 import com.example.online_shop_api.Exceptions.*;
 import com.example.online_shop_api.Mapper.OrderMapper;
 import com.example.online_shop_api.Mapper.ProductMapper;
 import com.example.online_shop_api.Mapper.UserMapper;
 import com.example.online_shop_api.MyUserDetails;
 import com.example.online_shop_api.Repository.*;
+import com.example.online_shop_api.Static.OrderStatusType;
 import com.example.online_shop_api.Static.RoleType;
 import com.example.online_shop_api.Utils.ValidationUtil;
 import jakarta.validation.Valid;
@@ -45,6 +40,7 @@ public class UserService {
     private final OrderRepository orderRepository;
     private final OrderProductRepository orderProductRepository;
     private final ProductService productService;
+    private final ProductRepository productRepository;
 
     private boolean isEmailInDB(String email) {
         return userRepository.findByEmail(email).isPresent();
@@ -143,9 +139,11 @@ public class UserService {
     }
 
     private BigDecimal calculateTotalPrice(List<ProductResponseDto> basketProducts) {
-        return basketProducts.stream()
-                .map(ProductResponseDto::getSubtotal)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal total = BigDecimal.ZERO;
+        for (ProductResponseDto product : basketProducts) {
+            total = total.add(product.getPrice());
+        }
+        return total;
     }
 
     public ResponseEntity<BasketResponse> getBasket(Authentication authentication) {
@@ -164,4 +162,60 @@ public class UserService {
         return ResponseEntity.ok(basketResponse);
     }
 
+    private List<String> validateProductAvailability(List<OrderProduct> orderProducts) {
+        List<String> errors = new ArrayList<>();
+        for (OrderProduct op : orderProducts) {
+            Product productInStock = productRepository.findByIdNotDeleted(op.getProduct().getId()).get();
+            if (productInStock.getQuantity() < op.getQuantity()) {
+                errors.add("The product " + productInStock.getName()
+                        + " has stock of " + productInStock.getQuantity()
+                        + " and you can not order amount of " + op.getQuantity()
+                        + " of this product!");
+            }
+        }
+        return errors;
+    }
+
+    public ResponseEntity<BuyNowResponse> buyNow(Authentication authentication) {
+        User user = getCurrentUser(authentication);
+        Order basketOrder = productService.getBasketOrder(user);
+
+        Long orderId = basketOrder.getId();
+        BigDecimal totalPrice = calculateTotalPrice(getBasketProducts(basketOrder));
+
+        List<OrderProduct> orderProducts = orderProductRepository.findAllByOrder_Id(basketOrder.getId());
+        List<String> errors = validateProductAvailability(orderProducts);
+
+        if (!errors.isEmpty()) {
+            return ResponseEntity.badRequest().body(new BuyNowResponse(false, errors, totalPrice, orderId));
+        }
+
+        processOrder(orderProducts, basketOrder);
+
+        return ResponseEntity.ok(new BuyNowResponse(true, null, totalPrice, orderId));
+    }
+
+    private void processOrder(List<OrderProduct> orderProducts, Order basketOrder) {
+        reduceStockQuantity(orderProducts);
+        saveThePurchasePriceInOrderProduct(orderProducts);
+        OrderStatus pending = new OrderStatus(OrderStatusType.PENDING.getId(), OrderStatusType.PENDING.name());
+        basketOrder.setStatus(pending);
+        orderRepository.save(basketOrder);
+    }
+
+    private void reduceStockQuantity(List<OrderProduct> orderProducts) {
+        for (OrderProduct op : orderProducts) {
+            Product productInStock = productRepository.findByIdNotDeleted(op.getProduct().getId()).get();
+            productInStock.setQuantity(productInStock.getQuantity() - op.getQuantity());
+            productRepository.save(productInStock);
+        }
+    }
+
+    private void saveThePurchasePriceInOrderProduct(List<OrderProduct> orderProducts) {
+        for (OrderProduct op : orderProducts) {
+            Product productInStock = productRepository.findByIdNotDeleted(op.getProduct().getId()).get();
+            op.setProductPriceWhenPurchased(productInStock.getPrice());
+            orderProductRepository.save(op);
+        }
+    }
 }

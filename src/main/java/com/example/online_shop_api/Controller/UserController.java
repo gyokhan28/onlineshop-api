@@ -2,6 +2,7 @@ package com.example.online_shop_api.Controller;
 
 import com.example.online_shop_api.Dto.Request.UserRequestDto;
 import com.example.online_shop_api.Dto.Response.BasketResponse;
+import com.example.online_shop_api.Dto.Response.BuyNowResponse;
 import com.example.online_shop_api.Dto.Response.UserProfileResponse;
 import com.example.online_shop_api.Service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -34,5 +35,11 @@ public class UserController {
     public ResponseEntity<BasketResponse> showBasket(Authentication authentication){
         return userService.getBasket(authentication);
     }
+
+    @PostMapping("/basket/buy")
+    public ResponseEntity<BuyNowResponse> buyNow(Authentication authentication){
+        return userService.buyNow(authentication);
+    }
+
 
 }
