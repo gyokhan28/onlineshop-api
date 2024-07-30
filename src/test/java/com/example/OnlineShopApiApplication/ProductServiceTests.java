@@ -1,7 +1,12 @@
 package com.example.OnlineShopApiApplication;
 
+import com.example.online_shop_api.Dto.Request.ProductCreationRequestDto;
+import com.example.online_shop_api.Dto.Request.ProductRequestDto;
 import com.example.online_shop_api.Dto.Response.ProductResponseDto;
+import com.example.online_shop_api.Entity.Products.Accessory;
+import com.example.online_shop_api.Entity.Products.Decoration;
 import com.example.online_shop_api.Entity.Products.Product;
+import com.example.online_shop_api.Exceptions.ProductNotFoundException;
 import com.example.online_shop_api.Repository.Products.ProductRepository;
 import com.example.online_shop_api.Service.Products.ProductService;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,24 +20,65 @@ import org.springframework.http.ResponseEntity;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @AutoConfigureMockMvc(addFilters = false)
- class ProductServiceTests {
+class ProductServiceTests {
   private ProductService productService;
   @Mock private ProductRepository productRepository;
   @Mock private ModelMapper modelMapper;
 
   private Product testProduct;
+  private ProductResponseDto testProductResponseDto;
+  private ProductCreationRequestDto productCreationRequestDto;
+  private ProductResponseDto productResponseDto;
 
-  @BeforeEach
-  public void setUp() {
-    productService = new ProductService(productRepository, modelMapper);
+//  @BeforeEach
+//  public void setUp() {
+//    productService = new ProductService(productRepository, modelMapper);
+//
+//    productCreationRequestDto = ProductCreationRequestDto.builder()
+//            .productType("Accessory")
+//            .productRequestDto(ProductRequestDto.builder()
+//                    .imageLocation("src/main/resources/image.png")
+//                    .build())
+//            .build();
+//
+//    testProduct = new Accessory(); // Пример за Accessory
+//    testProduct.setId(1L);
+//    testProduct.setName("Accessory Product");
+//    testProduct.setPrice(new BigDecimal(10));
+//    testProduct.setQuantity(1);
+//    testProduct.setImageUrls(List.of("src/main/resources/image.png"));
+//
+//    testProduct =
+//        Product.builder()
+//            .id(1L)
+//            .name("product")
+//            .price(new BigDecimal(10))
+//            .quantity(1)
+//            .imageUrls(List.of("src/main/resources/"))
+//            .build();
+//
+//    testProductResponseDto =
+//        ProductResponseDto.builder()
+//            .id(1L)
+//            .name("product")
+//            .price(new BigDecimal(10))
+//            .quantity(1)
+//            .imageLocation("src/main/resources/")
+//            .build();
+//  }
+@BeforeEach
+public void setUp() {
+  productService = new ProductService(productRepository, modelMapper);
 
-    testProduct =
+  testProduct =
         Product.builder()
             .id(1L)
             .name("product")
@@ -40,10 +86,116 @@ import static org.mockito.Mockito.*;
             .quantity(1)
             .imageUrls(List.of("src/main/resources/"))
             .build();
+
+  productCreationRequestDto = ProductCreationRequestDto.builder()
+          .productRequestDto(ProductRequestDto.builder()
+                  .imageLocation("src/main/resources/image.png")
+                  .build())
+          .build();
+
+  productResponseDto = ProductResponseDto.builder()
+          .id(1L)
+          .name("Product")
+          .price(new BigDecimal("10.00"))
+          .quantity(1)
+          .imageLocation("src/main/resources/image.png")
+          .build();
+}
+
+  @Test
+  void testCreateProduct_Accessory() {
+    Product accessoryProduct = new Accessory();
+    accessoryProduct.setId(1L);
+    accessoryProduct.setName("Accessory Product");
+    accessoryProduct.setPrice(new BigDecimal("10.00"));
+    accessoryProduct.setQuantity(1);
+    accessoryProduct.setImageUrls(List.of("src/main/resources/image.png"));
+
+    // Mock the behavior
+    productCreationRequestDto.setProductType("Accessory");
+    when(modelMapper.map(any(ProductRequestDto.class), eq(Accessory.class))).thenReturn(new Accessory());
+    when(productRepository.save(accessoryProduct)).thenReturn(accessoryProduct);
+    when(modelMapper.map(accessoryProduct, ProductResponseDto.class)).thenReturn(productResponseDto);
+
+    ResponseEntity<ProductResponseDto> response = productService.create(productCreationRequestDto);
+
+    assertEquals(200, response.getStatusCodeValue());
+    assertEquals(productResponseDto, response.getBody());
+
+    verify(productRepository, times(1)).save(accessoryProduct);
+    verify(modelMapper, times(1)).map(any(ProductRequestDto.class), eq(Accessory.class));
+    verify(modelMapper, times(1)).map(accessoryProduct, ProductResponseDto.class);
   }
 
   @Test
-   void testGetAllProducts() {
+  void testCreateProduct_Decoration() {
+    Product decorationProduct = new Decoration();
+    decorationProduct.setId(1L);
+    decorationProduct.setName("Decoration Product");
+    decorationProduct.setPrice(new BigDecimal("15.00"));
+    decorationProduct.setQuantity(2);
+    decorationProduct.setImageUrls(List.of("src/main/resources/image.png"));
+
+    // Mock the behavior
+    productCreationRequestDto.setProductType("Decoration");
+    when(modelMapper.map(any(ProductRequestDto.class), eq(Decoration.class))).thenReturn(new Decoration());
+    when(productRepository.save(decorationProduct)).thenReturn(decorationProduct);
+    when(modelMapper.map(decorationProduct, ProductResponseDto.class)).thenReturn(productResponseDto);
+
+    ResponseEntity<ProductResponseDto> response = productService.create(productCreationRequestDto);
+
+    assertEquals(200, response.getStatusCodeValue());
+    assertEquals(productResponseDto, response.getBody());
+
+    verify(productRepository, times(1)).save(decorationProduct);
+    verify(modelMapper, times(1)).map(any(ProductRequestDto.class), eq(Decoration.class));
+    verify(modelMapper, times(1)).map(decorationProduct, ProductResponseDto.class);
+  }
+
+  @Test
+  void testCreateProduct_InvalidType() {
+    productCreationRequestDto.setProductType("InvalidType");
+
+    IllegalArgumentException thrownException = assertThrows(IllegalArgumentException.class, () -> {
+      productService.create(productCreationRequestDto);
+    });
+
+    assertEquals("Invalid product type: InvalidType", thrownException.getMessage());
+
+    verify(productRepository, times(0)).save(any(Product.class));
+    verify(modelMapper, times(0)).map(any(ProductRequestDto.class), any(Class.class));
+  }
+
+  @Test
+  void testGetById() {
+    when(productRepository.findById(1L)).thenReturn(Optional.of(testProduct));
+    when(modelMapper.map(testProduct, ProductResponseDto.class)).thenReturn(testProductResponseDto);
+
+    ProductResponseDto response = productService.getById(1L);
+
+    assertEquals(testProductResponseDto, response);
+
+    verify(productRepository, times(1)).findById(1L);
+    verify(modelMapper, times(1)).map(testProduct, ProductResponseDto.class);
+  }
+
+  @Test
+  void testGetById_ProductNotFound() {
+    doThrow(new ProductNotFoundException(1L)).when(productRepository).findById(1L);
+
+    assertThrows(
+        ProductNotFoundException.class,
+        () -> {
+          productService.getById(1L);
+        });
+
+    verify(productRepository, times(1)).findById(1L);
+
+    verify(modelMapper, times(0)).map(any(), any());
+  }
+
+  @Test
+  void testGetAllProducts() {
     List<Product> productList = List.of(testProduct);
 
     when(productRepository.findAll()).thenReturn(productList);
