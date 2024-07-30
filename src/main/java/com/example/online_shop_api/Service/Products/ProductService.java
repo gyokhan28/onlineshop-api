@@ -42,19 +42,17 @@ public class ProductService {
     return ResponseEntity.ok(modelMapper.map(product, ProductResponseDto.class));
   }
 
-  public ResponseEntity<ProductResponseDto> update(ProductRequestDto request, Long id) {
-
+  public ResponseEntity<ProductResponseDto> update(ProductCreationRequestDto request, Long id) {
     Product existingProduct =
         productRepository.findById(id).orElseThrow(() -> new ProductNotFoundException(id));
 
-    modelMapper.map(request, existingProduct);
-    existingProduct.setImageUrls(List.of(request.getImageLocation()));
+    Product updatedProduct = validateProductType(request);
+    updatedProduct.setId(existingProduct.getId());
 
-    Product updatedProduct = productRepository.save(existingProduct);
+    updatedProduct = productRepository.save(updatedProduct);
 
-    ProductResponseDto responseDto = modelMapper.map(updatedProduct, ProductResponseDto.class);
-    return ResponseEntity.ok(responseDto);
-  }
+    return ResponseEntity.ok(modelMapper.map(updatedProduct, ProductResponseDto.class));
+    }
 
   public void deleteAccessory(Long id) {
     Product product =
@@ -64,6 +62,9 @@ public class ProductService {
 
   public Product validateProductType(ProductCreationRequestDto request) {
     String productType = request.getProductType();
+    productType = productType.replace(",", "");
+    request.setProductType(productType);
+
     ProductRequestDto productRequestDto = request.getProductRequestDto();
     return switch (productType) {
       case "Accessory" -> modelMapper.map(productRequestDto, Accessory.class);

@@ -1,7 +1,6 @@
 package com.example.online_shop_api.Controller.Products;
 
 import com.example.online_shop_api.Dto.Request.ProductCreationRequestDto;
-import com.example.online_shop_api.Dto.Request.ProductRequestDto;
 import com.example.online_shop_api.Dto.Response.ProductResponseDto;
 import com.example.online_shop_api.Service.Products.ProductService;
 import jakarta.validation.Valid;
@@ -25,7 +24,7 @@ public class ProductController {
   }
 
   @GetMapping("show/{id}")
-  ProductResponseDto getAccessoriesById(@PathVariable(name = "id") Long id) {
+  ProductResponseDto getProductById(@PathVariable(name = "id") Long id) {
     return productService.getById(id);
   }
 
@@ -37,7 +36,7 @@ public class ProductController {
 
   @PutMapping("/update/{id}")
   public ResponseEntity<ProductResponseDto> update(
-      @RequestBody @Valid ProductRequestDto requestDto, @PathVariable("id") Long id) {
+      @RequestBody @Valid ProductCreationRequestDto requestDto, @PathVariable("id") Long id) {
     return productService.update(requestDto, id);
   }
 
