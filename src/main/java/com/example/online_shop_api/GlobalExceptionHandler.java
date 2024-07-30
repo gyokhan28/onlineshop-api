@@ -1,7 +1,5 @@
 package com.example.online_shop_api;
 
-import com.example.online_shop_api.Exceptions.BrandNotExistException;
-import com.example.online_shop_api.Exceptions.ColorNotExistException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import java.time.LocalDateTime;
@@ -57,8 +55,6 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler({
-            ColorNotExistException.class,
-            BrandNotExistException.class,
     })
     public ResponseEntity<Object> handleEntityConstraintConflict(RuntimeException ex) {
         return createErrorResponse(HttpStatus.CONFLICT, ex.getMessage(), ex);
