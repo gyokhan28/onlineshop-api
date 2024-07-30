@@ -221,4 +221,40 @@ public void setUp() {
     verify(productRepository, times(0)).save(any(Product.class));
     verify(modelMapper, times(0)).map(any(), any());
   }
+  @Test
+  void testDeleteProduct_Success() {
+    // Arrange
+    Product productToDelete = Product.builder()
+            .id(1L)
+            .name("Product to delete")
+            .price(new BigDecimal("10.00"))
+            .quantity(1)
+            .imageUrls(List.of("src/main/resources/image.png"))
+            .build();
+
+    when(productRepository.findById(1L)).thenReturn(Optional.of(productToDelete));
+
+    // Act
+    productService.delete(1L);
+
+    // Assert
+    verify(productRepository, times(1)).findById(1L);
+    verify(productRepository, times(1)).delete(productToDelete);
+  }
+
+  @Test
+  void testDeleteProduct_ProductNotFound() {
+    // Arrange
+    when(productRepository.findById(1L)).thenReturn(Optional.empty());
+
+    // Act & Assert
+    ProductNotFoundException thrownException = assertThrows(ProductNotFoundException.class, () -> {
+      productService.delete(1L);
+    });
+
+    assertEquals("Product with ID: 1 not found", thrownException.getMessage());
+
+    verify(productRepository, times(1)).findById(1L);
+    verify(productRepository, times(0)).delete(any(Product.class));
+  }
 }
