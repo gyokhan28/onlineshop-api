@@ -1,11 +1,10 @@
 package com.example.online_shop_api.Service.Products;
 
+import com.example.online_shop_api.Dto.Request.ProductCreationRequestDto;
 import com.example.online_shop_api.Dto.Request.ProductRequestDto;
 import com.example.online_shop_api.Dto.Response.ProductResponseDto;
 import com.example.online_shop_api.Entity.Products.*;
 import com.example.online_shop_api.Exceptions.ProductNotFoundException;
-import com.example.online_shop_api.Repository.BrandRepository;
-import com.example.online_shop_api.Repository.ColorRepository;
 import com.example.online_shop_api.Repository.Products.ProductRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -19,8 +18,6 @@ public class ProductService {
 
   private final ProductRepository productRepository;
   private final ModelMapper modelMapper;
-  private final ColorRepository colorRepository;
-  private final BrandRepository brandRepository;
 
   public ResponseEntity<List<ProductResponseDto>> getAllAccessories() {
     List<Product> productList = productRepository.findAll();
@@ -36,10 +33,10 @@ public class ProductService {
     return modelMapper.map(product, ProductResponseDto.class);
   }
 
-  public ResponseEntity<ProductResponseDto> create(ProductRequestDto request) {
-    Product product = validateProductType(modelMapper.map(request, Product.class));
+  public ResponseEntity<ProductResponseDto> create(ProductCreationRequestDto request) {
+    Product product = validateProductType(request);
 
-    product.setImageUrls(List.of(request.getImageLocation()));
+    product.setImageUrls(List.of(request.getProductRequestDto().getImageLocation()));
 
     productRepository.save(product);
     return ResponseEntity.ok(modelMapper.map(product, ProductResponseDto.class));
@@ -65,22 +62,18 @@ public class ProductService {
     productRepository.delete(product);
   }
 
-  private Product validateProductType(Product product) {
-    if (product instanceof Accessory) {
-      return modelMapper.map(product, Accessory.class);
-    } else if (product instanceof Decoration) {
-      return modelMapper.map(product, Decoration.class);
-    } else if (product instanceof Drink) {
-      return modelMapper.map(product, Drink.class);
-    } else if (product instanceof Food) {
-      return modelMapper.map(product, Food.class);
-    } else if (product instanceof Others) {
-      return modelMapper.map(product, Others.class);
-    } else if (product instanceof Railing) {
-      return modelMapper.map(product, Railing.class);
-    } else if (product instanceof Sanitary) {
-      return modelMapper.map(product, Sanitary.class);
-    }
-    return new Product();
+  public Product validateProductType(ProductCreationRequestDto request) {
+    String productType = request.getProductType();
+    ProductRequestDto productRequestDto = request.getProductRequestDto();
+    return switch (productType) {
+      case "Accessory" -> modelMapper.map(productRequestDto, Accessory.class);
+      case "Decoration" -> modelMapper.map(productRequestDto, Decoration.class);
+      case "Drink" -> modelMapper.map(productRequestDto, Drink.class);
+      case "Food" -> modelMapper.map(productRequestDto, Food.class);
+      case "Others" -> modelMapper.map(productRequestDto, Others.class);
+      case "Railing" -> modelMapper.map(productRequestDto, Railing.class);
+      case "Sanitary" -> modelMapper.map(productRequestDto, Sanitary.class);
+      default -> throw new IllegalArgumentException("Invalid product type: " + productType);
+    };
   }
 }

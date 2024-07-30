@@ -1,5 +1,6 @@
 package com.example.online_shop_api.Controller.Products;
 
+import com.example.online_shop_api.Dto.Request.ProductCreationRequestDto;
 import com.example.online_shop_api.Dto.Request.ProductRequestDto;
 import com.example.online_shop_api.Dto.Response.ProductResponseDto;
 import com.example.online_shop_api.Service.Products.ProductService;
@@ -30,7 +31,7 @@ public class ProductController {
 
   @PostMapping("/add")
   public ResponseEntity<ProductResponseDto> create(
-      @RequestBody @Valid ProductRequestDto requestDto) {
+          @RequestBody @Valid ProductCreationRequestDto requestDto) {
     return productService.create(requestDto);
   }
 
