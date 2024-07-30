@@ -20,7 +20,7 @@ public class ProductController {
 
   @GetMapping("/show")
   public ResponseEntity<List<ProductResponseDto>> getAll() {
-    return productService.getAllAccessories();
+    return productService.getAllProducts();
   }
 
   @GetMapping("show/{id}")
@@ -43,6 +43,6 @@ public class ProductController {
   @DeleteMapping("/delete/{id}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void deleteAccessory(@PathVariable("id") Long id) {
-    productService.deleteAccessory(id);
+    productService.delete(id);
   }
 }

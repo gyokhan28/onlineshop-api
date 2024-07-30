@@ -19,7 +19,7 @@ public class ProductService {
   private final ProductRepository productRepository;
   private final ModelMapper modelMapper;
 
-  public ResponseEntity<List<ProductResponseDto>> getAllAccessories() {
+  public ResponseEntity<List<ProductResponseDto>> getAllProducts() {
     List<Product> productList = productRepository.findAll();
     return ResponseEntity.ok(
         productList.stream()
@@ -54,13 +54,13 @@ public class ProductService {
     return ResponseEntity.ok(modelMapper.map(updatedProduct, ProductResponseDto.class));
     }
 
-  public void deleteAccessory(Long id) {
+  public void delete(Long id) {
     Product product =
         productRepository.findById(id).orElseThrow(() -> new ProductNotFoundException(id));
     productRepository.delete(product);
   }
 
-  public Product validateProductType(ProductCreationRequestDto request) {
+  private Product validateProductType(ProductCreationRequestDto request) {
     String productType = request.getProductType();
     productType = productType.replace(",", "");
     request.setProductType(productType);
