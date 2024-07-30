@@ -3,6 +3,8 @@ package com.example.OnlineShopApiApplication;
 import com.example.online_shop_api.Dto.Request.ProductCreationRequestDto;
 import com.example.online_shop_api.Dto.Request.ProductRequestDto;
 import com.example.online_shop_api.Dto.Response.ProductResponseDto;
+import com.example.online_shop_api.Entity.ProductHelpers.Brand;
+import com.example.online_shop_api.Entity.ProductHelpers.Color;
 import com.example.online_shop_api.Entity.Products.Accessory;
 import com.example.online_shop_api.Entity.Products.Decoration;
 import com.example.online_shop_api.Entity.Products.Product;
@@ -52,7 +54,10 @@ public void setUp() {
             .build();
 
   productCreationRequestDto = ProductCreationRequestDto.builder()
+          .productType("Accessory")
           .productRequestDto(ProductRequestDto.builder()
+                  .color(new Color(1L,"Black"))
+                  .brand(new Brand(1L,"Nike"))
                   .imageLocation("src/main/resources/image.png")
                   .build())
           .build();
@@ -75,7 +80,6 @@ public void setUp() {
     accessoryProduct.setQuantity(1);
     accessoryProduct.setImageUrls(List.of("src/main/resources/image.png"));
 
-    // Mock the behavior
     productCreationRequestDto.setProductType("Accessory");
     when(modelMapper.map(any(ProductRequestDto.class), eq(Accessory.class))).thenReturn(new Accessory());
     when(productRepository.save(accessoryProduct)).thenReturn(accessoryProduct);
@@ -169,5 +173,52 @@ public void setUp() {
     assertEquals(productList.size(), response.getBody().size());
 
     verify(productRepository, times(1)).findAll();
+  }
+
+  @Test
+  void testUpdateProduct_Success() {
+    // Arrange
+    Product existingProduct = Product.builder()
+            .id(1L)
+            .name("Old Product")
+            .price(new BigDecimal("5.00"))
+            .quantity(1)
+            .imageUrls(List.of("src/main/resources/old_image.png"))
+            .build();
+
+    Product updatedProduct = Product.builder()
+            .id(1L)
+            .name("Updated Product")
+            .price(new BigDecimal("15.00"))
+            .quantity(2)
+            .imageUrls(List.of("src/main/resources/image.png"))
+            .build();
+
+    when(productRepository.findById(1L)).thenReturn(Optional.of(existingProduct));
+
+    when(modelMapper.map(productCreationRequestDto.getProductRequestDto(), Accessory.class)).thenReturn(new Accessory()); // Assuming the type is Accessory for this example
+
+    ResponseEntity<ProductResponseDto> response = productService.update(productCreationRequestDto, 1L);
+
+    // Assert
+    assertEquals(200, response.getStatusCodeValue());
+
+    verify(productRepository, times(1)).findById(1L);
+    verify(modelMapper, times(1)).map(productCreationRequestDto.getProductRequestDto(), Accessory.class);
+  }
+
+  @Test
+  void testUpdateProduct_ProductNotFound() {
+    when(productRepository.findById(1L)).thenReturn(Optional.empty());
+
+    ProductNotFoundException thrownException = assertThrows(ProductNotFoundException.class, () -> {
+      productService.update(productCreationRequestDto, 1L);
+    });
+
+    assertEquals("Product with ID: 1 not found", thrownException.getMessage());
+
+    verify(productRepository, times(1)).findById(1L);
+    verify(productRepository, times(0)).save(any(Product.class));
+    verify(modelMapper, times(0)).map(any(), any());
   }
 }
