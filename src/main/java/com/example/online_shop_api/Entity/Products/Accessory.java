@@ -10,7 +10,7 @@ import lombok.*;
 @Entity
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class Accessory extends Product {
 
   @ManyToOne
