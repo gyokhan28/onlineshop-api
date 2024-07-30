@@ -1,22 +1,48 @@
 package com.example.online_shop_api.Controller.Products;
 
+import com.example.online_shop_api.Dto.Request.ProductRequestDto;
+import com.example.online_shop_api.Dto.Response.ProductResponseDto;
 import com.example.online_shop_api.Service.Products.ProductService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/products")
 @RequiredArgsConstructor
 public class ProductController {
 
-    private final ProductService productService;
+  private final ProductService productService;
 
-    @GetMapping("/add")
-    public ResponseEntity<?> addNewProduct(@RequestParam("productType") String productType) {
-        return productService.addNewProduct(productType);
-    }
+  @GetMapping("/show")
+  public ResponseEntity<List<ProductResponseDto>> getAll() {
+    return productService.getAllAccessories();
+  }
+
+  @GetMapping("show/{id}")
+  ProductResponseDto getAccessoriesById(@PathVariable(name = "id") Long id) {
+    return productService.getById(id);
+  }
+
+  @PostMapping("/add")
+  public ResponseEntity<ProductResponseDto> create(
+      @RequestBody @Valid ProductRequestDto requestDto) {
+    return productService.create(requestDto);
+  }
+
+  @PutMapping("/update/{id}")
+  public ResponseEntity<ProductResponseDto> update(
+      @RequestBody @Valid ProductRequestDto requestDto, @PathVariable("id") Long id) {
+    return productService.update(requestDto, id);
+  }
+
+  @DeleteMapping("/delete/{id}")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void deleteAccessory(@PathVariable("id") Long id) {
+    productService.deleteAccessory(id);
+  }
 }

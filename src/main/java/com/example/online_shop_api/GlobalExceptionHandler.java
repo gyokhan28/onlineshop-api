@@ -1,6 +1,5 @@
 package com.example.online_shop_api;
 
-import com.example.online_shop_api.Exceptions.AccessoriesNotFoundException;
 import com.example.online_shop_api.Exceptions.BrandNotExistException;
 import com.example.online_shop_api.Exceptions.ColorNotExistException;
 import jakarta.validation.ConstraintViolation;
@@ -60,7 +59,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({
             ColorNotExistException.class,
             BrandNotExistException.class,
-            AccessoriesNotFoundException.class
     })
     public ResponseEntity<Object> handleEntityConstraintConflict(RuntimeException ex) {
         return createErrorResponse(HttpStatus.CONFLICT, ex.getMessage(), ex);
