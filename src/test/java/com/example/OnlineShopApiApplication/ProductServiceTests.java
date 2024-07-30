@@ -38,42 +38,6 @@ class ProductServiceTests {
   private ProductCreationRequestDto productCreationRequestDto;
   private ProductResponseDto productResponseDto;
 
-//  @BeforeEach
-//  public void setUp() {
-//    productService = new ProductService(productRepository, modelMapper);
-//
-//    productCreationRequestDto = ProductCreationRequestDto.builder()
-//            .productType("Accessory")
-//            .productRequestDto(ProductRequestDto.builder()
-//                    .imageLocation("src/main/resources/image.png")
-//                    .build())
-//            .build();
-//
-//    testProduct = new Accessory(); // Пример за Accessory
-//    testProduct.setId(1L);
-//    testProduct.setName("Accessory Product");
-//    testProduct.setPrice(new BigDecimal(10));
-//    testProduct.setQuantity(1);
-//    testProduct.setImageUrls(List.of("src/main/resources/image.png"));
-//
-//    testProduct =
-//        Product.builder()
-//            .id(1L)
-//            .name("product")
-//            .price(new BigDecimal(10))
-//            .quantity(1)
-//            .imageUrls(List.of("src/main/resources/"))
-//            .build();
-//
-//    testProductResponseDto =
-//        ProductResponseDto.builder()
-//            .id(1L)
-//            .name("product")
-//            .price(new BigDecimal(10))
-//            .quantity(1)
-//            .imageLocation("src/main/resources/")
-//            .build();
-//  }
 @BeforeEach
 public void setUp() {
   productService = new ProductService(productRepository, modelMapper);
