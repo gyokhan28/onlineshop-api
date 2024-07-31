@@ -1,10 +1,7 @@
 package com.example.online_shop_api.Entity.Products;
 
 import com.example.online_shop_api.Entity.ProductHelpers.Material;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,6 +13,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@DiscriminatorValue("Sanitary")
 public class Sanitary extends Product {
     @Column
     private boolean isBiodegradable;

@@ -1,6 +1,7 @@
 package com.example.online_shop_api.Entity.Products;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,6 +13,7 @@ import java.util.List;
 @Entity
 @Data
 @NoArgsConstructor
+@DiscriminatorValue("Drink")
 public class Drink extends Product {
 
     @Column(name = "best_before")
