@@ -2,6 +2,7 @@ package com.example.online_shop_api.Entity.Products;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -14,6 +15,7 @@ import java.time.LocalDate;
 public class Drink extends Product {
 
     @Column(name = "best_before")
+    @NotNull
     private LocalDate bestBefore;
 
     public Drink(String name, BigDecimal price, int quantity, LocalDate bestBefore) {
