@@ -325,7 +325,28 @@ public class UserService {
         return ResponseEntity.ok(responseList);
     }
 
-    public ResponseEntity<String> changeOrderStatusToCancelled(Long orderId) {
+    private void checkIfOrderHasStatusBasketOrCancelled(Order order) {
+        Optional<OrderStatus> optionalBasketStatus = orderStatusRepository.findByName("BASKET");
+        Optional<OrderStatus> optionalCancelledStatus = orderStatusRepository.findByName("CANCELLED");
+        if (optionalBasketStatus.isPresent()) {
+            OrderStatus basketStatus = optionalBasketStatus.get();
+            if (order.getStatus().equals(basketStatus)) {
+                throw new OrderStatusException("Orders with status \"Basket\" cannot be cancelled!");
+            }
+        }
+        if (optionalCancelledStatus.isPresent()) {
+            OrderStatus cancelledStatus = optionalCancelledStatus.get();
+            if (order.getStatus().equals(cancelledStatus)) {
+                throw new OrderStatusException("This order is already cancelled!");
+            }
+        }
+    }
+
+    private boolean isOrderOfCurrentUser(Order order, User user) {
+        return order.getUser().getId().equals(user.getId());
+    }
+
+    public ResponseEntity<String> changeOrderStatusToCancelled(Long orderId, Authentication authentication) {
         Optional<Order> optionalOrder = orderRepository.findById(orderId);
         Optional<OrderStatus> optionalStatus = orderStatusRepository.findByName("CANCELLED");
         if (optionalOrder.isEmpty()) {
@@ -335,6 +356,14 @@ public class UserService {
             return ResponseEntity.badRequest().body("Status not found!");
         }
         Order order = optionalOrder.get();
+        if (!isOrderOfCurrentUser(order, getCurrentUser(authentication))) {
+            return ResponseEntity.badRequest().body("This order is not made by the logged user");
+        }
+        try {
+            checkIfOrderHasStatusBasketOrCancelled(order);
+        } catch (OrderStatusException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
         OrderStatus cancelledStatus = optionalStatus.get();
         order.setStatus(cancelledStatus);
         order.setOrderCancelDateTime(LocalDateTime.now());

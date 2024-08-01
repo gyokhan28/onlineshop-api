@@ -1,14 +1,14 @@
 package com.example.OnlineShopApiApplication;
 
 import com.example.online_shop_api.Dto.Request.UserRequestDto;
-import com.example.online_shop_api.Entity.Address;
-import com.example.online_shop_api.Entity.City;
-import com.example.online_shop_api.Entity.User;
+import com.example.online_shop_api.Dto.Response.*;
+import com.example.online_shop_api.Entity.*;
+import com.example.online_shop_api.Entity.Products.Product;
 import com.example.online_shop_api.Exceptions.*;
 import com.example.online_shop_api.Mapper.UserMapper;
-import com.example.online_shop_api.Repository.AddressRepository;
-import com.example.online_shop_api.Repository.CityRepository;
-import com.example.online_shop_api.Repository.UserRepository;
+import com.example.online_shop_api.MyUserDetails;
+import com.example.online_shop_api.Repository.*;
+import com.example.online_shop_api.Service.ProductService;
 import com.example.online_shop_api.Service.UserService;
 import com.example.online_shop_api.Utils.ValidationUtil;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,10 +19,13 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.validation.BindingResult;
 
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.Optional;
 
@@ -37,10 +40,18 @@ public class UserServiceTests {
     private UserService userService;
     @InjectMocks
     private UserRequestDto userRequestDto;
+    @InjectMocks
+    private ProductService productService;
     @Mock
     UserRepository userRepository;
     @Mock
     CityRepository cityRepository;
+    @Mock
+    ProductRepository productRepository;
+    @Mock
+    OrderRepository orderRepository;
+    @Mock
+    OrderProductRepository orderProductRepository;
     @Mock
     AddressRepository addressRepository;
     @Mock
@@ -263,4 +274,71 @@ public class UserServiceTests {
         assertThrows(ServerErrorException.class, () -> userService.addNewUser(userRequestDto));
     }
 
+    @Test
+    void testViewProfile_Success() {
+        Authentication authentication = mock(Authentication.class);
+        MyUserDetails userDetails = mock(MyUserDetails.class);
+        User user = new User();
+        user.setId(1L);
+        Address address = new Address();
+        user.setAddress(address);
+        user.setUsername("testUser");
+
+        when(authentication.getPrincipal()).thenReturn(userDetails);
+        when(userDetails.getUser()).thenReturn(user);
+        when(userMapper.toDto(user)).thenReturn(new UserResponseDto());
+
+        ResponseEntity<UserProfileResponse> response = userService.viewProfile(authentication);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        verify(userMapper, times(1)).toDto(user);
+    }
+    @Test
+    void testUpdateQuantity_ProductNotFound() {
+        Long orderId = 1L;
+        Long productId = 1L;
+        int newQuantity = 3;
+
+        Order order = new Order();
+
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+        when(productRepository.findById(productId)).thenReturn(Optional.empty());
+
+        ResponseEntity<?> response = userService.updateQuantity(productId, orderId, newQuantity);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("Product with id 1 not found!", response.getBody());
+    }
+    @Test
+    void testUpdateQuantity_OrderNotFound() {
+        Long orderId = 1L;
+        Long productId = 1L;
+        int newQuantity = 3;
+
+        when(orderRepository.findById(orderId)).thenReturn(Optional.empty());
+
+        ResponseEntity<?> response = userService.updateQuantity(productId, orderId, newQuantity);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("Order with id 1 not found!", response.getBody());
+    }
+    @Test
+    void testUpdateQuantity_NegativeQuantity() {
+        Long orderId = 1L;
+        Long productId = 1L;
+        int newQuantity = -1;
+
+        Order order = new Order();
+        Product product = new Product();
+        product.setQuantity(10);
+
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+        when(productRepository.findById(productId)).thenReturn(Optional.of(product));
+
+        ResponseEntity<?> response = userService.updateQuantity(productId, orderId, newQuantity);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("The quantity cannot be negative number", response.getBody());
+    }
 }

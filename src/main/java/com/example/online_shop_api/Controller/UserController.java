@@ -56,7 +56,7 @@ public class UserController {
     }
 
     @PutMapping("/cancel-order/{id}")
-    public ResponseEntity<String> cancelOrder(@PathVariable("id") Long orderId){
-        return userService.changeOrderStatusToCancelled(orderId);
+    public ResponseEntity<String> cancelOrder(@PathVariable("id") Long orderId, Authentication authentication){
+        return userService.changeOrderStatusToCancelled(orderId, authentication);
     }
 }
