@@ -15,7 +15,6 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@DiscriminatorValue("Food")
 public class Food extends Product {
 
     @Column(name = "expiry_date")

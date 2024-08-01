@@ -13,7 +13,6 @@ import java.util.List;
 @Entity
 @Data
 @NoArgsConstructor
-@DiscriminatorValue("Drink")
 public class Drink extends Product {
 
     @Column(name = "best_before")

@@ -19,7 +19,6 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@DiscriminatorValue("Accessories")
 public class Accessories extends Product {
 
     @ManyToOne

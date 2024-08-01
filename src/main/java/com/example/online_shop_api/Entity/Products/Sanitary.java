@@ -13,7 +13,6 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@DiscriminatorValue("Sanitary")
 public class Sanitary extends Product {
     @Column
     private boolean isBiodegradable;

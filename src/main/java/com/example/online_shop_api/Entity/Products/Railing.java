@@ -17,7 +17,6 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-@DiscriminatorValue("Railing")
 public class Railing extends Product {
 
     @ManyToOne

@@ -16,7 +16,6 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-@DiscriminatorValue("Others")
 public class Others extends Product{
     @ManyToOne
     @JoinColumn(name = "material_id")

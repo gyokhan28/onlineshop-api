@@ -18,7 +18,6 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@DiscriminatorValue("Decoration")
 public class Decoration extends Product {
 
     @ManyToOne
