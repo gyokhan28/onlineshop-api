@@ -1,6 +1,7 @@
 package com.example.online_shop_api.Mapper;
 
 import com.example.online_shop_api.Dto.Request.UserRequestDto;
+import com.example.online_shop_api.Dto.Response.AdressResponseDto;
 import com.example.online_shop_api.Dto.Response.UserResponseDto;
 import com.example.online_shop_api.Entity.User;
 import org.springframework.stereotype.Component;
@@ -14,11 +15,12 @@ public class UserMapper {
         userResponseDto.setLastName(user.getLastName());
         userResponseDto.setEmail(user.getEmail());
         userResponseDto.setUsername(user.getUsername());
-        userResponseDto.setRole(user.getRole());
+        userResponseDto.setRole(user.getRole().getName());
         userResponseDto.setCreatedAt(user.getCreatedAt());
         userResponseDto.setPhoneNumber(user.getPhoneNumber());
         userResponseDto.setPhoneNumber(user.getPhoneNumber());
-        userResponseDto.setAddress(user.getAddress());
+        AdressResponseDto adressResponseDto = user.getAddress() != null ? AddressMapper.toDto(user.getAddress()) : null;
+        userResponseDto.setAddress(adressResponseDto);
 
         return userResponseDto;
     }

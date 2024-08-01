@@ -13,6 +13,7 @@ import java.util.List;
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "product")
+@DiscriminatorValue("not null")
 @SuperBuilder
 @NoArgsConstructor
 public class Product {
