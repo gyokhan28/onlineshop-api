@@ -1,6 +1,7 @@
 package com.example.online_shop_api.Mapper;
 
 import com.example.online_shop_api.Dto.Request.UserRequestDto;
+import com.example.online_shop_api.Dto.Response.UserEditResponse;
 import com.example.online_shop_api.Dto.Response.UserResponseDto;
 import com.example.online_shop_api.Entity.Address;
 import com.example.online_shop_api.Entity.City;
@@ -59,5 +60,16 @@ public class UserMapper {
                 .streetName(userRequestDto.getStreetName())
                 .additionalInformation(userRequestDto.getAdditionalInformation())
                 .build();
+    }
+
+    public static UserEditResponse toResponse(User user){
+        UserEditResponse response = new UserEditResponse();
+        response.setFirstName(user.getFirstName());
+        response.setLastName(user.getLastName());
+        response.setEmail(user.getEmail());
+        response.setCity(user.getAddress().getCity().getName());
+        response.setStreetName(user.getAddress().getStreetName());
+        response.setPhoneNumber(user.getPhoneNumber());
+        return response;
     }
 }

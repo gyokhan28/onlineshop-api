@@ -382,5 +382,82 @@ public class UserService {
             }
         }
     }
+
+    //Get page with user profile having all data that can be changed (fName, lName, email, Address, phoneNumber)
+    //The user edits the data (fields will be filled with the current user data)
+    public ResponseEntity<UserEditResponse> getCurrentUserToRequest(Authentication authentication){
+        User user = getCurrentUser(authentication);
+        return ResponseEntity.ok(UserMapper.toResponse(user));
+    }
+    public ResponseEntity<?> editUserProfile(BindingResult bindingResult, @Valid UserEditResponse userEditResponse, Authentication authentication) {
+        if (bindingResult.hasErrors()) {
+            return ResponseEntity.badRequest().body(bindingResult.getAllErrors());
+        }
+
+        User user = getCurrentUser(authentication);
+        updateUserFields(user, userEditResponse);
+
+        userRepository.save(user);
+        return ResponseEntity.ok().build();
+    }
+
+    private void updateUserFields(User user, UserEditResponse userEditResponse){
+        updateFirstName(user, userEditResponse.getFirstName());
+        updateLastName(user, userEditResponse.getLastName());
+        updateEmail(user, userEditResponse.getEmail());
+        updateAddress(user, userEditResponse.getCity(), userEditResponse.getStreetName());
+        updatePhoneNumber(user, userEditResponse.getPhoneNumber());
+    }
+
+    private void updateFirstName(User user, String firstName) {
+        if (firstName != null) {
+            user.setFirstName(firstName);
+        }
+    }
+
+    private void updateLastName(User user, String lastName) {
+        if (lastName != null) {
+            user.setLastName(lastName);
+        }
+    }
+
+    private void updateEmail(User user, String email) {
+        if (email != null) {
+            if (!isEmailInDB(email)) {
+                user.setEmail(email);
+            } else {
+                throw new EmailInUseException("Email already in use!");
+            }
+        }
+    }
+
+    private void updateAddress(User user, String city, String streetName) {
+        if (city != null || streetName != null) {
+            Address address = user.getAddress();
+            if (address == null) {
+                address = new Address();
+                user.setAddress(address);
+            }
+            if (city != null) {
+                String cityName = formatCityName(city);
+                City cityEntity = cityRepository.findByName(cityName);
+                address.setCity(cityEntity);
+            }
+            if (streetName != null) {
+                address.setStreetName(streetName);
+            }
+        }
+    }
+
+    private void updatePhoneNumber(User user, String phoneNumber) {
+        if (phoneNumber != null) {
+            user.setPhoneNumber(phoneNumber);
+        }
+    }
+
+    //SOFIA/sofia -> Sofia
+    public String formatCityName(String cityName){
+        return cityName.substring(0, 1).toUpperCase() + cityName.substring(1).toLowerCase();
+    }
 }
 
