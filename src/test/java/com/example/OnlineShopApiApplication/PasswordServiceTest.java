@@ -33,13 +33,10 @@ class PasswordServiceTest {
     private MyUserDetails myUserDetails;
     @Mock
     private Authentication authentication;
+    @Mock
     private User user;
+    @Mock
     private Employee employee;
-
-    @BeforeEach
-    public void setUp() {
-        user = mock(User.class);
-    }
 
     @Test
     void testIsUserWithUser() {
@@ -64,7 +61,6 @@ class PasswordServiceTest {
 
     @Test
     void testIsCurrentPasswordCorrectWithEmployee() {
-        employee = mock(Employee.class);
         when(employee.getPassword()).thenReturn("encodedPassword");
         when(myUserDetails.getEmployee()).thenReturn(employee);
         when(bCryptPasswordEncoder.matches("rawPassword", "encodedPassword")).thenReturn(true);
@@ -85,7 +81,6 @@ class PasswordServiceTest {
 
     @Test
     void testUpdatePasswordForEmployee() {
-        employee = mock(Employee.class);
         when(myUserDetails.getEmployee()).thenReturn(employee);
         when(bCryptPasswordEncoder.encode("newPassword")).thenReturn("encodedNewPassword");
 
