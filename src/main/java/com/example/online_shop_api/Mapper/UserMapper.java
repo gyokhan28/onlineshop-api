@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class UserMapper {
 
-    public UserResponseDto toDto(User user) {
+    public static UserResponseDto toDto(User user) {
         UserResponseDto userResponseDto = new UserResponseDto();
         userResponseDto.setFirstName(user.getFirstName());
         userResponseDto.setLastName(user.getLastName());
@@ -27,7 +27,7 @@ public class UserMapper {
         return userResponseDto;
     }
 
-    public User toEntity(UserRequestDto userRequestDto) {
+    public static User toEntity(UserRequestDto userRequestDto) {
         if (userRequestDto == null) {
             return null;
         }

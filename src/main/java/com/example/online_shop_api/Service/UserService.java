@@ -36,7 +36,6 @@ public class UserService {
     private final UserRepository userRepository;
     private final AddressRepository addressRepository;
     private final BCryptPasswordEncoder encoder;
-    private final UserMapper userMapper;
     private final CityRepository cityRepository;
     private final ValidationUtil validationUtil;
     private final OrderRepository orderRepository;
@@ -79,7 +78,7 @@ public class UserService {
     public String addNewUser(UserRequestDto userRequestDto) {
         Role userRole = new Role(RoleType.ROLE_USER.getId(), RoleType.ROLE_USER.name());
         try {
-            User user = userMapper.toEntity(userRequestDto);
+            User user = UserMapper.toEntity(userRequestDto);
             addressRepository.save(user.getAddress());
             user.setRole(userRole);
             user.setPassword(encoder.encode(userRequestDto.getPassword()));
@@ -110,7 +109,7 @@ public class UserService {
     public ResponseEntity<UserProfileResponse> viewProfile(Authentication authentication) {
         User user = getCurrentUser(authentication);
         UserProfileResponse response = new UserProfileResponse();
-        response.setUserResponseDto(userMapper.toDto(user));
+        response.setUserResponseDto(UserMapper.toDto(user));
         List<OrderResponseDto> orderResponseDtoList = getUserOrders(user);
         response.setOrderList(orderResponseDtoList);
         return ResponseEntity.ok(response);
@@ -385,10 +384,11 @@ public class UserService {
 
     //Get page with user profile having all data that can be changed (fName, lName, email, Address, phoneNumber)
     //The user edits the data (fields will be filled with the current user data)
-    public ResponseEntity<UserEditResponse> getCurrentUserToRequest(Authentication authentication){
+    public ResponseEntity<UserEditResponse> getCurrentUserToRequest(Authentication authentication) {
         User user = getCurrentUser(authentication);
         return ResponseEntity.ok(UserMapper.toResponse(user));
     }
+
     public ResponseEntity<?> editUserProfile(BindingResult bindingResult, @Valid UserEditResponse userEditResponse, Authentication authentication) {
         if (bindingResult.hasErrors()) {
             return ResponseEntity.badRequest().body(bindingResult.getAllErrors());
@@ -401,7 +401,7 @@ public class UserService {
         return ResponseEntity.ok().build();
     }
 
-    private void updateUserFields(User user, UserEditResponse userEditResponse){
+    private void updateUserFields(User user, UserEditResponse userEditResponse) {
         updateFirstName(user, userEditResponse.getFirstName());
         updateLastName(user, userEditResponse.getLastName());
         updateEmail(user, userEditResponse.getEmail());
@@ -456,7 +456,7 @@ public class UserService {
     }
 
     //SOFIA/sofia -> Sofia
-    public String formatCityName(String cityName){
+    public String formatCityName(String cityName) {
         return cityName.substring(0, 1).toUpperCase() + cityName.substring(1).toLowerCase();
     }
 }
