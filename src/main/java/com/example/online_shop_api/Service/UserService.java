@@ -48,6 +48,10 @@ public class UserService {
         return userRepository.findByEmail(email).isPresent();
     }
 
+    private boolean isPhoneNumberInDB(String phoneNumber) {
+        return userRepository.findByPhoneNumber(phoneNumber).isPresent();
+    }
+
     private boolean isUsernameInDB(String username) {
         return userRepository.findByUsername(username).isPresent();
     }
@@ -465,7 +469,11 @@ public class UserService {
 
     private void updatePhoneNumber(User user, String phoneNumber) {
         if (phoneNumber != null) {
-            user.setPhoneNumber(phoneNumber);
+            if (!isPhoneNumberInDB(phoneNumber)) {
+                user.setPhoneNumber(phoneNumber);
+            } else {
+                throw new EmailInUseException("Phone number already in use!");
+            }
         }
     }
 

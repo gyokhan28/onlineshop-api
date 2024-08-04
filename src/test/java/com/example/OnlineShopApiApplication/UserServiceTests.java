@@ -568,4 +568,57 @@ public class UserServiceTests {
         assertEquals(2, productResponses.size());
     }
 
+    @Test
+    void testReturnProductsToStock() throws Exception {
+        Product product = new Product();
+        product.setId(1L);
+        product.setQuantity(5);
+
+        Product productToBeReturnedToStock = new Product();
+        productToBeReturnedToStock.setId(1L);
+        productToBeReturnedToStock.setQuantity(10);
+
+        OrderProduct orderProduct = new OrderProduct();
+        orderProduct.setProduct(productToBeReturnedToStock);
+        orderProduct.setQuantity(10);
+        Order order = new Order();
+        order.setId(1L);
+        orderProduct.setOrder(order);
+
+        when(orderProductRepository.findAllByOrderId(order.getId())).thenReturn(Collections.singletonList(orderProduct));
+        when(productRepository.findById(productToBeReturnedToStock.getId())).thenReturn(Optional.of(product));
+
+
+        Method method = UserService.class.getDeclaredMethod("returnProductsToStock", Long.class);
+        method.setAccessible(true);
+        method.invoke(userService, order.getId());
+
+        assertEquals(15, product.getQuantity());
+    }
+
+    @Test
+    void testUpdateFirstName() throws Exception {
+        Method method = UserService.class.getDeclaredMethod("updateFirstName", User.class, String.class);
+        method.setAccessible(true);
+        String testName = "firstName";
+        User user = new User();
+        user.setFirstName("user");
+        method.invoke(userService, user, testName);
+
+        assertEquals("firstName", user.getFirstName());
+    }
+
+    @Test
+    void testUpdateLastName() throws Exception {
+        Method method = UserService.class.getDeclaredMethod("updateLastName", User.class, String.class);
+        method.setAccessible(true);
+        String testName = "lastname";
+        User user = new User();
+        user.setFirstName("user");
+        method.invoke(userService, user, testName);
+
+        assertEquals("lastname", user.getLastName());
+    }
+
+
 }
