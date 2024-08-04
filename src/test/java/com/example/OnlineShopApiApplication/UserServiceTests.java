@@ -10,6 +10,7 @@ import com.example.online_shop_api.Mapper.ProductMapper;
 import com.example.online_shop_api.Mapper.UserMapper;
 import com.example.online_shop_api.MyUserDetails;
 import com.example.online_shop_api.Repository.*;
+import com.example.online_shop_api.Service.OrderService;
 import com.example.online_shop_api.Service.ProductService;
 import com.example.online_shop_api.Service.UserService;
 import com.example.online_shop_api.Utils.ValidationUtil;
@@ -23,6 +24,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.parameters.P;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
@@ -30,10 +32,7 @@ import org.springframework.validation.ObjectError;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -66,6 +65,8 @@ public class UserServiceTests {
     private MockedStatic<UserMapper> mockedStaticUserMapper;
     @Mock
     private MockedStatic<ProductMapper> mockedStaticProductMapper;
+    @InjectMocks
+    private OrderService orderService;
 
     @BeforeEach
     public void setUp() {
@@ -444,7 +445,6 @@ public class UserServiceTests {
         productInStock.setName("Test Product");
         productInStock.setQuantity(5);
 
-        // Mock the behavior of productRepository
         when(productRepository.findByIdNotDeleted(1L)).thenReturn(Optional.of(productInStock));
 
         OrderProduct orderProduct = new OrderProduct();
@@ -454,16 +454,118 @@ public class UserServiceTests {
         List<OrderProduct> orderProducts = new ArrayList<>();
         orderProducts.add(orderProduct);
 
-        // Access the private method via reflection
         Method method = UserService.class.getDeclaredMethod("validateProductAvailability", List.class);
         method.setAccessible(true);
 
-        // Act
         List<String> errors = (List<String>) method.invoke(userService, orderProducts);
 
-        // Assert
         List<String> expectedErrors = new ArrayList<>();
         expectedErrors.add("The product Test Product has stock of 5 and you can not order amount of 10 of this product!");
         assertEquals(expectedErrors, errors, "Errors list should match the expected error message.");
     }
+
+    @Test
+    void testReduceStockQuantity() throws Exception {
+        Product product1 = new Product();
+        product1.setId(1L);
+        product1.setQuantity(10);
+
+        Product product2 = new Product();
+        product2.setId(2L);
+        product2.setQuantity(20);
+
+        OrderProduct orderProduct1 = new OrderProduct();
+        orderProduct1.setProduct(product1);
+        orderProduct1.setQuantity(3);
+
+        OrderProduct orderProduct2 = new OrderProduct();
+        orderProduct2.setProduct(product2);
+        orderProduct2.setQuantity(5);
+
+        List<OrderProduct> orderProducts = Arrays.asList(orderProduct1, orderProduct2);
+
+        when(productRepository.findByIdNotDeleted(1L)).thenReturn(Optional.of(product1));
+        when(productRepository.findByIdNotDeleted(2L)).thenReturn(Optional.of(product2));
+
+        Method method = UserService.class.getDeclaredMethod("reduceStockQuantity", List.class);
+        method.setAccessible(true);
+        method.invoke(userService, orderProducts);
+
+        verify(productRepository, times(1)).findByIdNotDeleted(1L);
+        verify(productRepository, times(1)).findByIdNotDeleted(2L);
+
+        ArgumentCaptor<Product> productCaptor = ArgumentCaptor.forClass(Product.class);
+        verify(productRepository, times(2)).save(productCaptor.capture());
+
+        List<Product> savedProducts = productCaptor.getAllValues();
+        assertEquals(7, savedProducts.get(0).getQuantity()); // 10 - 3 = 7
+        assertEquals(15, savedProducts.get(1).getQuantity()); // 20 - 5 = 15
+    }
+
+    @Test
+    void saveThePurchasePrice() throws Exception {
+        Product product1 = new Product();
+        product1.setId(1L);
+        product1.setPrice(new BigDecimal("10.00"));
+
+        Product product2 = new Product();
+        product2.setId(2L);
+        product2.setPrice(new BigDecimal("20.00"));
+
+        OrderProduct orderProduct1 = new OrderProduct();
+        orderProduct1.setId(1L);
+        orderProduct1.setProduct(product1);
+
+        OrderProduct orderProduct2 = new OrderProduct();
+        orderProduct1.setId(2L);
+        orderProduct2.setProduct(product2);
+
+        List<OrderProduct> orderProducts = Arrays.asList(orderProduct1, orderProduct2);
+        when(productRepository.findByIdNotDeleted(1L)).thenReturn(Optional.of(product1));
+        when(productRepository.findByIdNotDeleted(2L)).thenReturn(Optional.of(product2));
+
+        Method method = UserService.class.getDeclaredMethod("saveThePurchasePriceInOrderProduct", List.class);
+        method.setAccessible(true);
+        method.invoke(userService, orderProducts);
+
+        verify(productRepository, times(1)).findByIdNotDeleted(1L);
+        verify(productRepository, times(1)).findByIdNotDeleted(2L);
+
+        // Create an ArgumentCaptor to capture OrderProduct objects passed to the save method of orderProductRepository
+        ArgumentCaptor<OrderProduct> orderProductCaptor = ArgumentCaptor.forClass(OrderProduct.class);
+
+        // Verify that the save method of orderProductRepository is called exactly twice and capture the OrderProduct objects passed in each call
+        verify(orderProductRepository, times(2)).save(orderProductCaptor.capture());
+
+        List<OrderProduct> savedOrderProducts = orderProductCaptor.getAllValues();
+        assertEquals(new BigDecimal("10.00"), savedOrderProducts.get(0).getProductPriceWhenPurchased());
+        assertEquals(new BigDecimal("20.00"), savedOrderProducts.get(1).getProductPriceWhenPurchased());
+    }
+
+    @Test
+    public void testCalculateTotalPriceAndFillProductResponses() throws Exception {
+        List<ProductResponse> productResponses = new ArrayList<>();
+
+        Product product1 = new Product();
+        Product product2 = new Product();
+
+        OrderProduct op1 = new OrderProduct();
+        op1.setProduct(product1);
+        op1.setProductPriceWhenPurchased(new BigDecimal("10.00"));
+        op1.setQuantity(2);
+        OrderProduct op2 = new OrderProduct();
+        op2.setProduct(product2);
+        op2.setProductPriceWhenPurchased(new BigDecimal("5.00"));
+        op2.setQuantity(3);
+
+        List<OrderProduct> products = List.of(op1, op2);
+
+        Method method = UserService.class.getDeclaredMethod("calculateTotalPriceAndFillProductResponses", List.class, List.class);
+        method.setAccessible(true);
+        BigDecimal total = (BigDecimal) method.invoke(userService, products, productResponses);
+
+        assertEquals(new BigDecimal("35.00"), total);
+        assertEquals(2, productResponses.size());
+    }
+
 }
