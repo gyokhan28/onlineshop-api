@@ -9,7 +9,6 @@ import com.example.online_shop_api.Entity.JobType;
 import com.example.online_shop_api.Entity.Role;
 import com.example.online_shop_api.Exceptions.*;
 import com.example.online_shop_api.Mapper.EmployeeMapper;
-import com.example.online_shop_api.MyUserDetails;
 import com.example.online_shop_api.Repository.EmployeeRepository;
 import com.example.online_shop_api.Repository.JobTypeRepository;
 import com.example.online_shop_api.Repository.RoleRepository;
@@ -18,8 +17,6 @@ import com.example.online_shop_api.Static.RoleType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
 
@@ -32,7 +29,7 @@ public class EmployeeService {
 
     private final EmployeeRepository employeeRepository;
     private final RoleRepository roleRepository;
-    private final PasswordEncoder encoder;
+    //private final BCryptPasswordEncoder encoder;
     private final JobTypeRepository jobTypeRepository;
 
     public ResponseEntity<List<EmployeeResponseDto>> getAllEmployees() {
@@ -94,7 +91,7 @@ public class EmployeeService {
         try {
             Employee employee = EmployeeMapper.toEntity(employeeRequestDto);
             employee.setRole(optionalRole.get());
-            employee.setPassword(encoder.encode(employeeRequestDto.getPassword()));
+            //employee.setPassword(encoder.encode(employeeRequestDto.getPassword()));
             employee.setJobType(optionalJobType.get());
             //new employee accounts will be disabled -> after admin approval, they will be enabled.
             employee.setEnabled(false);
@@ -119,8 +116,8 @@ public class EmployeeService {
         return employeeRepository.findByPhoneNumber(phoneNumber).isPresent();
     }
 
-    public ResponseEntity<MyUserDetails> showEmployeeProfile(Authentication authentication) {
-        MyUserDetails userDetails = (MyUserDetails) authentication.getPrincipal();
-        return ResponseEntity.ok(userDetails);
-    }
+//    public ResponseEntity<MyUserDetails> showEmployeeProfile(Authentication authentication) {
+//        MyUserDetails userDetails = (MyUserDetails) authentication.getPrincipal();
+//        return ResponseEntity.ok(userDetails);
+//    }
 }
