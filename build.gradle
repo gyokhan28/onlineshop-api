@@ -72,6 +72,10 @@ sonar {
         property "sonar.organization", "gyokhan28"
         property "sonar.host.url", "https://sonarcloud.io"
         property "sonar.coverage.jacoco.xmlReportPaths", "${buildDir}/reports/jacoco/test/jacocoTestReport.xml"
-        property "sonar.coverage.exclusions", "Entity/**, DTO/**, Repository/**, Enum/**"
+        property 'sonar.exclusions', "**/com/example/online_shop_api/Dto/**,"+
+                "**/com/example/online_shop_api/Entity/**,"+
+                "**/com/example/online_shop_api/Mapper/**,"+
+                "**/com/example/online_shop_api/Exceptions/**,"+
+                "**/com/example/online_shop_api/Static/**"
     }
 }
