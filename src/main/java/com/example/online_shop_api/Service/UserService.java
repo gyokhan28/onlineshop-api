@@ -167,12 +167,15 @@ public class UserService {
     private List<String> validateProductAvailability(List<OrderProduct> orderProducts) {
         List<String> errors = new ArrayList<>();
         for (OrderProduct op : orderProducts) {
-            Product productInStock = productRepository.findByIdNotDeleted(op.getProduct().getId()).get();
-            if (productInStock.getQuantity() < op.getQuantity()) {
-                errors.add("The product " + productInStock.getName()
-                        + " has stock of " + productInStock.getQuantity()
-                        + " and you can not order amount of " + op.getQuantity()
-                        + " of this product!");
+            Optional<Product> optionalProduct = productRepository.findByIdNotDeleted(op.getProduct().getId());
+            if (optionalProduct.isPresent()) {
+                Product productInStock = optionalProduct.get();
+                if (productInStock.getQuantity() < op.getQuantity()) {
+                    errors.add("The product " + productInStock.getName()
+                            + " has stock of " + productInStock.getQuantity()
+                            + " and you can not order amount of " + op.getQuantity()
+                            + " of this product!");
+                }
             }
         }
         return errors;
@@ -207,18 +210,23 @@ public class UserService {
 
     private void reduceStockQuantity(List<OrderProduct> orderProducts) {
         for (OrderProduct op : orderProducts) {
-
-            Product productInStock = productRepository.findByIdNotDeleted(op.getProduct().getId()).get();
-            productInStock.setQuantity(productInStock.getQuantity() - op.getQuantity());
-            productRepository.save(productInStock);
+            Optional<Product> optionalProduct = productRepository.findByIdNotDeleted(op.getProduct().getId());
+            if (optionalProduct.isPresent()) {
+                Product productInStock = optionalProduct.get();
+                productInStock.setQuantity(productInStock.getQuantity() - op.getQuantity());
+                productRepository.save(productInStock);
+            }
         }
     }
 
     private void saveThePurchasePriceInOrderProduct(List<OrderProduct> orderProducts) {
         for (OrderProduct op : orderProducts) {
-            Product productInStock = productRepository.findByIdNotDeleted(op.getProduct().getId()).get();
-            op.setProductPriceWhenPurchased(productInStock.getPrice());
-            orderProductRepository.save(op);
+            Optional<Product> optionalProduct = productRepository.findByIdNotDeleted(op.getProduct().getId());
+            if (optionalProduct.isPresent()) {
+                Product productInStock = optionalProduct.get();
+                op.setProductPriceWhenPurchased(productInStock.getPrice());
+                orderProductRepository.save(op);
+            }
         }
     }
 
@@ -270,10 +278,15 @@ public class UserService {
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
-        Order basketOrder = orderRepository.findById(orderId).get();
+        Optional<Order> optionalOrder = orderRepository.findById(orderId);
+        Order basketOrder = new Order();
+        if (optionalOrder.isPresent()) {
+            basketOrder = optionalOrder.get();
+        }
         BigDecimal totalPrice = calculateTotalPrice(getBasketProducts(basketOrder));
         List<ProductResponseDto> basketProducts = getBasketProducts(basketOrder);
         return ResponseEntity.ok(new BasketResponse(basketProducts, totalPrice));
+
     }
 
     private String formatDeliveryAddress(User user) {
@@ -374,8 +387,9 @@ public class UserService {
     private void returnProductsToStock(Long orderId) {
         List<OrderProduct> orderProductsList = orderProductRepository.findAllByOrderId(orderId);
         for (OrderProduct op : orderProductsList) {
-            if (productRepository.findById(op.getProduct().getId()).isPresent()) {
-                Product product = productRepository.findById(op.getProduct().getId()).get();
+            Optional<Product> optionalProduct = productRepository.findById(op.getProduct().getId());
+            if (optionalProduct.isPresent()) {
+                Product product = optionalProduct.get();
                 product.setQuantity(product.getQuantity() + op.getQuantity());
                 productRepository.save(product);
             }

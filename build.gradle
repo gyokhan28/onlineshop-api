@@ -76,6 +76,7 @@ sonar {
                 "**/com/example/online_shop_api/Entity/**,"+
                 "**/com/example/online_shop_api/Mapper/**,"+
                 "**/com/example/online_shop_api/Exceptions/**,"+
-                "**/com/example/online_shop_api/Static/**"
+                "**/com/example/online_shop_api/Static/**,"+
+                "**/com/example/online_shop_api/Repository/**,"
     }
 }
