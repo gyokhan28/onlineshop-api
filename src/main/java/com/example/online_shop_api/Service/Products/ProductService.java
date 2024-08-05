@@ -35,9 +35,6 @@ public class ProductService {
 
   public ResponseEntity<ProductResponseDto> create(ProductCreationRequestDto request) {
     Product product = validateProductType(request);
-
-    product.setImageUrls(List.of(request.getProductRequestDto().getImageLocation()));
-
     productRepository.save(product);
     return ResponseEntity.ok(modelMapper.map(product, ProductResponseDto.class));
   }

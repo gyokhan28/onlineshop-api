@@ -22,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -40,11 +41,11 @@ class ProductServiceTests {
   private ProductCreationRequestDto productCreationRequestDto;
   private ProductResponseDto productResponseDto;
 
-@BeforeEach
-public void setUp() {
-  productService = new ProductService(productRepository, modelMapper);
+  @BeforeEach
+  public void setUp() {
+    productService = new ProductService(productRepository, modelMapper);
 
-  testProduct =
+    testProduct =
         Product.builder()
             .id(1L)
             .name("product")
@@ -53,30 +54,47 @@ public void setUp() {
             .imageUrls(List.of("src/main/resources/"))
             .build();
 
-  productCreationRequestDto = ProductCreationRequestDto.builder()
-          .productType("Accessory")
-          .productRequestDto(ProductRequestDto.builder()
-                  .color(new Color(1L,"Black"))
-                  .brand(new Brand(1L,"Nike"))
-                  .imageLocation("src/main/resources/image.png")
-                  .build())
-          .build();
+    productCreationRequestDto =
+        ProductCreationRequestDto.builder()
+            .productType("Accessory")
+            .productRequestDto(
+                ProductRequestDto.builder()
+                    .name("Accessory")
+                    .imageLocation("src/main/resources/")
+                    .price(BigDecimal.valueOf(10))
+                    .quantity(1)
+                    .color(new Color(1L, "Black"))
+                    .brand(new Brand(1L, "Nike"))
+                    .imageLocation("src/main/resources/image.png")
+                    .build())
+            .build();
 
-  productResponseDto = ProductResponseDto.builder()
-          .id(1L)
-          .name("Product")
-          .price(new BigDecimal("10.00"))
-          .quantity(1)
-          .imageLocation("src/main/resources/image.png")
-          .build();
-}
+    productResponseDto =
+        ProductResponseDto.builder()
+            .id(1L)
+            .name("Product")
+            .price(new BigDecimal("10.00"))
+            .quantity(1)
+            .imageLocation("src/main/resources/image.png")
+            .build();
+  }
+
+  @Test
+  void testCreateProduct() {
+    ResponseEntity<ProductResponseDto> response = productService.create(productCreationRequestDto);
+    assertEquals(200, response.getStatusCodeValue());
+  }
+
   @Test
   void testCreateProduct_InvalidType() {
     productCreationRequestDto.setProductType("InvalidType");
 
-    IllegalArgumentException thrownException = assertThrows(IllegalArgumentException.class, () -> {
-      productService.create(productCreationRequestDto);
-    });
+    IllegalArgumentException thrownException =
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> {
+              productService.create(productCreationRequestDto);
+            });
 
     assertEquals("Invalid product type: InvalidType", thrownException.getMessage());
 
@@ -128,7 +146,8 @@ public void setUp() {
   @Test
   void testUpdateProduct_Success() {
     // Arrange
-    Product existingProduct = Product.builder()
+    Product existingProduct =
+        Product.builder()
             .id(1L)
             .name("Old Product")
             .price(new BigDecimal("5.00"))
@@ -136,7 +155,8 @@ public void setUp() {
             .imageUrls(List.of("src/main/resources/old_image.png"))
             .build();
 
-    Product updatedProduct = Product.builder()
+    Product updatedProduct =
+        Product.builder()
             .id(1L)
             .name("Updated Product")
             .price(new BigDecimal("15.00"))
@@ -146,24 +166,30 @@ public void setUp() {
 
     when(productRepository.findById(1L)).thenReturn(Optional.of(existingProduct));
 
-    when(modelMapper.map(productCreationRequestDto.getProductRequestDto(), Accessory.class)).thenReturn(new Accessory()); // Assuming the type is Accessory for this example
+    when(modelMapper.map(productCreationRequestDto.getProductRequestDto(), Accessory.class))
+        .thenReturn(new Accessory()); // Assuming the type is Accessory for this example
 
-    ResponseEntity<ProductResponseDto> response = productService.update(productCreationRequestDto, 1L);
+    ResponseEntity<ProductResponseDto> response =
+        productService.update(productCreationRequestDto, 1L);
 
     // Assert
     assertEquals(200, response.getStatusCodeValue());
 
     verify(productRepository, times(1)).findById(1L);
-    verify(modelMapper, times(1)).map(productCreationRequestDto.getProductRequestDto(), Accessory.class);
+    verify(modelMapper, times(1))
+        .map(productCreationRequestDto.getProductRequestDto(), Accessory.class);
   }
 
   @Test
   void testUpdateProduct_ProductNotFound() {
     when(productRepository.findById(1L)).thenReturn(Optional.empty());
 
-    ProductNotFoundException thrownException = assertThrows(ProductNotFoundException.class, () -> {
-      productService.update(productCreationRequestDto, 1L);
-    });
+    ProductNotFoundException thrownException =
+        assertThrows(
+            ProductNotFoundException.class,
+            () -> {
+              productService.update(productCreationRequestDto, 1L);
+            });
 
     assertEquals("Product with ID: 1 not found", thrownException.getMessage());
 
@@ -171,10 +197,12 @@ public void setUp() {
     verify(productRepository, times(0)).save(any(Product.class));
     verify(modelMapper, times(0)).map(any(), any());
   }
+
   @Test
   void testDeleteProduct_Success() {
     // Arrange
-    Product productToDelete = Product.builder()
+    Product productToDelete =
+        Product.builder()
             .id(1L)
             .name("Product to delete")
             .price(new BigDecimal("10.00"))
@@ -198,9 +226,12 @@ public void setUp() {
     when(productRepository.findById(1L)).thenReturn(Optional.empty());
 
     // Act & Assert
-    ProductNotFoundException thrownException = assertThrows(ProductNotFoundException.class, () -> {
-      productService.delete(1L);
-    });
+    ProductNotFoundException thrownException =
+        assertThrows(
+            ProductNotFoundException.class,
+            () -> {
+              productService.delete(1L);
+            });
 
     assertEquals("Product with ID: 1 not found", thrownException.getMessage());
 
