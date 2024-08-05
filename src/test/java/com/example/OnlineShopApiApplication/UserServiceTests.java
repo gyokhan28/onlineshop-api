@@ -2,6 +2,7 @@ package com.example.OnlineShopApiApplication;
 
 import com.example.online_shop_api.Dto.Request.UserRequestDto;
 import com.example.online_shop_api.Dto.Response.BuyNowResponse;
+import com.example.online_shop_api.Dto.Response.UserEditResponse;
 import com.example.online_shop_api.Dto.Response.UserProfileResponse;
 import com.example.online_shop_api.Dto.Response.UserResponseDto;
 import com.example.online_shop_api.Entity.*;
@@ -61,10 +62,9 @@ public class UserServiceTests {
     private ProductService productService;
     @Mock
     private Authentication authentication;
+
     @Mock
-    private User user;
-    @Mock
-    private MyUserDetails myUserDetails;
+    private BindingResult bindingResult;
     @Mock
     private OrderProductRepository orderProductRepository;
 
@@ -402,5 +402,74 @@ public class UserServiceTests {
         assertEquals(1L, buyNowResponse.getOrderId());
     }
 
+    @Test
+    public void testEditUserProfile_Success() {
+        when(bindingResult.hasErrors()).thenReturn(false);
+        User currentUser = new User();
+        MyUserDetails userDetails = new MyUserDetails(currentUser);
+        when(authentication.getPrincipal()).thenReturn(userDetails);
+        when(userRepository.save(any(User.class))).thenReturn(currentUser);
+
+        UserEditResponse userEditResponse = new UserEditResponse();
+        userEditResponse.setFirstName("John");
+        userEditResponse.setLastName("Doe");
+        userEditResponse.setEmail("john.doe@example.com");
+        userEditResponse.setCity("New York");
+        userEditResponse.setStreetName("5th Avenue");
+        userEditResponse.setPhoneNumber("1234567890");
+
+        ResponseEntity<?> response = userService.editUserProfile(bindingResult, userEditResponse, authentication);
+
+        assertEquals(ResponseEntity.ok().build(), response);
+        verify(userRepository, times(1)).save(any(User.class));
+    }
+
+    @Test
+    public void testEditUserProfile_EmailInUse() {
+        when(bindingResult.hasErrors()).thenReturn(false);
+        User currentUser = new User();
+        MyUserDetails userDetails = new MyUserDetails(currentUser);
+        when(authentication.getPrincipal()).thenReturn(userDetails);
+
+        doAnswer(invocation -> {
+            User user = invocation.getArgument(0);
+            if (user.getEmail().equals("existing.email@example.com")) {
+                throw new EmailInUseException("Email already in use!");
+            }
+            return null;
+        }).when(userRepository).save(any(User.class));
+
+        UserEditResponse userEditResponse = new UserEditResponse();
+        userEditResponse.setEmail("existing.email@example.com");
+
+        assertThrows(EmailInUseException.class, () -> {
+            userService.editUserProfile(bindingResult, userEditResponse, authentication);
+        });
+    }
+
+    @Test
+    public void testEditUserProfile_PhoneNumberInUse() {
+        // Setup
+        when(bindingResult.hasErrors()).thenReturn(false);
+        User currentUser = new User();
+        MyUserDetails userDetails = new MyUserDetails(currentUser);
+        when(authentication.getPrincipal()).thenReturn(userDetails);
+
+        doAnswer(invocation -> {
+            User user = invocation.getArgument(0);
+            if (user.getPhoneNumber().equals("1234567890")) {
+                throw new PhoneInUseException("Phone number already in use!");
+            }
+            return null;
+        }).when(userRepository).save(any(User.class));
+
+        UserEditResponse userEditResponse = new UserEditResponse();
+        userEditResponse.setPhoneNumber("1234567890");
+
+        assertThrows(PhoneInUseException.class, () -> {
+            userService.editUserProfile(bindingResult, userEditResponse, authentication);
+        });
+
+    }
 }
 
