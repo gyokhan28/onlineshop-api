@@ -297,14 +297,13 @@ public class UserService {
         return user.getAddress().getCity().getName() + ", " + user.getAddress().getStreetName();
     }
 
-    private BigDecimal calculateTotalPriceAndFillProductResponses(List<OrderProduct> products, List<ProductResponse> productResponses) {
-        BigDecimal total = BigDecimal.ZERO;
+    private List<ProductResponse> fillProductResponse(List<OrderProduct> products){
+        List<ProductResponse> productResponses = new ArrayList<>();
         for (OrderProduct op : products) {
             ProductResponse productResponse = new ProductResponse(op.getProduct().getName(), op.getQuantity());
             productResponses.add(productResponse);
-            total = total.add(op.getProductPriceWhenPurchased().multiply(BigDecimal.valueOf(op.getQuantity())));
         }
-        return total;
+        return productResponses;
     }
 
     private UserOrdersResponse createUserOrderResponse(User user, Order order) {
@@ -315,8 +314,10 @@ public class UserService {
         response.setStatus(order.getStatus().getName());
 
         List<OrderProduct> products = orderProductRepository.findAllByOrder_Id(order.getId());
-        List<ProductResponse> productResponses = new ArrayList<>();
-        BigDecimal price = calculateTotalPriceAndFillProductResponses(products, productResponses);
+        List<ProductResponse> productResponses = fillProductResponse(products);
+
+        List<ProductResponseDto> basketProducts = getBasketProducts(order);
+        BigDecimal price = calculateTotalPrice(basketProducts);
 
         response.setPrice(price);
         response.setProducts(productResponses);
@@ -341,15 +342,18 @@ public class UserService {
         return ResponseEntity.ok(responseList);
     }
 
-    private void checkIfOrderHasStatusBasketOrCancelled(Order order) {
+    private void checkIfOrderHasStatusBasket(Order order) {
         Optional<OrderStatus> optionalBasketStatus = orderStatusRepository.findByName("BASKET");
-        Optional<OrderStatus> optionalCancelledStatus = orderStatusRepository.findByName("CANCELLED");
         if (optionalBasketStatus.isPresent()) {
             OrderStatus basketStatus = optionalBasketStatus.get();
             if (order.getStatus().equals(basketStatus)) {
                 throw new OrderStatusException("Orders with status \"Basket\" cannot be cancelled!");
             }
         }
+    }
+
+    private void checkIfOrderHasStatusCancelled(Order order) {
+        Optional<OrderStatus> optionalCancelledStatus = orderStatusRepository.findByName("CANCELLED");
         if (optionalCancelledStatus.isPresent()) {
             OrderStatus cancelledStatus = optionalCancelledStatus.get();
             if (order.getStatus().equals(cancelledStatus)) {
@@ -362,7 +366,7 @@ public class UserService {
         return order.getUser().getId().equals(user.getId());
     }
 
-    public ResponseEntity<String> changeOrderStatusToCancelled(Long orderId, Authentication authentication) {
+    public ResponseEntity<String> cancelOrder(Long orderId, Authentication authentication) {
         Optional<Order> optionalOrder = orderRepository.findById(orderId);
         Optional<OrderStatus> optionalStatus = orderStatusRepository.findByName("CANCELLED");
         if (optionalOrder.isEmpty()) {
@@ -376,7 +380,8 @@ public class UserService {
             return ResponseEntity.badRequest().body("This order is not made by the logged user");
         }
         try {
-            checkIfOrderHasStatusBasketOrCancelled(order);
+            checkIfOrderHasStatusBasket(order);
+            checkIfOrderHasStatusCancelled(order);
         } catch (OrderStatusException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

@@ -4,7 +4,6 @@ import com.example.online_shop_api.Dto.Request.UserRequestDto;
 import com.example.online_shop_api.Dto.Response.*;
 import com.example.online_shop_api.Service.UserService;
 import jakarta.validation.Valid;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -54,7 +53,7 @@ public class UserController {
 
     @PutMapping("/cancel-order/{id}")
     public ResponseEntity<String> cancelOrder(@PathVariable("id") Long orderId, Authentication authentication){
-        return userService.changeOrderStatusToCancelled(orderId, authentication);
+        return userService.cancelOrder(orderId, authentication);
     }
 
     @GetMapping("/profile/edit")

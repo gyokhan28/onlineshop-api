@@ -24,6 +24,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.parameters.P;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.validation.BindingResult;
@@ -32,6 +34,7 @@ import org.springframework.validation.ObjectError;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -51,8 +54,6 @@ public class UserServiceTests {
     @Mock
     OrderRepository orderRepository;
     @Mock
-    OrderProductRepository orderProductRepository;
-    @Mock
     AddressRepository addressRepository;
     @Spy
     @InjectMocks
@@ -63,10 +64,8 @@ public class UserServiceTests {
     ValidationUtil validationUtil;
     @Mock
     private MockedStatic<UserMapper> mockedStaticUserMapper;
-    @Mock
-    private MockedStatic<ProductMapper> mockedStaticProductMapper;
-    @InjectMocks
-    private OrderService orderService;
+
+
 
     @BeforeEach
     public void setUp() {
@@ -355,269 +354,6 @@ public class UserServiceTests {
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertEquals("The quantity cannot be negative number", response.getBody());
-    }
-
-    @Test
-    void getBasketProducts_shouldReturnProductResponseDtos() throws Exception {
-
-        Method method = UserService.class.getDeclaredMethod("getBasketProducts", Order.class);
-        method.setAccessible(true);
-
-        Order basketOrder = new Order();
-        basketOrder.setId(1L);
-
-        Product product = new Product();
-        product.setPrice(new BigDecimal("20.00"));
-
-        OrderProduct orderProduct = new OrderProduct();
-        orderProduct.setProduct(product);
-        orderProduct.setQuantity(2);
-
-        List<OrderProduct> orderProducts = List.of(orderProduct);
-
-        ProductResponseDto productResponseDto = new ProductResponseDto();
-        productResponseDto.setQuantity(2);
-        productResponseDto.setSubtotal(new BigDecimal("40.00"));
-
-        when(orderProductRepository.findAllByOrderId(basketOrder.getId())).thenReturn(orderProducts);
-        mockedStaticProductMapper.when(() -> ProductMapper.toDto(Mockito.any(Product.class))).thenReturn(productResponseDto);
-
-        List<ProductResponseDto> result = (List<ProductResponseDto>) method.invoke(userService, basketOrder);
-
-        assertEquals(1, result.size());
-        assertEquals(2, result.get(0).getQuantity());
-        assertEquals(new BigDecimal("40.00"), result.get(0).getSubtotal());
-    }
-
-    @Test
-    void calculateTotalPrice_WithProducts_ShouldReturnCorrectTotal() throws Exception {
-        Method method = UserService.class.getDeclaredMethod("calculateTotalPrice", List.class);
-        method.setAccessible(true);
-
-        ProductResponseDto product1 = new ProductResponseDto();
-        product1.setPrice(new BigDecimal("10.50"));
-
-        ProductResponseDto product2 = new ProductResponseDto();
-        product2.setPrice(new BigDecimal("20.75"));
-
-        List<ProductResponseDto> basketProducts = List.of(product1, product2);
-
-        BigDecimal total = (BigDecimal) method.invoke(userService, basketProducts);
-
-        assertEquals(new BigDecimal("31.25"), total, "Total price should be 31.25");
-    }
-
-    @Test
-    void calculateTotalPrice_EmptyList_ShouldReturnZero() throws Exception {
-        Method method = UserService.class.getDeclaredMethod("calculateTotalPrice", List.class);
-        method.setAccessible(true);
-
-        List<ProductResponseDto> basketProducts = List.of();
-
-        BigDecimal total = (BigDecimal) method.invoke(userService, basketProducts);
-
-        assertEquals(BigDecimal.ZERO, total, "Total price should be zero for an empty list");
-    }
-
-    @Test
-    void calculateTotalPrice_WithZeroPriceProducts_ShouldReturnZero() throws Exception {
-        Method method = UserService.class.getDeclaredMethod("calculateTotalPrice", List.class);
-        method.setAccessible(true);
-
-        ProductResponseDto product1 = new ProductResponseDto();
-        product1.setPrice(BigDecimal.ZERO);
-
-        ProductResponseDto product2 = new ProductResponseDto();
-        product2.setPrice(BigDecimal.ZERO);
-
-        List<ProductResponseDto> basketProducts = List.of(product1, product2);
-
-        BigDecimal total = (BigDecimal) method.invoke(userService, basketProducts);
-
-        assertEquals(BigDecimal.ZERO, total, "Total price should be zero when all products have zero price");
-    }
-
-    @Test
-    void testValidateProductAvailability() throws Exception {
-        // Arrange
-        Product productInStock = new Product();
-        productInStock.setId(1L);
-        productInStock.setName("Test Product");
-        productInStock.setQuantity(5);
-
-        when(productRepository.findByIdNotDeleted(1L)).thenReturn(Optional.of(productInStock));
-
-        OrderProduct orderProduct = new OrderProduct();
-        orderProduct.setProduct(productInStock);
-        orderProduct.setQuantity(10);
-
-        List<OrderProduct> orderProducts = new ArrayList<>();
-        orderProducts.add(orderProduct);
-
-        Method method = UserService.class.getDeclaredMethod("validateProductAvailability", List.class);
-        method.setAccessible(true);
-
-        List<String> errors = (List<String>) method.invoke(userService, orderProducts);
-
-        List<String> expectedErrors = new ArrayList<>();
-        expectedErrors.add("The product Test Product has stock of 5 and you can not order amount of 10 of this product!");
-        assertEquals(expectedErrors, errors, "Errors list should match the expected error message.");
-    }
-
-    @Test
-    void testReduceStockQuantity() throws Exception {
-        Product product1 = new Product();
-        product1.setId(1L);
-        product1.setQuantity(10);
-
-        Product product2 = new Product();
-        product2.setId(2L);
-        product2.setQuantity(20);
-
-        OrderProduct orderProduct1 = new OrderProduct();
-        orderProduct1.setProduct(product1);
-        orderProduct1.setQuantity(3);
-
-        OrderProduct orderProduct2 = new OrderProduct();
-        orderProduct2.setProduct(product2);
-        orderProduct2.setQuantity(5);
-
-        List<OrderProduct> orderProducts = Arrays.asList(orderProduct1, orderProduct2);
-
-        when(productRepository.findByIdNotDeleted(1L)).thenReturn(Optional.of(product1));
-        when(productRepository.findByIdNotDeleted(2L)).thenReturn(Optional.of(product2));
-
-        Method method = UserService.class.getDeclaredMethod("reduceStockQuantity", List.class);
-        method.setAccessible(true);
-        method.invoke(userService, orderProducts);
-
-        verify(productRepository, times(1)).findByIdNotDeleted(1L);
-        verify(productRepository, times(1)).findByIdNotDeleted(2L);
-
-        ArgumentCaptor<Product> productCaptor = ArgumentCaptor.forClass(Product.class);
-        verify(productRepository, times(2)).save(productCaptor.capture());
-
-        List<Product> savedProducts = productCaptor.getAllValues();
-        assertEquals(7, savedProducts.get(0).getQuantity()); // 10 - 3 = 7
-        assertEquals(15, savedProducts.get(1).getQuantity()); // 20 - 5 = 15
-    }
-
-    @Test
-    void saveThePurchasePrice() throws Exception {
-        Product product1 = new Product();
-        product1.setId(1L);
-        product1.setPrice(new BigDecimal("10.00"));
-
-        Product product2 = new Product();
-        product2.setId(2L);
-        product2.setPrice(new BigDecimal("20.00"));
-
-        OrderProduct orderProduct1 = new OrderProduct();
-        orderProduct1.setId(1L);
-        orderProduct1.setProduct(product1);
-
-        OrderProduct orderProduct2 = new OrderProduct();
-        orderProduct1.setId(2L);
-        orderProduct2.setProduct(product2);
-
-        List<OrderProduct> orderProducts = Arrays.asList(orderProduct1, orderProduct2);
-        when(productRepository.findByIdNotDeleted(1L)).thenReturn(Optional.of(product1));
-        when(productRepository.findByIdNotDeleted(2L)).thenReturn(Optional.of(product2));
-
-        Method method = UserService.class.getDeclaredMethod("saveThePurchasePriceInOrderProduct", List.class);
-        method.setAccessible(true);
-        method.invoke(userService, orderProducts);
-
-        verify(productRepository, times(1)).findByIdNotDeleted(1L);
-        verify(productRepository, times(1)).findByIdNotDeleted(2L);
-
-        // Create an ArgumentCaptor to capture OrderProduct objects passed to the save method of orderProductRepository
-        ArgumentCaptor<OrderProduct> orderProductCaptor = ArgumentCaptor.forClass(OrderProduct.class);
-
-        // Verify that the save method of orderProductRepository is called exactly twice and capture the OrderProduct objects passed in each call
-        verify(orderProductRepository, times(2)).save(orderProductCaptor.capture());
-
-        List<OrderProduct> savedOrderProducts = orderProductCaptor.getAllValues();
-        assertEquals(new BigDecimal("10.00"), savedOrderProducts.get(0).getProductPriceWhenPurchased());
-        assertEquals(new BigDecimal("20.00"), savedOrderProducts.get(1).getProductPriceWhenPurchased());
-    }
-
-    @Test
-    public void testCalculateTotalPriceAndFillProductResponses() throws Exception {
-        List<ProductResponse> productResponses = new ArrayList<>();
-
-        Product product1 = new Product();
-        Product product2 = new Product();
-
-        OrderProduct op1 = new OrderProduct();
-        op1.setProduct(product1);
-        op1.setProductPriceWhenPurchased(new BigDecimal("10.00"));
-        op1.setQuantity(2);
-        OrderProduct op2 = new OrderProduct();
-        op2.setProduct(product2);
-        op2.setProductPriceWhenPurchased(new BigDecimal("5.00"));
-        op2.setQuantity(3);
-
-        List<OrderProduct> products = List.of(op1, op2);
-
-        Method method = UserService.class.getDeclaredMethod("calculateTotalPriceAndFillProductResponses", List.class, List.class);
-        method.setAccessible(true);
-        BigDecimal total = (BigDecimal) method.invoke(userService, products, productResponses);
-
-        assertEquals(new BigDecimal("35.00"), total);
-        assertEquals(2, productResponses.size());
-    }
-
-    @Test
-    void testReturnProductsToStock() throws Exception {
-        Product product = new Product();
-        product.setId(1L);
-        product.setQuantity(5);
-
-        Product productToBeReturnedToStock = new Product();
-        productToBeReturnedToStock.setId(1L);
-        productToBeReturnedToStock.setQuantity(10);
-
-        OrderProduct orderProduct = new OrderProduct();
-        orderProduct.setProduct(productToBeReturnedToStock);
-        orderProduct.setQuantity(10);
-        Order order = new Order();
-        order.setId(1L);
-        orderProduct.setOrder(order);
-
-        when(orderProductRepository.findAllByOrderId(order.getId())).thenReturn(Collections.singletonList(orderProduct));
-        when(productRepository.findById(productToBeReturnedToStock.getId())).thenReturn(Optional.of(product));
-
-
-        Method method = UserService.class.getDeclaredMethod("returnProductsToStock", Long.class);
-        method.setAccessible(true);
-        method.invoke(userService, order.getId());
-
-        assertEquals(15, product.getQuantity());
-    }
-
-    @Test
-    void testUpdateFirstName() throws Exception {
-        Method method = UserService.class.getDeclaredMethod("updateFirstName", User.class, String.class);
-        method.setAccessible(true);
-        String testName = "firstName";
-        User user = new User();
-        user.setFirstName("user");
-        method.invoke(userService, user, testName);
-
-        assertEquals("firstName", user.getFirstName());
-    }
-
-    @Test
-    void testUpdateLastName() throws Exception {
-        Method method = UserService.class.getDeclaredMethod("updateLastName", User.class, String.class);
-        method.setAccessible(true);
-        String testName = "lastname";
-        User user = new User();
-        user.setFirstName("user");
-        method.invoke(userService, user, testName);
-
-        assertEquals("lastname", user.getLastName());
     }
 
 

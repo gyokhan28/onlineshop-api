@@ -10,5 +10,5 @@ import java.util.List;
 @AllArgsConstructor
 public class BasketResponse {
     private List<ProductResponseDto> products;
-    private BigDecimal totalPrice; //???
+    private BigDecimal totalPrice;
 }
