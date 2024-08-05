@@ -62,16 +62,19 @@ jacocoTestReport {
                     'com/example/online-shop-api/Entity/**',
                     'com/example/online-shop-api/Mapper/**',
                     'com/example/online-shop-api/Static/**',
+                    'com/example/online-shop-api/ApplicationConfig/**'
             ]) })
     )
 }
 
 tasks.check.dependsOn jacocoTestCoverageVerification
+
 sonar {
     properties {
         property "sonar.projectKey", "gyokhan28_onlineshop-api"
         property "sonar.organization", "gyokhan28"
         property "sonar.host.url", "https://sonarcloud.io"
         property "sonar.coverage.jacoco.xmlReportPaths", "${buildDir}/reports/jacoco/test/jacocoTestReport.xml"
+        property "sonar.exclusions", "**/Dto/**,**/Entity/**,**/Mapper/**,**/Static/**,**/ApplicationConfig/**"
     }
 }
