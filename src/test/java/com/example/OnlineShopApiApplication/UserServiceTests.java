@@ -64,8 +64,16 @@ public class UserServiceTests {
     ValidationUtil validationUtil;
     @Mock
     private MockedStatic<UserMapper> mockedStaticUserMapper;
-
-
+    @Mock
+    private ProductService productService;
+    @Mock
+    private Authentication authentication;
+    @Mock
+    private User user;
+    @Mock
+    private MyUserDetails myUserDetails;
+    @Mock
+    private OrderProductRepository orderProductRepository;
 
     @BeforeEach
     public void setUp() {
@@ -356,5 +364,55 @@ public class UserServiceTests {
         assertEquals("The quantity cannot be negative number", response.getBody());
     }
 
+    @Test
+    public void testGetBasketWithNoBasketOrder() {
+        when(authentication.getPrincipal()).thenReturn(myUserDetails);
+        when(myUserDetails.getUser()).thenReturn(user);
+        when(productService.getBasketOrder(user)).thenReturn(null);
 
+        ResponseEntity<BasketResponse> response = userService.getBasket(authentication);
+
+        assertNotNull(response);
+        assertEquals(response.getStatusCodeValue(), 200);
+        BasketResponse basketResponse = response.getBody();
+        assertNotNull(basketResponse);
+        assertEquals(basketResponse.getProducts().size(), 0);
+        assertEquals(basketResponse.getTotalPrice(), BigDecimal.ZERO);
+    }
+
+    @Test
+    public void testGetBasketWithBasketOrder() {
+        when(authentication.getPrincipal()).thenReturn(myUserDetails);
+        when(myUserDetails.getUser()).thenReturn(user);
+
+        Order basketOrder = mock(Order.class);
+        when(productService.getBasketOrder(user)).thenReturn(basketOrder);
+
+        List<OrderProduct> orderProducts = new ArrayList<>();
+        OrderProduct orderProduct1 = mock(OrderProduct.class);
+        Product product1 = mock(Product.class);
+        when(orderProduct1.getProduct()).thenReturn(product1);
+        when(product1.getPrice()).thenReturn(BigDecimal.TEN);
+        when(orderProduct1.getQuantity()).thenReturn(1);
+        orderProducts.add(orderProduct1);
+
+        OrderProduct orderProduct2 = mock(OrderProduct.class);
+        Product product2 = mock(Product.class);
+        when(orderProduct2.getProduct()).thenReturn(product2);
+        when(product2.getPrice()).thenReturn(BigDecimal.valueOf(20));
+        when(orderProduct2.getQuantity()).thenReturn(2);
+        orderProducts.add(orderProduct2);
+
+        when(orderProductRepository.findAllByOrderId(basketOrder.getId())).thenReturn(orderProducts);
+
+        ResponseEntity<BasketResponse> response = userService.getBasket(authentication);
+
+        assertNotNull(response);
+        assertEquals(response.getStatusCodeValue(), 200);
+        BasketResponse basketResponse = response.getBody();
+        assertNotNull(basketResponse);
+        assertEquals(basketResponse.getProducts().size(), 2);
+        assertEquals(basketResponse.getTotalPrice(), BigDecimal.valueOf(50));
+    }
 }
+

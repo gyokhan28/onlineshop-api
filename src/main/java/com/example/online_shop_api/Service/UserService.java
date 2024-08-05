@@ -147,7 +147,7 @@ public class UserService {
     private BigDecimal calculateTotalPrice(List<ProductResponseDto> basketProducts) {
         BigDecimal total = BigDecimal.ZERO;
         for (ProductResponseDto product : basketProducts) {
-            total = total.add(product.getPrice());
+            total = total.add(product.getSubtotal());
         }
         return total;
     }
