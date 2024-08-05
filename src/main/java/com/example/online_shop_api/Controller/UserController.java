@@ -34,9 +34,9 @@ public class UserController {
         return userService.getBasket(authentication);
     }
 
-    @PostMapping("/basket/buy")
-    public ResponseEntity<BuyNowResponse> buyNow(Authentication authentication) {
-        return userService.buyNow(authentication);
+    @GetMapping("/basket/buy")
+    public ResponseEntity<?> buyNow(@RequestParam("userId") Long userId) {
+        return userService.buyNow(userId);
     }
 
     @PutMapping("/update-quantity")

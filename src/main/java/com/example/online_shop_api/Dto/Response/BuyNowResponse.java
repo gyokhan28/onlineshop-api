@@ -12,7 +12,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class BuyNowResponse {
     private boolean success;
-    private List<String> errors;
+    private List<InsufficientQuantityResponse> errors;
     private BigDecimal totalPrice;
     private Long orderId;
 }

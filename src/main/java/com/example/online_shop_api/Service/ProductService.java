@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static java.time.chrono.JapaneseEra.values;
 
@@ -70,22 +71,22 @@ public class ProductService {
     private List<Order> getUserOrdersByOrderStatus(User user, OrderStatus orderStatus) {
         return orderRepository.findAllByUser_IdAndStatus_Id(user.getId(), orderStatus.getId());
     }
-    public Order getBasketOrder(User user) {
+    public Optional<Order> getBasketOrder(User user) {
         OrderStatus basketOrderStatus = OrderStatus.builder()
                 .id(OrderStatusType.BASKET.getId())
                 .name(OrderStatusType.BASKET.name())
                 .build();
 
-        List<Order> basket_orders = getUserOrdersByOrderStatus(user, basketOrderStatus);
+        List<Order> basketOrders = getUserOrdersByOrderStatus(user, basketOrderStatus);
 
-        if (basket_orders.size() > 1) {
-            throw new ServerErrorException("Critical server error.More than one basket for user with userID: " + user.getId());
+        if (basketOrders.size() > 1) {
+            throw new ServerErrorException("Critical server error. More than one basket for user with userID: " + user.getId());
         }
 
-        if (basket_orders.size() == 1) {
-            return basket_orders.get(0);
+        if (basketOrders.size() == 1) {
+            return Optional.ofNullable(basketOrders.get(0));
         }
 
-        return null;
+        return Optional.empty();
     }
 }

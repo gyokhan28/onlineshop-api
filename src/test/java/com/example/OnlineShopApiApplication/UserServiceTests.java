@@ -1,20 +1,18 @@
 package com.example.OnlineShopApiApplication;
 
-import com.example.online_shop_api.Controller.UserController;
 import com.example.online_shop_api.Dto.Request.UserRequestDto;
-import com.example.online_shop_api.Dto.Response.*;
+import com.example.online_shop_api.Dto.Response.BuyNowResponse;
+import com.example.online_shop_api.Dto.Response.UserProfileResponse;
+import com.example.online_shop_api.Dto.Response.UserResponseDto;
 import com.example.online_shop_api.Entity.*;
 import com.example.online_shop_api.Entity.Products.Product;
 import com.example.online_shop_api.Exceptions.*;
-import com.example.online_shop_api.Mapper.ProductMapper;
 import com.example.online_shop_api.Mapper.UserMapper;
 import com.example.online_shop_api.MyUserDetails;
 import com.example.online_shop_api.Repository.*;
-import com.example.online_shop_api.Service.OrderService;
 import com.example.online_shop_api.Service.ProductService;
 import com.example.online_shop_api.Service.UserService;
 import com.example.online_shop_api.Utils.ValidationUtil;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,18 +22,13 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.parameters.P;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.ObjectError;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -365,54 +358,49 @@ public class UserServiceTests {
     }
 
     @Test
-    public void testGetBasketWithNoBasketOrder() {
-        when(authentication.getPrincipal()).thenReturn(myUserDetails);
-        when(myUserDetails.getUser()).thenReturn(user);
-        when(productService.getBasketOrder(user)).thenReturn(null);
+    public void testBuyNowSuccess() {
+        Product product = new Product();
+        product.setId(1L);
+        product.setPrice(BigDecimal.TEN);
 
-        ResponseEntity<BasketResponse> response = userService.getBasket(authentication);
+        User testUser = User.builder()
+                .id(1L)
+                .build();
 
-        assertNotNull(response);
-        assertEquals(response.getStatusCodeValue(), 200);
-        BasketResponse basketResponse = response.getBody();
-        assertNotNull(basketResponse);
-        assertEquals(basketResponse.getProducts().size(), 0);
-        assertEquals(basketResponse.getTotalPrice(), BigDecimal.ZERO);
-    }
+        Order basketOrder = Order.builder()
+                .status(OrderStatus.builder().name("BASKET").id(0L).build())
+                .user(testUser)
+                .id(1L)
+                .build();
+        when(productService.getBasketOrder(testUser)).thenReturn(Optional.of(basketOrder));
 
-    @Test
-    public void testGetBasketWithBasketOrder() {
-        when(authentication.getPrincipal()).thenReturn(myUserDetails);
-        when(myUserDetails.getUser()).thenReturn(user);
+        Product p1 = Product.builder()
+                .price(BigDecimal.TEN)
+                .quantity(100)
+                .build();
+        OrderProduct op1 = OrderProduct.builder()
+                .order(basketOrder)
+                .product(p1)
+                .quantity(5)
+                .productPriceWhenPurchased(BigDecimal.TEN)
+                .build();
 
-        Order basketOrder = mock(Order.class);
-        when(productService.getBasketOrder(user)).thenReturn(basketOrder);
+        List<OrderProduct> orderProductList = List.of(op1);
 
-        List<OrderProduct> orderProducts = new ArrayList<>();
-        OrderProduct orderProduct1 = mock(OrderProduct.class);
-        Product product1 = mock(Product.class);
-        when(orderProduct1.getProduct()).thenReturn(product1);
-        when(product1.getPrice()).thenReturn(BigDecimal.TEN);
-        when(orderProduct1.getQuantity()).thenReturn(1);
-        orderProducts.add(orderProduct1);
+        when(orderProductRepository.findAllByOrder_Id(basketOrder.getId())).thenReturn(orderProductList);
+        when(userRepository.findById(testUser.getId())).thenReturn(Optional.of(testUser));
 
-        OrderProduct orderProduct2 = mock(OrderProduct.class);
-        Product product2 = mock(Product.class);
-        when(orderProduct2.getProduct()).thenReturn(product2);
-        when(product2.getPrice()).thenReturn(BigDecimal.valueOf(20));
-        when(orderProduct2.getQuantity()).thenReturn(2);
-        orderProducts.add(orderProduct2);
-
-        when(orderProductRepository.findAllByOrderId(basketOrder.getId())).thenReturn(orderProducts);
-
-        ResponseEntity<BasketResponse> response = userService.getBasket(authentication);
+        ResponseEntity<BuyNowResponse> response = (ResponseEntity<BuyNowResponse>) userService.buyNow(testUser.getId());
 
         assertNotNull(response);
-        assertEquals(response.getStatusCodeValue(), 200);
-        BasketResponse basketResponse = response.getBody();
-        assertNotNull(basketResponse);
-        assertEquals(basketResponse.getProducts().size(), 2);
-        assertEquals(basketResponse.getTotalPrice(), BigDecimal.valueOf(50));
+        assertEquals(200, response.getStatusCodeValue());
+        BuyNowResponse buyNowResponse = (BuyNowResponse) response.getBody();
+        assertNotNull(buyNowResponse);
+        assertTrue(buyNowResponse.isSuccess());
+        assertNull(buyNowResponse.getErrors());
+        assertEquals(BigDecimal.valueOf(50), response.getBody().getTotalPrice());
+        assertEquals(1L, buyNowResponse.getOrderId());
     }
+
 }
 

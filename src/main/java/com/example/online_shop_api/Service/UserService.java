@@ -15,6 +15,7 @@ import com.example.online_shop_api.Static.RoleType;
 import com.example.online_shop_api.Utils.ValidationUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -133,21 +134,24 @@ public class UserService {
 
     private List<ProductResponseDto> getBasketProducts(Order basketOrder) {
         List<OrderProduct> products = orderProductRepository.findAllByOrderId(basketOrder.getId());
-        return products.stream()
-                .map(p -> {
-                    Product product = p.getProduct();
-                    ProductResponseDto responseProduct = ProductMapper.toDto(product);
-                    responseProduct.setQuantity(p.getQuantity());
-                    responseProduct.setSubtotal(product.getPrice().multiply(BigDecimal.valueOf(p.getQuantity())));
-                    return responseProduct;
-                })
-                .collect(Collectors.toList());
+        List<ProductResponseDto> responseList = new ArrayList<>();
+        for (OrderProduct op : products) {
+            ProductResponseDto responseProduct = ProductMapper.toDto(op.getProduct());
+
+            BigDecimal price = op.getProduct().getPrice();
+            BigDecimal quantity = BigDecimal.valueOf(op.getQuantity());
+            BigDecimal subTotal = price.multiply(quantity);
+            responseProduct.setSubtotal(subTotal);
+
+            responseList.add(responseProduct);
+        }
+        return responseList;
     }
 
-    private BigDecimal calculateTotalPrice(List<ProductResponseDto> basketProducts) {
+    private BigDecimal calculateTotalPrice(List<OrderProduct> orderProducts) {
         BigDecimal total = BigDecimal.ZERO;
-        for (ProductResponseDto product : basketProducts) {
-            total = total.add(product.getSubtotal());
+        for (OrderProduct product : orderProducts) {
+            total = total.add(product.getProductPriceWhenPurchased().multiply(BigDecimal.valueOf(product.getQuantity())));
         }
         return total;
     }
@@ -156,11 +160,11 @@ public class UserService {
         User user = getCurrentUser(authentication);
         BasketResponse basketResponse = new BasketResponse(new ArrayList<>(), BigDecimal.ZERO);
 
-        Order basketOrder = productService.getBasketOrder(user);
-
-        if (basketOrder != null) {
-            List<ProductResponseDto> basketProducts = getBasketProducts(basketOrder);
-            BigDecimal totalPrice = calculateTotalPrice(basketProducts);
+        Optional<Order> basketOrder = productService.getBasketOrder(user);
+        if (basketOrder.isPresent()) {
+            List<ProductResponseDto> basketProducts = getBasketProducts(basketOrder.get());
+            List<OrderProduct> orderProducts = orderProductRepository.findAllByOrder_Id(basketOrder.get().getId());
+            BigDecimal totalPrice = calculateTotalPrice(orderProducts);
             basketResponse.setProducts(basketProducts);
             basketResponse.setTotalPrice(totalPrice);
         }
@@ -168,32 +172,40 @@ public class UserService {
         return ResponseEntity.ok(basketResponse);
     }
 
-    private List<String> validateProductAvailability(List<OrderProduct> orderProducts) {
-        List<String> errors = new ArrayList<>();
+    private List<InsufficientQuantityResponse> validateProductAvailability(List<OrderProduct> orderProducts) {
+        List<InsufficientQuantityResponse> errors = new ArrayList<>();
         for (OrderProduct op : orderProducts) {
             Optional<Product> optionalProduct = productRepository.findByIdNotDeleted(op.getProduct().getId());
             if (optionalProduct.isPresent()) {
                 Product productInStock = optionalProduct.get();
                 if (productInStock.getQuantity() < op.getQuantity()) {
-                    errors.add("The product " + productInStock.getName()
-                            + " has stock of " + productInStock.getQuantity()
-                            + " and you can not order amount of " + op.getQuantity()
-                            + " of this product!");
+                    errors.add(new InsufficientQuantityResponse(op.getProduct().getName(),
+                            op.getQuantity(),
+                            productInStock.getQuantity()));
                 }
             }
         }
         return errors;
     }
 
-    public ResponseEntity<BuyNowResponse> buyNow(Authentication authentication) {
-        User user = getCurrentUser(authentication);
-        Order basketOrder = productService.getBasketOrder(user);
+    public ResponseEntity<?> buyNow(Long userId) {
+        Optional<User> optionalUser = userRepository.findById(userId);
+        if (optionalUser.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User not found");
+        }
+        User user = optionalUser.get();
 
+        Optional<Order> optionalBasketOrder = productService.getBasketOrder(user);
+        if (optionalBasketOrder.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body("The basket of user " + user.getId() + " is empty!");
+        }
+        Order basketOrder = optionalBasketOrder.get();
         Long orderId = basketOrder.getId();
-        BigDecimal totalPrice = calculateTotalPrice(getBasketProducts(basketOrder));
+        List<OrderProduct> orderProductList = orderProductRepository.findAllByOrder_Id(orderId);
+        BigDecimal totalPrice = calculateTotalPrice(orderProductList);
 
         List<OrderProduct> orderProducts = orderProductRepository.findAllByOrder_Id(orderId);
-        List<String> errors = validateProductAvailability(orderProducts);
+        List<InsufficientQuantityResponse> errors = validateProductAvailability(orderProducts);
 
         if (!errors.isEmpty()) {
             return ResponseEntity.badRequest().body(new BuyNowResponse(false, errors, totalPrice, orderId));
@@ -287,7 +299,8 @@ public class UserService {
         if (optionalOrder.isPresent()) {
             basketOrder = optionalOrder.get();
         }
-        BigDecimal totalPrice = calculateTotalPrice(getBasketProducts(basketOrder));
+        List<OrderProduct> orderProductList = orderProductRepository.findAllByOrder_Id(orderId);
+        BigDecimal totalPrice = calculateTotalPrice(orderProductList);
         List<ProductResponseDto> basketProducts = getBasketProducts(basketOrder);
         return ResponseEntity.ok(new BasketResponse(basketProducts, totalPrice));
 
@@ -297,7 +310,7 @@ public class UserService {
         return user.getAddress().getCity().getName() + ", " + user.getAddress().getStreetName();
     }
 
-    private List<ProductResponse> fillProductResponse(List<OrderProduct> products){
+    private List<ProductResponse> fillProductResponse(List<OrderProduct> products) {
         List<ProductResponse> productResponses = new ArrayList<>();
         for (OrderProduct op : products) {
             ProductResponse productResponse = new ProductResponse(op.getProduct().getName(), op.getQuantity());
@@ -316,7 +329,7 @@ public class UserService {
         List<OrderProduct> products = orderProductRepository.findAllByOrder_Id(order.getId());
         List<ProductResponse> productResponses = fillProductResponse(products);
 
-        List<ProductResponseDto> basketProducts = getBasketProducts(order);
+        List<OrderProduct> basketProducts = orderProductRepository.findAllByOrder_Id(order.getId());
         BigDecimal price = calculateTotalPrice(basketProducts);
 
         response.setPrice(price);
