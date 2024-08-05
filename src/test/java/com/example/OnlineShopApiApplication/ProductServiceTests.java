@@ -1,16 +1,22 @@
 package com.example.OnlineShopApiApplication;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.*;
+
 import com.example.online_shop_api.Dto.Request.ProductCreationRequestDto;
 import com.example.online_shop_api.Dto.Request.ProductRequestDto;
 import com.example.online_shop_api.Dto.Response.ProductResponseDto;
 import com.example.online_shop_api.Entity.ProductHelpers.Brand;
 import com.example.online_shop_api.Entity.ProductHelpers.Color;
 import com.example.online_shop_api.Entity.Products.Accessory;
-import com.example.online_shop_api.Entity.Products.Decoration;
 import com.example.online_shop_api.Entity.Products.Product;
 import com.example.online_shop_api.Exceptions.ProductNotFoundException;
 import com.example.online_shop_api.Repository.Products.ProductRepository;
 import com.example.online_shop_api.Service.Products.ProductService;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,15 +25,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.ResponseEntity;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -80,7 +77,52 @@ class ProductServiceTests {
   }
 
   @Test
+  void testCreateProductAccessory() {
+    ResponseEntity<ProductResponseDto> response = productService.create(productCreationRequestDto);
+    assertEquals(200, response.getStatusCodeValue());
+  }
+  @Test
+  void testCreateProductDecoration() {
+    productCreationRequestDto.setProductType("Decoration");
+    ResponseEntity<ProductResponseDto> response = productService.create(productCreationRequestDto);
+    assertEquals(200, response.getStatusCodeValue());
+  }
+  @Test
+  void testCreateProductDrink() {
+    productCreationRequestDto.setProductType("Drink");
+    ResponseEntity<ProductResponseDto> response = productService.create(productCreationRequestDto);
+    assertEquals(200, response.getStatusCodeValue());
+  }
+  @Test
+  void testCreateProductFood() {
+    productCreationRequestDto.setProductType("Food");
+    ResponseEntity<ProductResponseDto> response = productService.create(productCreationRequestDto);
+    assertEquals(200, response.getStatusCodeValue());
+  }
+  @Test
+  void testCreateProductRailing() {
+    productCreationRequestDto.setProductType("Railing");
+    ResponseEntity<ProductResponseDto> response = productService.create(productCreationRequestDto);
+    assertEquals(200, response.getStatusCodeValue());
+  }
+  @Test
+  void testCreateProductSanitary() {
+    productCreationRequestDto.setProductType("Sanitary");
+    ResponseEntity<ProductResponseDto> response = productService.create(productCreationRequestDto);
+    assertEquals(200, response.getStatusCodeValue());
+  }
+  @Test
   void testCreateProduct() {
+    productCreationRequestDto.setProductType("Test");
+    assertThrows(IllegalArgumentException.class, () -> {
+      productService.create(productCreationRequestDto);
+    });
+  }
+
+
+  @Test
+  void testCreateProductOthers() {
+    productCreationRequestDto.setProductType("Others");
     ResponseEntity<ProductResponseDto> response = productService.create(productCreationRequestDto);
     assertEquals(200, response.getStatusCodeValue());
   }
