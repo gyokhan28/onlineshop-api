@@ -2,12 +2,10 @@ package com.example.online_shop_api.Controller;
 
 import com.example.online_shop_api.Dto.Request.EmployeeRequestDto;
 import com.example.online_shop_api.Dto.Response.EmployeeResponseDto;
-import com.example.online_shop_api.MyUserDetails;
 import com.example.online_shop_api.Service.EmployeeService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -34,9 +32,9 @@ public class EmployeeController {
         return employeeService.registerNewEmployee(employeeRequestDto, bindingResult);
     }
 
-    @GetMapping("/profile")
-    public ResponseEntity<MyUserDetails> showProfile(Authentication authentication) {
-        return employeeService.showEmployeeProfile(authentication);
-    }
+//    @GetMapping("/profile")
+//    public ResponseEntity<MyUserDetails> showProfile(Authentication authentication) {
+//        return employeeService.showEmployeeProfile(authentication);
+//    }
 
 }
