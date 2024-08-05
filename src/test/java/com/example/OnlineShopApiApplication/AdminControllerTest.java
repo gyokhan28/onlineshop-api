@@ -21,6 +21,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(classes = OnlineShopApiApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
 public class AdminControllerTest {
+
     @Autowired
     private MockMvc mockMvc;
     @Autowired

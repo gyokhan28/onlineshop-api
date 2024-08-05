@@ -36,6 +36,11 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok:1.18.32'
     testCompileOnly 'org.projectlombok:lombok:1.18.32'
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.32'
+
+    runtimeOnly 'org.postgresql:postgresql'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.testcontainers:junit-jupiter'
+    testImplementation 'org.testcontainers:postgresql'
 }
 
 tasks.named('test') {
@@ -63,6 +68,10 @@ jacocoTestReport {
                     '**/Static/*',
             ]) })
     )
+}
+
+ext {
+    set('testcontainers.version', "1.19.8")
 }
 
 tasks.check.dependsOn jacocoTestCoverageVerification
