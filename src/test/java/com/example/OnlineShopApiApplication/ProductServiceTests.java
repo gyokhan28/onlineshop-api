@@ -70,56 +70,6 @@ public void setUp() {
           .imageLocation("src/main/resources/image.png")
           .build();
 }
-
-//  @Test
-//  void testCreateProduct_Accessory() {
-//    Product accessoryProduct = new Accessory();
-//    accessoryProduct.setId(1L);
-//    accessoryProduct.setName("Accessory Product");
-//    accessoryProduct.setPrice(new BigDecimal("10.00"));
-//    accessoryProduct.setQuantity(1);
-//    accessoryProduct.setImageUrls(List.of("src/main/resources/image.png"));
-//
-//    productCreationRequestDto.setProductType("Accessory");
-//    when(modelMapper.map(any(ProductRequestDto.class), eq(Accessory.class))).thenReturn(new Accessory());
-//    when(productRepository.save(accessoryProduct)).thenReturn(accessoryProduct);
-//    when(modelMapper.map(accessoryProduct, ProductResponseDto.class)).thenReturn(productResponseDto);
-//
-//    ResponseEntity<ProductResponseDto> response = productService.create(productCreationRequestDto);
-//
-//    assertEquals(200, response.getStatusCodeValue());
-//    assertEquals(productResponseDto, response.getBody());
-//
-//    verify(productRepository, times(1)).save(accessoryProduct);
-//    verify(modelMapper, times(1)).map(any(ProductRequestDto.class), eq(Accessory.class));
-//    verify(modelMapper, times(1)).map(accessoryProduct, ProductResponseDto.class);
-//  }
-//
-//  @Test
-//  void testCreateProduct_Decoration() {
-//    Product decorationProduct = new Decoration();
-//    decorationProduct.setId(1L);
-//    decorationProduct.setName("Decoration Product");
-//    decorationProduct.setPrice(new BigDecimal("15.00"));
-//    decorationProduct.setQuantity(2);
-//    decorationProduct.setImageUrls(List.of("src/main/resources/image.png"));
-//
-//    // Mock the behavior
-//    productCreationRequestDto.setProductType("Decoration");
-//    when(modelMapper.map(any(ProductRequestDto.class), eq(Decoration.class))).thenReturn(new Decoration());
-//    when(productRepository.save(decorationProduct)).thenReturn(decorationProduct);
-//    when(modelMapper.map(decorationProduct, ProductResponseDto.class)).thenReturn(productResponseDto);
-//
-//    ResponseEntity<ProductResponseDto> response = productService.create(productCreationRequestDto);
-//
-//    assertEquals(200, response.getStatusCodeValue());
-//    assertEquals(productResponseDto, response.getBody());
-//
-//    verify(productRepository, times(1)).save(decorationProduct);
-//    verify(modelMapper, times(1)).map(any(ProductRequestDto.class), eq(Decoration.class));
-//    verify(modelMapper, times(1)).map(decorationProduct, ProductResponseDto.class);
-//  }
-
   @Test
   void testCreateProduct_InvalidType() {
     productCreationRequestDto.setProductType("InvalidType");
