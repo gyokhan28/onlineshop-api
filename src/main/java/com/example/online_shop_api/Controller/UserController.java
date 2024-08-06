@@ -20,7 +20,7 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/register")
-    public ResponseEntity<String> registerNewUser(UserRequestDto userRequestDto, BindingResult bindingResult) {
+    public ResponseEntity<String> registerNewUser(@Valid @RequestBody UserRequestDto userRequestDto, BindingResult bindingResult) {
         return userService.registerNewUser(userRequestDto, bindingResult);
     }
 
