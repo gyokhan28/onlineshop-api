@@ -48,6 +48,8 @@ public class UserServiceTests {
     OrderRepository orderRepository;
     @Mock
     AddressRepository addressRepository;
+    @Mock
+    OrderStatusRepository orderStatusRepository;
     @Spy
     @InjectMocks
     private UserService userService;
@@ -484,6 +486,111 @@ public class UserServiceTests {
         ResponseEntity<UserEditResponse> responseEntity = userService.getCurrentUserToRequest(authentication);
 
         assertEquals(ResponseEntity.ok(expectedResponse), responseEntity);
+    }
+
+    @Test
+    void testCancelOrder_OrderNotFound() {
+        lenient().when(authentication.getPrincipal()).thenReturn(myUserDetails);
+        lenient().when(myUserDetails.getUser()).thenReturn(user);
+
+        lenient().when(orderRepository.findById(any(Long.class))).thenReturn(Optional.empty());
+
+        ResponseEntity<String> response = userService.cancelOrder(1L, authentication);
+
+        assertEquals(ResponseEntity.badRequest().body("Order not found!"), response);
+    }
+
+    @Test
+    void testCancelOrder_StatusNotFound() {
+        lenient().when(authentication.getPrincipal()).thenReturn(myUserDetails);
+        lenient().when(myUserDetails.getUser()).thenReturn(user);
+        Order order = new Order();
+        when(orderRepository.findById(any(Long.class))).thenReturn(Optional.of(order));
+        when(orderStatusRepository.findByName("CANCELLED")).thenReturn(Optional.empty());
+
+        ResponseEntity<String> response = userService.cancelOrder(1L, authentication);
+
+        assertEquals(ResponseEntity.badRequest().body("Status not found!"), response);
+    }
+
+    @Test
+    void testCancelOrder_OrderNotOfCurrentUser() {
+        lenient().when(authentication.getPrincipal()).thenReturn(myUserDetails);
+        lenient().when(myUserDetails.getUser()).thenReturn(user);
+        Order order = new Order();
+        User otherUser = new User();
+        otherUser.setId(2L);
+        order.setUser(otherUser);
+        when(orderRepository.findById(any(Long.class))).thenReturn(Optional.of(order));
+        when(orderStatusRepository.findByName("CANCELLED")).thenReturn(Optional.of(new OrderStatus()));
+
+        ResponseEntity<String> response = userService.cancelOrder(1L, authentication);
+
+        assertEquals(ResponseEntity.badRequest().body("This order is not made by the logged user"), response);
+    }
+
+    @Test
+    void testCancelOrder_OrderHasStatusBasket() {
+        User currentUser = new User();
+        currentUser.setId(1L);
+        lenient().when(authentication.getPrincipal()).thenReturn(myUserDetails);
+        lenient().when(myUserDetails.getUser()).thenReturn(currentUser);
+        Order order = new Order();
+        order.setUser(currentUser);
+        OrderStatus basketStatus = new OrderStatus();
+        basketStatus.setName("BASKET");
+        order.setStatus(basketStatus);
+
+        when(orderRepository.findById(any(Long.class))).thenReturn(Optional.of(order));
+        when(orderStatusRepository.findByName("CANCELLED")).thenReturn(Optional.of(new OrderStatus()));
+        when(orderStatusRepository.findByName("BASKET")).thenReturn(Optional.of(basketStatus));
+
+        ResponseEntity<String> response = userService.cancelOrder(1L, authentication);
+
+        assertEquals(ResponseEntity.badRequest().body("Orders with status \"Basket\" cannot be cancelled!"), response);
+    }
+
+    @Test
+    void testCancelOrder_OrderAlreadyCancelled() {
+        User currentUser = new User();
+        currentUser.setId(1L);
+        lenient().when(authentication.getPrincipal()).thenReturn(myUserDetails);
+        lenient().when(myUserDetails.getUser()).thenReturn(currentUser);
+        Order order = new Order();
+        order.setUser(currentUser);
+        OrderStatus cancelledStatus = new OrderStatus();
+        cancelledStatus.setName("CANCELLED");
+        order.setStatus(cancelledStatus);
+
+        when(orderRepository.findById(any(Long.class))).thenReturn(Optional.of(order));
+        when(orderStatusRepository.findByName("CANCELLED")).thenReturn(Optional.of(cancelledStatus));
+
+        ResponseEntity<String> response = userService.cancelOrder(1L, authentication);
+
+        assertEquals(ResponseEntity.badRequest().body("This order is already cancelled!"), response);
+    }
+
+    @Test
+    void testCancelOrder_Success() {
+        User currentUser = new User();
+        currentUser.setId(1L);
+        lenient().when(authentication.getPrincipal()).thenReturn(myUserDetails);
+        lenient().when(myUserDetails.getUser()).thenReturn(currentUser);
+        Order order = new Order();
+        order.setUser(currentUser);
+        OrderStatus currentStatus = new OrderStatus();
+        currentStatus.setName("IN_PROGRESS");
+        order.setStatus(currentStatus);
+
+        OrderStatus cancelledStatus = new OrderStatus();
+        cancelledStatus.setName("CANCELLED");
+
+        when(orderRepository.findById(any(Long.class))).thenReturn(Optional.of(order));
+        when(orderStatusRepository.findByName("CANCELLED")).thenReturn(Optional.of(cancelledStatus));
+
+        ResponseEntity<String> response = userService.cancelOrder(1L, authentication);
+
+        assertEquals(ResponseEntity.ok("Order cancelled successfully!"), response);
     }
 }
 
