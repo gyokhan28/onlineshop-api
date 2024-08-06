@@ -1,10 +1,7 @@
 package com.example.OnlineShopApiApplication;
 
 import com.example.online_shop_api.Dto.Request.UserRequestDto;
-import com.example.online_shop_api.Dto.Response.BuyNowResponse;
-import com.example.online_shop_api.Dto.Response.UserEditResponse;
-import com.example.online_shop_api.Dto.Response.UserProfileResponse;
-import com.example.online_shop_api.Dto.Response.UserResponseDto;
+import com.example.online_shop_api.Dto.Response.*;
 import com.example.online_shop_api.Entity.*;
 import com.example.online_shop_api.Entity.Products.Product;
 import com.example.online_shop_api.Exceptions.*;
@@ -27,6 +24,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.validation.BindingResult;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -62,7 +61,10 @@ public class UserServiceTests {
     private ProductService productService;
     @Mock
     private Authentication authentication;
-
+    @Mock
+    private User user;
+    @Mock
+    private MyUserDetails myUserDetails;
     @Mock
     private BindingResult bindingResult;
     @Mock
@@ -470,6 +472,18 @@ public class UserServiceTests {
             userService.editUserProfile(bindingResult, userEditResponse, authentication);
         });
 
+    }
+
+    @Test
+    void testGetCurrentUserToRequest() {
+        when(authentication.getPrincipal()).thenReturn(myUserDetails);
+        when(myUserDetails.getUser()).thenReturn(user);
+        UserEditResponse expectedResponse = new UserEditResponse();
+        when(UserMapper.toResponse(user)).thenReturn(expectedResponse);
+
+        ResponseEntity<UserEditResponse> responseEntity = userService.getCurrentUserToRequest(authentication);
+
+        assertEquals(ResponseEntity.ok(expectedResponse), responseEntity);
     }
 }
 
