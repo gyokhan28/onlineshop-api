@@ -62,7 +62,7 @@ jacocoTestReport {
                     'com/example/online-shop-api/Entity/**',
                     'com/example/online-shop-api/Mapper/**',
                     'com/example/online-shop-api/Static/**',
-                    'SecurityConfig.class'
+                    'SecurityConfig.java'
             ]) })
     )
 }
