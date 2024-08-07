@@ -2,10 +2,7 @@ package com.example.online_shop_api.Entity;
 
 import com.example.online_shop_api.Entity.Products.Product;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 import java.math.BigDecimal;
 
@@ -22,6 +19,7 @@ public class OrderProduct {
 
     @ManyToOne()
     @JoinColumn(name = "order_id")
+    @ToString.Exclude
     private Order order;
 
     @ManyToOne()
