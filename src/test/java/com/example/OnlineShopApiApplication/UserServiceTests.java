@@ -545,6 +545,59 @@ public class UserServiceTests {
     }
 
     @Test
+    void testCancelOrder_ReturnProductsToStock_Success() {
+        User currentUser = new User();
+        currentUser.setId(1L);
+        lenient().when(authentication.getPrincipal()).thenReturn(myUserDetails);
+        lenient().when(myUserDetails.getUser()).thenReturn(currentUser);
+
+        Order order = new Order();
+        order.setId(1L);
+        order.setUser(currentUser);
+        OrderStatus currentStatus = new OrderStatus();
+        currentStatus.setName("IN_PROGRESS");
+        order.setStatus(currentStatus);
+
+        OrderStatus cancelledStatus = new OrderStatus();
+        cancelledStatus.setName("CANCELLED");
+
+        when(orderRepository.findById(any(Long.class))).thenReturn(Optional.of(order));
+        when(orderStatusRepository.findByName("CANCELLED")).thenReturn(Optional.of(cancelledStatus));
+
+        Product product1 = new Product();
+        product1.setId(1L);
+        product1.setQuantity(10);
+
+        Product product2 = new Product();
+        product2.setId(2L);
+        product2.setQuantity(20);
+
+        OrderProduct orderProduct1 = new OrderProduct();
+        orderProduct1.setProduct(product1);
+        orderProduct1.setQuantity(5);
+
+        OrderProduct orderProduct2 = new OrderProduct();
+        orderProduct2.setProduct(product2);
+        orderProduct2.setQuantity(10);
+
+        List<OrderProduct> orderProducts = Arrays.asList(orderProduct1, orderProduct2);
+
+        when(orderProductRepository.findAllByOrderId(order.getId())).thenReturn(orderProducts);
+        when(productRepository.findById(1L)).thenReturn(Optional.of(product1));
+        when(productRepository.findById(2L)).thenReturn(Optional.of(product2));
+
+        ResponseEntity<String> response = userService.cancelOrder(order.getId(), authentication);
+
+        assertEquals(ResponseEntity.ok("Order cancelled successfully!"), response);
+
+        assertEquals(15, product1.getQuantity());
+        assertEquals(30, product2.getQuantity());
+
+        verify(productRepository).save(product1);
+        verify(productRepository).save(product2);
+    }
+
+    @Test
     void testUpdateQuantity_ProductNotFound() throws Exception {
         Long productId = 1L;
         int quantity = 5;
