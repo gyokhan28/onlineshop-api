@@ -312,56 +312,6 @@ public class UserServiceTests {
     }
 
     @Test
-    void testUpdateQuantity_ProductNotFound() {
-        Long orderId = 1L;
-        Long productId = 1L;
-        int newQuantity = 3;
-
-        Order order = new Order();
-
-        when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
-        when(productRepository.findById(productId)).thenReturn(Optional.empty());
-
-        ResponseEntity<?> response = userService.updateQuantity(productId, orderId, newQuantity);
-
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertEquals("Product with id 1 not found!", response.getBody());
-    }
-
-    @Test
-    void testUpdateQuantity_OrderNotFound() {
-        Long orderId = 1L;
-        Long productId = 1L;
-        int newQuantity = 3;
-
-        when(orderRepository.findById(orderId)).thenReturn(Optional.empty());
-
-        ResponseEntity<?> response = userService.updateQuantity(productId, orderId, newQuantity);
-
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertEquals("Order with id 1 not found!", response.getBody());
-    }
-
-    @Test
-    void testUpdateQuantity_NegativeQuantity() {
-        Long orderId = 1L;
-        Long productId = 1L;
-        int newQuantity = -1;
-
-        Order order = new Order();
-        Product product = new Product();
-        product.setQuantity(10);
-
-        when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
-        when(productRepository.findById(productId)).thenReturn(Optional.of(product));
-
-        ResponseEntity<?> response = userService.updateQuantity(productId, orderId, newQuantity);
-
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertEquals("The quantity cannot be negative number", response.getBody());
-    }
-
-    @Test
     public void testBuyNowSuccess() {
         Product product = new Product();
         product.setId(1L);
@@ -591,6 +541,109 @@ public class UserServiceTests {
         ResponseEntity<String> response = userService.cancelOrder(1L, authentication);
 
         assertEquals(ResponseEntity.ok("Order cancelled successfully!"), response);
+    }
+
+    @Test
+    void testUpdateQuantity_ProductNotFound() throws Exception {
+        Long productId = 1L;
+        int quantity = 5;
+        Mockito.when(authentication.getPrincipal()).thenReturn(new MyUserDetails(user));
+        Mockito.when(productService.getBasketOrder(user)).thenReturn(Optional.of(new Order()));
+        Mockito.when(productRepository.findById(productId)).thenReturn(Optional.empty());
+
+        ResponseEntity<?> response = userService.updateQuantity(productId, quantity, authentication);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("Product with id " + productId + " not found!", response.getBody());
+    }
+
+    @Test
+    void testUpdateQuantity_OrderNotFound() throws Exception {
+        Long productId = 1L;
+        int quantity = 5;
+        Mockito.when(authentication.getPrincipal()).thenReturn(new MyUserDetails(user));
+        Mockito.when(productService.getBasketOrder(user)).thenReturn(Optional.empty());
+
+        ResponseEntity<?> response = userService.updateQuantity(productId, quantity, authentication);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("Order not found!", response.getBody());
+    }
+
+    @Test
+    void testUpdateQuantity_NegativeQuantity() throws Exception {
+        Long productId = 1L;
+        int quantity = -1;
+        Mockito.when(authentication.getPrincipal()).thenReturn(new MyUserDetails(user));
+        Mockito.when(productService.getBasketOrder(user)).thenReturn(Optional.of(new Order()));
+
+        Product product = new Product();
+        Mockito.when(productRepository.findById(productId)).thenReturn(Optional.of(product));
+
+        ResponseEntity<?> response = userService.updateQuantity(productId, quantity, authentication);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("The quantity cannot be negative number", response.getBody());
+    }
+
+    @Test
+    void testUpdateQuantity_QuantityNotAvailable() throws Exception {
+        Long productId = 1L;
+        int newQuantity = 10;
+        user.setId(1L);
+
+        MyUserDetails myUserDetails = Mockito.mock(MyUserDetails.class);
+        Mockito.when(authentication.getPrincipal()).thenReturn(myUserDetails);
+        Mockito.when(myUserDetails.getUser()).thenReturn(user);
+
+        Order basketOrder = new Order();
+        basketOrder.setId(1L);
+        Mockito.when(productService.getBasketOrder(user)).thenReturn(Optional.of(basketOrder));
+
+        Product product = new Product();
+        Mockito.when(productRepository.findById(productId)).thenReturn(Optional.of(product));
+        Mockito.when(orderRepository.findById(basketOrder.getId())).thenReturn(Optional.of(basketOrder));
+
+        lenient().when(orderProductRepository.findByOrderIdAndProductId(basketOrder.getId(), productId))
+                .thenThrow(new QuantityNotAvailableException("The quantity that you are trying to set is not available!"));
+
+        ResponseEntity<?> response = userService.updateQuantity(productId, newQuantity, authentication);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("The quantity that you are trying to set is not available!", response.getBody());
+    }
+
+    @Test
+    void testUpdateQuantity_QuantityIsZero() throws Exception {
+        Long productId = 1L;
+        int newQuantity = 0;
+        user.setId(1L);
+
+        MyUserDetails myUserDetails = Mockito.mock(MyUserDetails.class);
+        Mockito.when(authentication.getPrincipal()).thenReturn(myUserDetails);
+        Mockito.when(myUserDetails.getUser()).thenReturn(user);
+
+        Order basketOrder = new Order();
+
+        basketOrder.setId(1L);
+        Mockito.when(productService.getBasketOrder(user)).thenReturn(Optional.of(basketOrder));
+        Product product = new Product();
+        Mockito.when(productRepository.findById(productId)).thenReturn(Optional.of(product));
+
+        Mockito.when(orderRepository.findById(basketOrder.getId())).thenReturn(Optional.of(basketOrder));
+
+        OrderProduct orderProduct = Mockito.mock(OrderProduct.class);
+        Mockito.when(orderProductRepository.findByOrderIdAndProductId(basketOrder.getId(), productId)).thenReturn(orderProduct);
+        lenient().when(orderProduct.getProduct()).thenReturn(product);
+
+        Long currentOrderProductId = 1L;
+        Mockito.when(orderProductRepository.findByOrderIdAndProductId(basketOrder.getId(), productId)).thenReturn(orderProduct);
+        Mockito.when(orderProduct.getId()).thenReturn(currentOrderProductId);
+
+        ResponseEntity<?> response = userService.updateQuantity(productId, newQuantity, authentication);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        Mockito.verify(orderProductRepository).deleteById(currentOrderProductId);
     }
 }
 

@@ -44,6 +44,7 @@ public class UserService {
     private final ProductService productService;
     private final ProductRepository productRepository;
     private final OrderStatusRepository orderStatusRepository;
+    private final MinioService minioService;
 
     private boolean isEmailInDB(String email) {
         return userRepository.findByEmail(email).isPresent();
@@ -132,7 +133,7 @@ public class UserService {
         return myUserDetails.getUser();
     }
 
-    private List<ProductResponseDto> getBasketProducts(Order basketOrder) {
+    private List<ProductResponseDto> getBasketProducts(Order basketOrder) throws Exception {
         List<OrderProduct> products = orderProductRepository.findAllByOrderId(basketOrder.getId());
         List<ProductResponseDto> responseList = new ArrayList<>();
         for (OrderProduct op : products) {
@@ -141,7 +142,11 @@ public class UserService {
             BigDecimal price = op.getProduct().getPrice();
             BigDecimal quantity = BigDecimal.valueOf(op.getQuantity());
             BigDecimal subTotal = price.multiply(quantity);
+
+            responseProduct.setId(op.getProduct().getId());
             responseProduct.setSubtotal(subTotal);
+            responseProduct.setQuantity(op.getQuantity());
+            responseProduct.setImageUrls(minioService.listFilesInDirectoryFullPath(String.valueOf(op.getProduct().getId())));
 
             responseList.add(responseProduct);
         }
@@ -156,7 +161,7 @@ public class UserService {
         return total;
     }
 
-    public ResponseEntity<BasketResponse> getBasket(Authentication authentication) {
+    public ResponseEntity<BasketResponse> getBasket(Authentication authentication) throws Exception {
         User user = getCurrentUser(authentication);
         BasketResponse basketResponse = new BasketResponse(new ArrayList<>(), BigDecimal.ZERO);
 
@@ -249,9 +254,6 @@ public class UserService {
     private void updateProductQuantity(Long orderId, Long productId, int newQuantity) {
         Optional<Order> optionalOrder = orderRepository.findById(orderId);
         Optional<Product> optionalProduct = productRepository.findById(productId);
-        if (optionalOrder.isEmpty()) {
-            throw new OrderNotFoundException("Order with id " + orderId + " not found!");
-        }
         if (optionalProduct.isEmpty()) {
             throw new ProductNotFoundException("Product with id " + productId + " not found!");
         }
@@ -288,16 +290,18 @@ public class UserService {
         return product.getQuantity() >= newQuantity;
     }
 
-    public ResponseEntity<?> updateQuantity(Long productId, Long orderId, int quantity) {
+    public ResponseEntity<?> updateQuantity(Long productId, int quantity, Authentication authentication) throws Exception {
+        User user = getCurrentUser(authentication);
+        Optional<Order> optionalBasketOrder = productService.getBasketOrder(user);
+        if (optionalBasketOrder.isEmpty()) {
+            return ResponseEntity.badRequest().body("Order not found!");
+        }
+        Order basketOrder = optionalBasketOrder.get();
+        Long orderId = basketOrder.getId();
         try {
             updateProductQuantity(orderId, productId, quantity);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
-        }
-        Optional<Order> optionalOrder = orderRepository.findById(orderId);
-        Order basketOrder = new Order();
-        if (optionalOrder.isPresent()) {
-            basketOrder = optionalOrder.get();
         }
         List<OrderProduct> orderProductList = orderProductRepository.findAllByOrder_Id(orderId);
         BigDecimal totalPrice = calculateTotalPrice(orderProductList);

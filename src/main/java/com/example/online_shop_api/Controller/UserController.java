@@ -30,7 +30,7 @@ public class UserController {
     }
 
     @GetMapping("/basket/show")
-    public ResponseEntity<BasketResponse> showBasket(Authentication authentication) {
+    public ResponseEntity<BasketResponse> showBasket(Authentication authentication) throws Exception {
         return userService.getBasket(authentication);
     }
 
@@ -39,11 +39,11 @@ public class UserController {
         return userService.buyNow(userId);
     }
 
-    @PutMapping("/update-quantity")
+    @PutMapping("/basket/update-quantity")
     public ResponseEntity<?> updateQuantity(@RequestParam("productId") Long productId,
-                                            @RequestParam("orderId") Long orderId,
-                                            @RequestParam("quantity") int quantity) {
-        return userService.updateQuantity(productId, orderId, quantity);
+                                            @RequestParam("quantity") int quantity,
+                                            Authentication authentication) throws Exception {
+        return userService.updateQuantity(productId, quantity, authentication);
     }
 
     @GetMapping("/orders")
