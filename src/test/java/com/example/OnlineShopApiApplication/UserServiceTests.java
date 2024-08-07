@@ -24,6 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -223,6 +224,20 @@ public class UserServiceTests {
         assertEquals(expectedResponse, actualResponse);
     }
 
+    @Test
+    void testRegisterNewUser_BindingResultErrors() {
+        UserRequestDto userRequestDto = new UserRequestDto();
+
+        ObjectError error1 = new ObjectError("field1", "Field1 error message");
+        ObjectError error2 = new ObjectError("field2", "Field2 error message");
+        List<ObjectError> errors = Arrays.asList(error1, error2);
+        when(bindingResult.hasErrors()).thenReturn(true);
+        when(bindingResult.getAllErrors()).thenReturn(errors);
+
+        ResponseEntity<String> response = userService.registerNewUser(userRequestDto, bindingResult);
+
+        assertEquals(ResponseEntity.badRequest().body(errors.toString()), response);
+    }
     @Test
     void testAddNewUser_ThrowsServerErrorException() {
         userRequestDto.setEmail("test@mail.bg");
