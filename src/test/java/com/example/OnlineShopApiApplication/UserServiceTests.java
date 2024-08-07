@@ -10,7 +10,9 @@ import com.example.online_shop_api.MyUserDetails;
 import com.example.online_shop_api.Repository.*;
 import com.example.online_shop_api.Service.ProductService;
 import com.example.online_shop_api.Service.UserService;
+import com.example.online_shop_api.Static.OrderStatusType;
 import com.example.online_shop_api.Utils.ValidationUtil;
+import org.checkerframework.checker.units.qual.A;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,10 +27,7 @@ import org.springframework.validation.BindingResult;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -644,6 +643,70 @@ public class UserServiceTests {
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         Mockito.verify(orderProductRepository).deleteById(currentOrderProductId);
+    }
+
+    @Test
+    void testGetCurrentUserOrders_UserNotFound() {
+        Long userId = 1L;
+
+        Mockito.when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+        ResponseEntity<List<UserOrdersResponse>> response = userService.getCurrentUserOrders(userId);
+
+        assertNull(response);
+    }
+
+    @Test
+    void testGetCurrentUserOrders_UserFound() {
+        Long userId = 1L;
+        User user = new User();
+        user.setId(userId);
+        Address address = new Address();
+        City city = new City();
+        city.setName("Sofia");
+        address.setCity(city);
+        user.setAddress(address);
+
+        Order order1 = new Order();
+        order1.setId(1L);
+        order1.setOrderDateTime(LocalDateTime.now());
+        order1.setStatus(OrderStatus.builder().name("SHIPPED").build());
+
+        Order order2 = new Order();
+        order2.setId(2L);
+        order2.setOrderDateTime(LocalDateTime.now());
+        order2.setStatus(new OrderStatus(OrderStatusType.SHIPPED.getId(), OrderStatusType.SHIPPED.name()));
+
+        List<Order> orders = Arrays.asList(order1, order2);
+
+        Mockito.when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+
+        Mockito.when(orderRepository.findOrdersByUserIdAndStatusNotBasket(userId)).thenReturn(orders);
+
+        Mockito.when(orderProductRepository.findAllByOrder_Id(order1.getId())).thenReturn(new ArrayList<>());
+        Mockito.when(orderProductRepository.findAllByOrder_Id(order2.getId())).thenReturn(new ArrayList<>());
+
+        ResponseEntity<List<UserOrdersResponse>> response = userService.getCurrentUserOrders(userId);
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+
+        List<UserOrdersResponse> responseBody = response.getBody();
+        assertNotNull(responseBody);
+        assertEquals(2, responseBody.size());
+
+        UserOrdersResponse response1 = responseBody.get(0);
+        assertEquals(order1.getId(), response1.getOrderId());
+        assertEquals(order1.getOrderDateTime(), response1.getOrderDate());
+        assertEquals(order1.getStatus().getName(), response1.getStatus());
+        assertEquals(BigDecimal.ZERO, response1.getPrice());
+        assertTrue(response1.getProducts().isEmpty());
+
+        UserOrdersResponse response2 = responseBody.get(1);
+        assertEquals(order2.getId(), response2.getOrderId());
+        assertEquals(order2.getOrderDateTime(), response2.getOrderDate());
+        assertEquals(order2.getStatus().getName(), response2.getStatus());
+        assertEquals(BigDecimal.ZERO, response2.getPrice());
+        assertTrue(response2.getProducts().isEmpty());
     }
 }
 
