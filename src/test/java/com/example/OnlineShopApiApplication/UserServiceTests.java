@@ -602,7 +602,7 @@ public class UserServiceTests {
 
         Product product = new Product();
         Mockito.when(productRepository.findById(productId)).thenReturn(Optional.of(product));
-        Mockito.when(orderRepository.findById(basketOrder.getId())).thenReturn(Optional.of(basketOrder));
+        lenient().when(orderRepository.findById(basketOrder.getId())).thenReturn(Optional.of(basketOrder));
 
         lenient().when(orderProductRepository.findByOrderIdAndProductId(basketOrder.getId(), productId))
                 .thenThrow(new QuantityNotAvailableException("The quantity that you are trying to set is not available!"));
@@ -630,7 +630,7 @@ public class UserServiceTests {
         Product product = new Product();
         Mockito.when(productRepository.findById(productId)).thenReturn(Optional.of(product));
 
-        Mockito.when(orderRepository.findById(basketOrder.getId())).thenReturn(Optional.of(basketOrder));
+        lenient().when(orderRepository.findById(basketOrder.getId())).thenReturn(Optional.of(basketOrder));
 
         OrderProduct orderProduct = Mockito.mock(OrderProduct.class);
         Mockito.when(orderProductRepository.findByOrderIdAndProductId(basketOrder.getId(), productId)).thenReturn(orderProduct);

@@ -251,8 +251,7 @@ public class UserService {
         }
     }
 
-    private void updateProductQuantity(Long orderId, Long productId, int newQuantity) {
-        Optional<Order> optionalOrder = orderRepository.findById(orderId);
+    private void updateProductQuantity(Order order, Long productId, int newQuantity) {
         Optional<Product> optionalProduct = productRepository.findById(productId);
         if (optionalProduct.isEmpty()) {
             throw new ProductNotFoundException("Product with id " + productId + " not found!");
@@ -260,16 +259,14 @@ public class UserService {
         if (newQuantity < 0) {
             throw new QuantityNotAvailableException("The quantity cannot be negative number");
         }
-        Order order = optionalOrder.get();
         Product product = optionalProduct.get();
-
         if (!isQuantityAvailable(product, newQuantity)) {
             throw new QuantityNotAvailableException("The quantity that you are trying to set is not available!");
         }
         List<OrderProduct> currentOrderProducts = orderProductRepository.findAllByOrder(order);
         Long currentOrderProductId;
         try {
-            currentOrderProductId = orderProductRepository.findByOrderIdAndProductId(orderId, productId).getId();
+            currentOrderProductId = orderProductRepository.findByOrderIdAndProductId(order.getId(), productId).getId();
         } catch (RuntimeException e) {
             throw new RuntimeException("Order/Product was not found!");
         }
@@ -299,7 +296,7 @@ public class UserService {
         Order basketOrder = optionalBasketOrder.get();
         Long orderId = basketOrder.getId();
         try {
-            updateProductQuantity(orderId, productId, quantity);
+            updateProductQuantity(basketOrder, productId, quantity);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
