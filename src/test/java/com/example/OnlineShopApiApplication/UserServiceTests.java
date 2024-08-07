@@ -8,11 +8,11 @@ import com.example.online_shop_api.Exceptions.*;
 import com.example.online_shop_api.Mapper.UserMapper;
 import com.example.online_shop_api.MyUserDetails;
 import com.example.online_shop_api.Repository.*;
+import com.example.online_shop_api.Service.MinioService;
 import com.example.online_shop_api.Service.ProductService;
 import com.example.online_shop_api.Service.UserService;
 import com.example.online_shop_api.Static.OrderStatusType;
 import com.example.online_shop_api.Utils.ValidationUtil;
-import org.checkerframework.checker.units.qual.A;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -60,6 +60,8 @@ public class UserServiceTests {
     private MockedStatic<UserMapper> mockedStaticUserMapper;
     @Mock
     private ProductService productService;
+    @Mock
+    private MinioService minioService;
     @Mock
     private Authentication authentication;
     @Mock
@@ -707,6 +709,28 @@ public class UserServiceTests {
         assertEquals(order2.getStatus().getName(), response2.getStatus());
         assertEquals(BigDecimal.ZERO, response2.getPrice());
         assertTrue(response2.getProducts().isEmpty());
+    }
+
+    @Test
+    void testGetBasket_NoBasketOrder() throws Exception {
+        Authentication authentication = mock(Authentication.class);
+        MyUserDetails myUserDetails = mock(MyUserDetails.class);
+        User user = new User();
+        user.setId(1L);
+
+        when(authentication.getPrincipal()).thenReturn(myUserDetails);
+        when(myUserDetails.getUser()).thenReturn(user);
+
+        when(productService.getBasketOrder(user)).thenReturn(Optional.empty());
+
+        ResponseEntity<BasketResponse> response = userService.getBasket(authentication);
+
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        BasketResponse basketResponse = response.getBody();
+        assertNotNull(basketResponse);
+        assertTrue(basketResponse.getProducts().isEmpty());
+        assertEquals(BigDecimal.ZERO, basketResponse.getTotalPrice());
     }
 }
 
