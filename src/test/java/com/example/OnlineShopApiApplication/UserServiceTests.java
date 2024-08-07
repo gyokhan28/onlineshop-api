@@ -785,5 +785,68 @@ public class UserServiceTests {
         assertTrue(basketResponse.getProducts().isEmpty());
         assertEquals(BigDecimal.ZERO, basketResponse.getTotalPrice());
     }
+
+    @Test
+    void testGetBasket_Success() throws Exception {
+        User currentUser = new User();
+        currentUser.setId(1L);
+        lenient().when(authentication.getPrincipal()).thenReturn(myUserDetails);
+        lenient().when(myUserDetails.getUser()).thenReturn(currentUser);
+
+        Order basketOrder = new Order();
+        basketOrder.setId(1L);
+        basketOrder.setUser(currentUser);
+
+        Product product1 = new Product();
+        product1.setId(1L);
+        product1.setPrice(BigDecimal.valueOf(100));
+        product1.setQuantity(10);
+
+        Product product2 = new Product();
+        product2.setId(2L);
+        product2.setPrice(BigDecimal.valueOf(200));
+        product2.setQuantity(20);
+
+        OrderProduct orderProduct1 = new OrderProduct();
+        orderProduct1.setOrder(basketOrder);
+        orderProduct1.setProduct(product1);
+        orderProduct1.setQuantity(2);
+        orderProduct1.setProductPriceWhenPurchased(BigDecimal.valueOf(100));
+
+        OrderProduct orderProduct2 = new OrderProduct();
+        orderProduct2.setOrder(basketOrder);
+        orderProduct2.setProduct(product2);
+        orderProduct2.setQuantity(1);
+        orderProduct2.setProductPriceWhenPurchased(BigDecimal.valueOf(200));
+
+        List<OrderProduct> orderProducts = Arrays.asList(orderProduct1, orderProduct2);
+
+        when(productService.getBasketOrder(currentUser)).thenReturn(Optional.of(basketOrder));
+        when(orderProductRepository.findAllByOrderId(basketOrder.getId())).thenReturn(orderProducts);
+        when(orderProductRepository.findAllByOrder_Id(basketOrder.getId())).thenReturn(orderProducts);
+        when(minioService.listFilesInDirectoryFullPath(anyString())).thenReturn(Collections.emptyList());
+
+        ResponseEntity<BasketResponse> response = userService.getBasket(authentication);
+
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        BasketResponse basketResponse = response.getBody();
+        assertNotNull(basketResponse);
+        assertEquals(2, basketResponse.getProducts().size());
+        assertEquals(BigDecimal.valueOf(400), basketResponse.getTotalPrice());  // (100 * 2) + (200 * 1)
+
+        // Verify the basket products
+        ProductResponseDto productResponse1 = basketResponse.getProducts().get(0);
+        assertEquals(product1.getId(), productResponse1.getId());
+        assertEquals(orderProduct1.getQuantity(), productResponse1.getQuantity());
+        assertEquals(product1.getPrice().multiply(BigDecimal.valueOf(orderProduct1.getQuantity())), productResponse1.getSubtotal());
+
+        ProductResponseDto productResponse2 = basketResponse.getProducts().get(1);
+        assertEquals(product2.getId(), productResponse2.getId());
+        assertEquals(orderProduct2.getQuantity(), productResponse2.getQuantity());
+        assertEquals(product2.getPrice().multiply(BigDecimal.valueOf(orderProduct2.getQuantity())), productResponse2.getSubtotal());
+
+        verify(minioService, times(2)).listFilesInDirectoryFullPath(anyString());
+    }
 }
 
