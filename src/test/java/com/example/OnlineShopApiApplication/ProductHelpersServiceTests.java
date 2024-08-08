@@ -4,6 +4,7 @@ import com.example.online_shop_api.Entity.ProductHelpers.Brand;
 import com.example.online_shop_api.Entity.ProductHelpers.Color;
 import com.example.online_shop_api.Repository.BrandRepository;
 import com.example.online_shop_api.Repository.ColorRepository;
+import com.example.online_shop_api.Repository.MaterialRepository;
 import com.example.online_shop_api.Service.Products.ProductHelpersService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,10 +27,12 @@ class ProductHelpersServiceTests {
   @Mock private BrandRepository brandRepository;
 
   @Mock private ColorRepository colorRepository;
+  @Mock private MaterialRepository materialRepository;
+
 
   @BeforeEach
   void setUp() {
-    productHelpersService = new ProductHelpersService(brandRepository, colorRepository);
+    productHelpersService = new ProductHelpersService(brandRepository, colorRepository,materialRepository);
   }
 
   @Test

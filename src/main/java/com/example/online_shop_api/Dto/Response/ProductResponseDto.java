@@ -3,7 +3,9 @@ package com.example.online_shop_api.Dto.Response;
 import com.example.online_shop_api.Entity.ProductHelpers.Brand;
 import com.example.online_shop_api.Entity.ProductHelpers.Color;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
+import com.example.online_shop_api.Entity.ProductHelpers.Material;
 import lombok.*;
 
 @Builder
@@ -19,4 +21,8 @@ public class ProductResponseDto {
     private String imageLocation;
     private Color color;
     private Brand brand;
+    private Material material;
+    private LocalDate bestBefore;
+    private LocalDate expiryDate;
+
 }

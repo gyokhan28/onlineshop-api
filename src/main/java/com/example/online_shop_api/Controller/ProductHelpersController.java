@@ -2,6 +2,7 @@ package com.example.online_shop_api.Controller;
 
 import com.example.online_shop_api.Entity.ProductHelpers.Brand;
 import com.example.online_shop_api.Entity.ProductHelpers.Color;
+import com.example.online_shop_api.Entity.ProductHelpers.Material;
 import com.example.online_shop_api.Service.Products.ProductHelpersService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,5 +25,9 @@ public class ProductHelpersController {
   @GetMapping("/getAllColors")
   public List<Color> getAllColors() {
     return productHelpersService.getAllColors();
+  }
+  @GetMapping("/getAllMaterials")
+  public List<Material> getAllMaterials() {
+    return productHelpersService.getAllMaterials();
   }
 }
