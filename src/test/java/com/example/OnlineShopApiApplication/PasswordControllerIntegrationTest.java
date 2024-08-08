@@ -29,6 +29,8 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -36,7 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Testcontainers
 @SpringBootTest(classes = OnlineShopApiApplication.class) // Specify the configuration class
 @AutoConfigureMockMvc
-public class PasswordControllerIntegrationTest {
+class PasswordControllerIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -68,7 +70,7 @@ public class PasswordControllerIntegrationTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         User user = userRepository.findByUsername("user").orElseThrow(() -> new UsernameNotFoundException("User not found"));
         MyUserDetails myUserDetails = new MyUserDetails(user);
 
@@ -77,7 +79,7 @@ public class PasswordControllerIntegrationTest {
     }
 
     @Test
-    public void changePasswordTest() throws Exception {
+    void changePasswordTest() throws Exception {
         String currentPassword = "123";
         String newPassword = "123";
         String confirmPassword = "123";
@@ -91,7 +93,7 @@ public class PasswordControllerIntegrationTest {
     }
 
     @Test
-    public void changePasswordTestEmployee() throws Exception {
+    void changePasswordTestEmployee() throws Exception {
         Employee employee = employeeRepository.findByUsername("admin").orElseThrow(() -> new UsernameNotFoundException("Employee not found"));
 
         MyUserDetails myUserDetails = new MyUserDetails(employee);
@@ -111,7 +113,7 @@ public class PasswordControllerIntegrationTest {
     }
 
     @Test
-    public void testPasswordsDoNotMatch() throws Exception {
+    void testPasswordsDoNotMatch() throws Exception {
         String currentPassword = "123";
         String newPassword = "newPassword";
         String confirmPassword = "differentPassword";
@@ -125,7 +127,7 @@ public class PasswordControllerIntegrationTest {
     }
 
     @Test
-    public void testEmptyNewPassword() throws Exception {
+    void testEmptyNewPassword() throws Exception {
         String currentPassword = "123";
         String newPassword = "";
         String confirmPassword = "";
@@ -139,7 +141,7 @@ public class PasswordControllerIntegrationTest {
     }
 
     @Test
-    public void testPasswordLessThanThreeSymbols() throws Exception {
+    void testPasswordLessThanThreeSymbols() throws Exception {
         String currentPassword = "123";
         String newPassword = "a";
         String confirmPassword = "a";
@@ -153,7 +155,7 @@ public class PasswordControllerIntegrationTest {
     }
 
     @Test
-    public void testIncorrectCurrentPassword() throws Exception {
+    void testIncorrectCurrentPassword() throws Exception {
         Long userId = 1L;
         String currentPassword = "wrongPassword";
         String newPassword = "123";
@@ -169,10 +171,13 @@ public class PasswordControllerIntegrationTest {
     }
 
     @Test
-    public void testUsersInDatabase() throws Exception {
+    void testUsersInDatabase() throws Exception {
         String jdbcUrl = mySqlContainer.getJdbcUrl();
         String username = mySqlContainer.getUsername();
         String password = mySqlContainer.getPassword();
+
+        boolean userFound = false;
+        boolean user2Found = false;
 
         try (Connection connection = DriverManager.getConnection(jdbcUrl, username, password);
              Statement statement = connection.createStatement();
@@ -180,10 +185,20 @@ public class PasswordControllerIntegrationTest {
 
             while (resultSet.next()) {
                 String userName = resultSet.getString("username");
-                String pass = resultSet.getString("password");
-                System.out.println("User: " + userName + " - " + pass);
+                if ("user".equals(userName)) {
+                    userFound = true;
+                } else if ("user2".equals(userName)) {
+                    user2Found = true;
+                }
             }
+
+            assertTrue(userFound, "User 'user' should be present in the database");
+            assertTrue(user2Found, "User 'user2' should be present in the database");
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail("Exception occurred while checking users in the database: " + e.getMessage());
         }
+
 
 //        Thread.sleep(300000); // 5 minutes delay so that DB can be tested manually
     }
