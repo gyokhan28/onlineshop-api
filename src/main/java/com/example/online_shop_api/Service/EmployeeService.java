@@ -61,9 +61,11 @@ public class EmployeeService {
         } catch (UsernameInUseException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorResponse("username-error", e.getMessage()));
         } catch (PasswordsNotMatchingException e) {
-            return ResponseEntity.badRequest().body(new ErrorResponse("password-error", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorResponse("password-error", e.getMessage()));
         } catch (PhoneInUseException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorResponse("phone-error", e.getMessage()));
+        } catch (ServerErrorException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse("server-error", e.getMessage()));
         }
         return ResponseEntity.status(HttpStatus.CREATED).body(new SuccessResponse("Account created successfully!"));
     }
@@ -75,9 +77,12 @@ public class EmployeeService {
         if (employeeRequestDto.getPhoneNumber() != null && isPhoneNumberInDB(employeeRequestDto.getPhoneNumber())) {
             throw new PhoneInUseException("Phone number already in use. Please use a different phone number or leave blank");
         }
-
-        validatePasswordsAreMatching(employeeRequestDto);
-
+        if (isUsernameInDB(employeeRequestDto.getUsername())) {
+            throw new UsernameInUseException("Username already in use. Please use a different username");
+        }
+        if (!arePasswordsMatching(employeeRequestDto)) {
+            throw new PasswordsNotMatchingException("Passwords don't match");
+        }
         Optional<Role> optionalRole = roleRepository.findByName(RoleType.ROLE_EMPLOYEE.name());
         if (optionalRole.isEmpty()) {
             throw new ServerErrorException("Employee role not found in the DB");
@@ -102,12 +107,6 @@ public class EmployeeService {
         }
     }
 
-    private void validatePasswordsAreMatching(EmployeeRequestDto employeeRequestDto) {
-        if (!employeeRequestDto.getPassword().equals(employeeRequestDto.getRepeatedPassword())) {
-            throw new PasswordsNotMatchingException("Passwords don't match");
-        }
-    }
-
     private boolean isEmailInDB(String email) {
         return employeeRepository.findByEmail(email).isPresent();
     }
@@ -116,8 +115,11 @@ public class EmployeeService {
         return employeeRepository.findByPhoneNumber(phoneNumber).isPresent();
     }
 
-//    public ResponseEntity<MyUserDetails> showEmployeeProfile(Authentication authentication) {
-//        MyUserDetails userDetails = (MyUserDetails) authentication.getPrincipal();
-//        return ResponseEntity.ok(userDetails);
-//    }
+    private boolean isUsernameInDB(String username) {
+        return employeeRepository.findByUsername(username).isPresent();
+    }
+
+    private boolean arePasswordsMatching(EmployeeRequestDto employeeRequestDto) {
+        return employeeRequestDto.getPassword().equals(employeeRequestDto.getRepeatedPassword());
+    }
 }
