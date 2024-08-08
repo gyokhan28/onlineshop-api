@@ -24,5 +24,9 @@ public class ProductResponseDto {
     private Material material;
     private LocalDate bestBefore;
     private LocalDate expiryDate;
+    private boolean isBiodegradable;
+    private boolean isReusable;
+    private boolean isNonSlip;
+    private boolean isOutdoor;
 
 }
