@@ -67,12 +67,12 @@ jacocoTestReport {
     classDirectories.setFrom(
             files(classDirectories.files.collect {
                 fileTree(dir: it, exclude: [
-                        '**/Dto/**',
-                        '**/Entity/**',
-                        '**/Mapper/**',
-                        '**/Exceptions/**',
-                        '**/Static/**',
-                        '**/SecurityConfig.class'
+                        'com/example/online-shop-api/Dto/**',
+                        'com/example/online-shop-api/Entity/**',
+                        'com/example/online-shop-api/Mapper/**',
+                        'com/example/online-shop-api/Exceptions/**',
+                        'com/example/online-shop-api/Static/**',
+                        'com/example/online-shop-api/SecurityConfig.class'
                 ])
             })
     )
