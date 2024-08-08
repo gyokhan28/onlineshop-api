@@ -2,6 +2,7 @@ package com.example.OnlineShopApiApplication;
 
 import com.example.online_shop_api.Entity.ProductHelpers.Brand;
 import com.example.online_shop_api.Entity.ProductHelpers.Color;
+import com.example.online_shop_api.Entity.ProductHelpers.Material;
 import com.example.online_shop_api.Repository.BrandRepository;
 import com.example.online_shop_api.Repository.ColorRepository;
 import com.example.online_shop_api.Repository.MaterialRepository;
@@ -37,7 +38,6 @@ class ProductHelpersServiceTests {
 
   @Test
   void testGetAllBrand() {
-    // Arrange
     Brand brand1 = new Brand();
     brand1.setId(1L);
     brand1.setName("Brand1");
@@ -50,10 +50,8 @@ class ProductHelpersServiceTests {
 
     when(brandRepository.findAll()).thenReturn(brandList);
 
-    // Act
     List<Brand> result = productHelpersService.getAllBrand();
 
-    // Assert
     assertEquals(2, result.size());
     assertEquals(brand1, result.get(0));
     assertEquals(brand2, result.get(1));
@@ -63,7 +61,6 @@ class ProductHelpersServiceTests {
 
   @Test
   void testGetAllColors() {
-    // Arrange
     Color color1 = new Color();
     color1.setId(1L);
     color1.setName("Color1");
@@ -76,14 +73,34 @@ class ProductHelpersServiceTests {
 
     when(colorRepository.findAll()).thenReturn(colorList);
 
-    // Act
     List<Color> result = productHelpersService.getAllColors();
 
-    // Assert
     assertEquals(2, result.size());
     assertEquals(color1, result.get(0));
     assertEquals(color2, result.get(1));
 
     verify(colorRepository, times(1)).findAll();
+  }
+  @Test
+  void testGetAllMaterials() {
+    Material material = new Material();
+    material.setId(1L);
+    material.setName("Color1");
+
+    Material material2 = new Material();
+    material2.setId(2L);
+    material2.setName("Color2");
+
+    List<Material> colorList = List.of(material, material2);
+
+    when(materialRepository.findAll()).thenReturn(colorList);
+
+    List<Material> result = productHelpersService.getAllMaterials();
+
+    assertEquals(2, result.size());
+    assertEquals(material, result.get(0));
+    assertEquals(material2, result.get(1));
+
+    verify(materialRepository, times(1)).findAll();
   }
 }
