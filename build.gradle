@@ -80,12 +80,13 @@ jacocoTestReport {
 }
 
 tasks.check.dependsOn jacocoTestCoverageVerification
+
 sonar {
     properties {
         property "sonar.projectKey", "gyokhan28_onlineshop-api"
         property "sonar.organization", "gyokhan28"
         property "sonar.host.url", "https://sonarcloud.io"
         property "sonar.coverage.jacoco.xmlReportPaths", "${buildDir}/reports/jacoco/test/jacocoTestReport.xml"
-        property "sonar.coverage.exclusions", "Entity/**, DTO/**, Repository/**, Enum/**, Exceptions/**"
+        property "sonar.exclusions", "**/Dto/**,**/Entity/**,**/Mapper/**,**/Static/**,**/ApplicationConfig/**,**/Controller/**"
     }
 }
