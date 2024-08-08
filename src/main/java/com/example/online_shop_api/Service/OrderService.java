@@ -10,6 +10,7 @@ import com.example.online_shop_api.Entity.User;
 import com.example.online_shop_api.Mapper.OrderMapper;
 import com.example.online_shop_api.Mapper.UserMapper;
 import com.example.online_shop_api.Repository.*;
+import com.example.online_shop_api.Repository.Products.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;

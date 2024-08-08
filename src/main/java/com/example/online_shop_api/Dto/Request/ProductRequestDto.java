@@ -25,7 +25,6 @@ public class ProductRequestDto {
     @Min(value = 1, message = "Quantity must be at least 1")
     private int quantity;
 
-    @NotBlank(message = "You must upload product picture")
     private String imageLocation;
 
 //    private String productType; // will be creating different products of this
