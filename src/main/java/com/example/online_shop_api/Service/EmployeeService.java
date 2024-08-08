@@ -92,13 +92,11 @@ public class EmployeeService {
         if (optionalJobType.isEmpty()) {
             throw new ServerErrorException("Job Type not found in the DB");
         }
-
         try {
             Employee employee = EmployeeMapper.toEntity(employeeRequestDto);
             employee.setRole(optionalRole.get());
             //employee.setPassword(encoder.encode(employeeRequestDto.getPassword()));
             employee.setJobType(optionalJobType.get());
-            //new employee accounts will be disabled -> after admin approval, they will be enabled.
             employee.setEnabled(false);
             employeeRepository.save(employee);
             EmployeeMapper.toDto(employee);
