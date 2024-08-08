@@ -19,6 +19,10 @@ repositories {
     mavenCentral()
 }
 
+ext {
+    set('testcontainers.version', "1.20.1")
+}
+
 dependencies {
     implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.5.0'
     implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign', version: '4.1.2'
@@ -30,12 +34,17 @@ dependencies {
     implementation 'org.flywaydb:flyway-core'
     implementation 'org.flywaydb:flyway-mysql'
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     compileOnly 'org.projectlombok:lombok:1.18.32'
     annotationProcessor 'org.projectlombok:lombok:1.18.32'
     testCompileOnly 'org.projectlombok:lombok:1.18.32'
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.32'
+    testImplementation 'org.testcontainers:junit-jupiter'
+    testImplementation 'org.testcontainers:mysql'
+    testImplementation 'io.rest-assured:rest-assured'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
 }
 
 tasks.named('test') {
@@ -56,12 +65,14 @@ jacocoTestReport {
         html.required = true
     }
     classDirectories.setFrom(
-            files(classDirectories.files.collect { fileTree(dir: it, exclude: [
-                    'com/example/online-shop-api/Dto/**',
-                    'com/example/online-shop-api/Entity/**',
-                    'com/example/online-shop-api/Mapper/**',
-                    'com/example/online-shop-api/Static/**',
-            ]) })
+            files(classDirectories.files.collect {
+                fileTree(dir: it, exclude: [
+                        'com/example/online-shop-api/Dto/**',
+                        'com/example/online-shop-api/Entity/**',
+                        'com/example/online-shop-api/Mapper/**',
+                        'com/example/online-shop-api/Static/**',
+                ])
+            })
     )
 }
 
