@@ -7,7 +7,6 @@ import com.example.online_shop_api.MyUserDetails;
 import com.example.online_shop_api.Repository.EmployeeRepository;
 import com.example.online_shop_api.Repository.UserRepository;
 import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -17,9 +16,9 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 public class PasswordService {
 
-    private EmployeeRepository employeeRepository;
-    private UserRepository userRepository;
-    private BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final EmployeeRepository employeeRepository;
+    private final UserRepository userRepository;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     public boolean isUser(MyUserDetails myUserDetails) {
         return myUserDetails.getUser() != null;
