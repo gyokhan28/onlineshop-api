@@ -57,27 +57,27 @@ jacoco {
     reportsDirectory = layout.buildDirectory.dir('reports/jacoco')
 }
 
-jacocoTestReport {
-    dependsOn test
-    reports {
-        xml.required = true
-        csv.required = false
-        html.required = true
-    }
-    classDirectories.setFrom(
-            files(classDirectories.files.collect {
-                fileTree(dir: it, exclude: [
-                        '**/Dto/*',
-                        '**/Entity/*',
-                        '**/Mapper/*',
-                        '**/Exceptions/*',
-                        '**/Static/*',
-                        '**/SecurityConfig.java',
-                ])
-            })
-    )
-
-}
+//jacocoTestReport {
+//    dependsOn test
+//    reports {
+//        xml.required = true
+//        csv.required = false
+//        html.required = true
+//    }
+//    classDirectories.setFrom(
+//            files(classDirectories.files.collect {
+//                fileTree(dir: it, exclude: [
+//                        '**/Dto/*',
+//                        '**/Entity/*',
+//                        '**/Mapper/*',
+//                        '**/Exceptions/*',
+//                        '**/Static/*',
+//                        '**/SecurityConfig.java',
+//                ])
+//            })
+//    )
+//
+//}
 
 tasks.check.dependsOn jacocoTestCoverageVerification
 
