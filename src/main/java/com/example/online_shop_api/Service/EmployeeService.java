@@ -30,7 +30,6 @@ public class EmployeeService {
     private final EmployeeRepository employeeRepository;
     private final RoleRepository roleRepository;
     private final JobTypeRepository jobTypeRepository;
-
     public ResponseEntity<List<EmployeeResponseDto>> getAllEmployees() {
         try {
             List<EmployeeResponseDto> employeeResponseDtos = EmployeeMapper.toDtoList(employeeRepository.findAll());

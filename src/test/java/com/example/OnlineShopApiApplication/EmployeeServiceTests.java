@@ -43,6 +43,7 @@ public class EmployeeServiceTests {
     JobTypeRepository jobTypeRepository;
     @Mock
     BindingResult bindingResult;
+
     @Test
     void testGetAllEmployeesSuccess() {
         Role role = Role.builder().id(2L).name("ROLE_EMPLOYEE").build();
