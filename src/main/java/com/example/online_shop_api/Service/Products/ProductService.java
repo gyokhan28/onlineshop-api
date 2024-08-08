@@ -34,7 +34,7 @@ public class ProductService {
   }
 
   public ResponseEntity<ProductResponseDto> create(ProductCreationRequestDto request) {
-    Product product = validateProductType(request);
+    Product product = mapToSpecificProduct(request);
     productRepository.save(product);
     return ResponseEntity.ok(modelMapper.map(product, ProductResponseDto.class));
   }
@@ -43,7 +43,7 @@ public class ProductService {
     Product existingProduct =
         productRepository.findById(id).orElseThrow(() -> new ProductNotFoundException(id));
 
-    Product updatedProduct = validateProductType(request);
+    Product updatedProduct = mapToSpecificProduct(request);
     updatedProduct.setId(existingProduct.getId());
 
     updatedProduct = productRepository.save(updatedProduct);
@@ -56,10 +56,8 @@ public class ProductService {
         productRepository.findById(id).orElseThrow(() -> new ProductNotFoundException(id));
     productRepository.delete(product);
   }
-
-  private Product validateProductType(ProductCreationRequestDto request) {
-    String productType = request.getProductType();
-    productType = productType.replace(",", "");
+  private Product mapToSpecificProduct(ProductCreationRequestDto request) {
+    String productType = normalizeProductType(request.getProductType());
     request.setProductType(productType);
 
     ProductRequestDto productRequestDto = request.getProductRequestDto();
@@ -73,5 +71,9 @@ public class ProductService {
       case "Sanitary" -> modelMapper.map(productRequestDto, Sanitary.class);
       default -> throw new IllegalArgumentException("Invalid product type: " + productType);
     };
+  }
+
+  private String normalizeProductType(String productType) {
+    return productType.replace(",", "");
   }
 }
