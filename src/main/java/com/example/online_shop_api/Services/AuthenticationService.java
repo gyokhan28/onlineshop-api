@@ -1,18 +1,20 @@
 package com.example.online_shop_api.Services;
 
-import com.example.online_shop_api.Dto.LoginDtos.LoginEmployeeDto;
-import com.example.online_shop_api.Dto.LoginDtos.LoginUserDto;
+import com.example.online_shop_api.Dto.LoginDtos.LoginDto;
 import com.example.online_shop_api.Dto.Request.EmployeeRequestDto;
 import com.example.online_shop_api.Dto.Request.UserRequestDto;
 import com.example.online_shop_api.Entity.Employee;
 import com.example.online_shop_api.Entity.User;
 import com.example.online_shop_api.Mapper.UserMapper;
+import com.example.online_shop_api.MyUserDetails;
 import com.example.online_shop_api.Repository.EmployeeRepository;
 import com.example.online_shop_api.Repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -38,37 +40,14 @@ public class AuthenticationService {
         return employeeRepository.save(employee);
     }
 
-    public User authenticate(LoginUserDto input) {
+    public UserDetails authenticate(LoginDto loginDto, boolean isEmployee) {
         try {
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken
-                    (input.getUsername(), input.getPassword()));
-        } catch (
-                AuthenticationException e) {
-            // Log the error or handle it accordingly
+            Authentication authentication = new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword());
+            Authentication authResult = authenticationManager.authenticate(authentication);
+
+            return (MyUserDetails) authResult.getPrincipal();
+        } catch (AuthenticationException e) {
             throw new RuntimeException("Authentication failed", e);
         }
-        return userRepository.findByEmail(input.getUsername()).orElseThrow();
-    }
-
-//    public User authenticate(LoginUserDto input) {
-//        authenticationManager.authenticate(
-//                new UsernamePasswordAuthenticationToken(
-//                        input.getUsername(),
-//                        input.getPassword()
-//                )
-//        );
-//        return userRepository.findByUsername(input.getUsername())
-//                .orElseThrow();
-//    }
-
-    public Employee authenticate(LoginEmployeeDto input) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        input.getEmail(),
-                        input.getPassword()
-                )
-        );
-        return employeeRepository.findByEmail(input.getEmail())
-                .orElseThrow();
     }
 }

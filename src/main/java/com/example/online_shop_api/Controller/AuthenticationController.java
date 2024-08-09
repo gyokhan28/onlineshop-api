@@ -1,8 +1,7 @@
 package com.example.online_shop_api.Controller;
 
-import com.example.online_shop_api.Dto.LoginDtos.LoginEmployeeDto;
+import com.example.online_shop_api.Dto.LoginDtos.LoginDto;
 import com.example.online_shop_api.Dto.LoginDtos.LoginResponse;
-import com.example.online_shop_api.Dto.LoginDtos.LoginUserDto;
 import com.example.online_shop_api.Dto.Request.EmployeeRequestDto;
 import com.example.online_shop_api.Dto.Request.UserRequestDto;
 import com.example.online_shop_api.Entity.Employee;
@@ -21,14 +20,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 public class AuthenticationController {
-
     private final JwtService jwtService;
     private final AuthenticationService authenticationService;
-
-    @PostMapping("/test")
-    public ResponseEntity<String> test(){
-        return ResponseEntity.ok("test-1");
-    }
 
     @PostMapping("/user/signup")
     public ResponseEntity<User> register(@RequestBody UserRequestDto registerUserDto) {
@@ -44,23 +37,10 @@ public class AuthenticationController {
         return ResponseEntity.ok(registeredEmployee);
     }
 
-    @PostMapping("/user/login")
-    public ResponseEntity<LoginResponse> authenticate(@RequestBody LoginUserDto loginUserDto) {
-        User authenticatedUser = authenticationService.authenticate(loginUserDto);
-        String jwtToken = jwtService.generateToken((UserDetails) authenticatedUser);
-
-        LoginResponse loginResponse = new LoginResponse();
-        loginResponse.setToken(jwtToken);
-        loginResponse.setExpiresIn(jwtService.getExpirationTime());
-
-        return ResponseEntity.ok(loginResponse);
-    }
-
-    @PostMapping("/employee/login")
-    public ResponseEntity<LoginResponse> authenticate(@RequestBody LoginEmployeeDto loginEmployeeDto) {
-        Employee authenticatedEmployee = authenticationService.authenticate(loginEmployeeDto);
-
-        String jwtToken = jwtService.generateToken((UserDetails) authenticatedEmployee);
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> authenticate(@RequestBody LoginDto loginDto) {
+        UserDetails authenticatedUser = authenticationService.authenticate(loginDto, false);
+        String jwtToken = jwtService.generateToken(authenticatedUser);
 
         LoginResponse loginResponse = new LoginResponse();
         loginResponse.setToken(jwtToken);
