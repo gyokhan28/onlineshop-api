@@ -1,5 +1,6 @@
 package com.example.online_shop_api.Repository;
 
+import com.example.online_shop_api.Entity.Order;
 import com.example.online_shop_api.Entity.OrderProduct;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -14,7 +15,7 @@ public interface OrderProductRepository extends JpaRepository<OrderProduct, Long
     List<OrderProduct> findAllByOrderId(@Param("orderId")Long orderId);
     //[OrderProduct(id=null, order=null, product=Product(id=1, name=name1, price=2.10, quantity=0, imageLocation=null), quantity=3),
     // OrderProduct(id=null, order=null, product=Product(id=2, name=name2, price=2.20, quantity=0, imageLocation=null), quantity=1)]
-
+    List<OrderProduct> findAllByOrder(Order order);
     OrderProduct findByOrderIdAndProductId(Long orderId, Long productId);
 
     List<OrderProduct> findAllByOrder_Id(Long orderId); // This returns all information;

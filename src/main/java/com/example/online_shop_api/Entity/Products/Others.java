@@ -2,6 +2,7 @@ package com.example.online_shop_api.Entity.Products;
 
 import com.example.online_shop_api.Entity.ProductHelpers.Color;
 import com.example.online_shop_api.Entity.ProductHelpers.Material;
+import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
