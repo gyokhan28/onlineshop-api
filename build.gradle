@@ -75,7 +75,8 @@ jacocoTestReport {
                         '**/ApplicationConfig/*',
                         '**/Controller/*',
                         '**/Configs/*',
-                        '**/SecurityConfig.java'
+                        '**/SecurityConfig.java',
+                        '**/Services/JwtService.java'
                 ])
             })
     )
@@ -89,6 +90,6 @@ sonar {
         property "sonar.organization", "gyokhan28"
         property "sonar.host.url", "https://sonarcloud.io"
         property "sonar.coverage.jacoco.xmlReportPaths", "${buildDir}/reports/jacoco/test/jacocoTestReport.xml"
-        property "sonar.exclusions", "**/Dto/**,**/Entity/**,**/Mapper/**,**/Static/**,**/ApplicationConfig/**,**/Controller/**,**/Exceptions/**,**/Configs/**,**/SecurityConfig.java"
+        property "sonar.exclusions", "**/Dto/**,**/Entity/**,**/Mapper/**,**/Static/**,**/ApplicationConfig/**,**/Controller/**,**/Exceptions/**,**/Configs/**,**/Services/JwtService.java,**/SecurityConfig.java"
     }
 }

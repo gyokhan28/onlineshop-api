@@ -5,6 +5,7 @@ import com.example.online_shop_api.Dto.Request.EmployeeRequestDto;
 import com.example.online_shop_api.Dto.Request.UserRequestDto;
 import com.example.online_shop_api.Entity.Employee;
 import com.example.online_shop_api.Entity.User;
+import com.example.online_shop_api.Exceptions.AuthenticationFailedException;
 import com.example.online_shop_api.Mapper.UserMapper;
 import com.example.online_shop_api.MyUserDetails;
 import com.example.online_shop_api.Repository.EmployeeRepository;
@@ -40,14 +41,14 @@ public class AuthenticationService {
         return employeeRepository.save(employee);
     }
 
-    public UserDetails authenticate(LoginDto loginDto, boolean isEmployee) {
+    public UserDetails authenticate(LoginDto loginDto) {
         try {
             Authentication authentication = new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword());
             Authentication authResult = authenticationManager.authenticate(authentication);
 
             return (MyUserDetails) authResult.getPrincipal();
         } catch (AuthenticationException e) {
-            throw new RuntimeException("Authentication failed", e);
+            throw new AuthenticationFailedException("Authentication failed: " + e);
         }
     }
 }
