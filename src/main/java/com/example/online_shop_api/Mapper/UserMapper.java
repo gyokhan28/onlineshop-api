@@ -2,12 +2,20 @@ package com.example.online_shop_api.Mapper;
 
 import com.example.online_shop_api.Dto.Request.UserRequestDto;
 import com.example.online_shop_api.Dto.Response.UserResponseDto;
+import com.example.online_shop_api.Entity.Address;
+import com.example.online_shop_api.Entity.City;
+import com.example.online_shop_api.Entity.Role;
 import com.example.online_shop_api.Entity.User;
+import com.example.online_shop_api.Static.BulgarianCity;
+import lombok.AllArgsConstructor;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
+@AllArgsConstructor
 public class UserMapper {
 
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
     public static UserResponseDto toDto(User user){
         UserResponseDto userResponseDto = new UserResponseDto();
         userResponseDto.setFirstName(user.getFirstName());
@@ -21,5 +29,40 @@ public class UserMapper {
         userResponseDto.setAddress(user.getAddress());
 
         return userResponseDto;
+    }
+
+    public static User toEntity(UserRequestDto userRequestDto) {
+        if (userRequestDto == null) {
+            return null;
+        }
+        User.UserBuilder user = User.builder();
+
+        user.firstName(userRequestDto.getFirstName());
+        user.lastName(userRequestDto.getLastName());
+        user.username(userRequestDto.getUsername());
+        user.email(userRequestDto.getEmail());
+        user.password(userRequestDto.getPassword());
+        user.phoneNumber(userRequestDto.getPhoneNumber());
+
+        user.createdAt(java.time.LocalDateTime.now());
+        user.isEnabled(true);
+        user.address(createAddress(userRequestDto));
+
+        return user.build();
+    }
+
+    public static Address createAddress(UserRequestDto userRequestDto) {
+        if (userRequestDto.getCityId() == null) {
+            return null;
+        }
+        City city = BulgarianCity.getCityById(userRequestDto.getCityId());
+        if (city == null) {
+            return null;
+        }
+        return Address.builder()
+                .city(city)
+                .streetName(userRequestDto.getStreetName())
+                .additionalInformation(userRequestDto.getAdditionalInformation())
+                .build();
     }
 }
