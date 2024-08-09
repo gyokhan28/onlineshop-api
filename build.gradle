@@ -58,10 +58,14 @@ jacocoTestReport {
     }
     classDirectories.setFrom(
             files(classDirectories.files.collect { fileTree(dir: it, exclude: [
-                    'com/example/online-shop-api/Dto/**',
-                    'com/example/online-shop-api/Entity/**',
-                    'com/example/online-shop-api/Mapper/**',
-                    'com/example/online-shop-api/Static/**'
+                    '**/Dto/*',
+                    '**/Entity/*',
+                    '**/Mapper/*',
+                    '**/Exceptions/*',
+                    '**/Static/*',
+                    '**/ApplicationConfig/*',
+                    '**/Controller/*',
+                    '**/SecurityConfig.java'
             ]) })
     )
 }
@@ -73,11 +77,6 @@ sonar {
         property "sonar.organization", "gyokhan28"
         property "sonar.host.url", "https://sonarcloud.io"
         property "sonar.coverage.jacoco.xmlReportPaths", "${buildDir}/reports/jacoco/test/jacocoTestReport.xml"
-        property 'sonar.exclusions', "**/com/example/online_shop_api/Dto/**,"+
-                "**/com/example/online_shop_api/Entity/**,"+
-                "**/com/example/online_shop_api/Mapper/**,"+
-                "**/com/example/online_shop_api/Exceptions/**,"+
-                "**/com/example/online_shop_api/Static/**,"+
-                "**/com/example/online_shop_api/Repository/**,"
+        property "sonar.exclusions","**/Dto/**,**/Entity/**,**/Mapper/**,**/Static/**,**/ApplicationConfig/**,**/Controller/**,**/Exceptions/**,**/SecurityConfig.java"
     }
 }
