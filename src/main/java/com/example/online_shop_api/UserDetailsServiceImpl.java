@@ -5,10 +5,10 @@ import com.example.online_shop_api.Entity.User;
 import com.example.online_shop_api.Repository.EmployeeRepository;
 import com.example.online_shop_api.Repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -22,10 +22,10 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
 
     @Override
-    public UserDetails loadUserByUsername(String usernameOrEmail) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String usernameOrEmail) throws BadCredentialsException {
         try {
             return loadUserByEmailOrUsername(usernameOrEmail);
-        } catch (UsernameNotFoundException e) {
+        } catch (BadCredentialsException e) {
             return loadEmployeeByEmailOrUsername(usernameOrEmail);
         }
     }
@@ -39,7 +39,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         if (optionalUser.isPresent()) {
             return new MyUserDetails(optionalUser.get());
         }
-        throw new UsernameNotFoundException("Could not find user");
+        throw new BadCredentialsException("Invalid credentials");
     }
 
     private UserDetails loadEmployeeByEmailOrUsername(String emailOrUsername) {
@@ -54,6 +54,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         if (optionalEmployee.isPresent()) {
             return new MyUserDetails(optionalEmployee.get());
         }
-        throw new UsernameNotFoundException("Could not find employee");
+        // Throw a generic exception so that hackers won't be able to brute-force attack
+        throw new BadCredentialsException("Invalid credentials");
     }
 }
