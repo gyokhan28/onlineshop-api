@@ -6,6 +6,7 @@ import com.example.online_shop_api.Dto.Request.UserRequestDto;
 import com.example.online_shop_api.Entity.Employee;
 import com.example.online_shop_api.Entity.User;
 import com.example.online_shop_api.Exceptions.AuthenticationFailedException;
+import com.example.online_shop_api.Mapper.EmployeeMapper;
 import com.example.online_shop_api.Mapper.UserMapper;
 import com.example.online_shop_api.MyUserDetails;
 import com.example.online_shop_api.Repository.EmployeeRepository;
@@ -34,9 +35,7 @@ public class AuthenticationService {
     }
 
     public Employee signup(EmployeeRequestDto input) {
-        Employee employee = new Employee();
-        employee.setUsername(input.getUsername());
-        employee.setEmail(input.getEmail());
+        Employee employee = EmployeeMapper.toEntity(input);
         employee.setPassword(passwordEncoder.encode(input.getPassword()));
         return employeeRepository.save(employee);
     }
