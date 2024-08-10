@@ -36,8 +36,7 @@ jobs:
       - name: Set up MySQL
         run: |
           sudo /etc/init.d/mysql start
-          sudo mysql -u root -p root
-          sudo mysql -e "SET PASSWORD FOR 'root'@'localhost' = '';"
+          sudo mysql -u root -proot -e "SET PASSWORD FOR 'root'@'localhost' = '';"
           sudo mysql -e "FLUSH PRIVILEGES;"
       - name: Make gradlew executable
         run: chmod +x ./gradlew
