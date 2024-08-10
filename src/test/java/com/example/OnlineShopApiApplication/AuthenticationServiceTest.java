@@ -11,7 +11,7 @@ import com.example.online_shop_api.Mapper.UserMapper;
 import com.example.online_shop_api.MyUserDetails;
 import com.example.online_shop_api.Repository.EmployeeRepository;
 import com.example.online_shop_api.Repository.UserRepository;
-import com.example.online_shop_api.Services.AuthenticationService;
+import com.example.online_shop_api.Service.AuthenticationService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

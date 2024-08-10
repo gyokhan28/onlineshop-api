@@ -1,4 +1,4 @@
-package com.example.online_shop_api.Services;
+package com.example.online_shop_api.Service;
 
 import com.example.online_shop_api.Dto.LoginDtos.LoginDto;
 import com.example.online_shop_api.Dto.Request.EmployeeRequestDto;

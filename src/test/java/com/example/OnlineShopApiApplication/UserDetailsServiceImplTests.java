@@ -5,7 +5,6 @@ import com.example.online_shop_api.Entity.User;
 import com.example.online_shop_api.Repository.EmployeeRepository;
 import com.example.online_shop_api.Repository.UserRepository;
 import com.example.online_shop_api.UserDetailsServiceImpl;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -14,7 +13,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import java.util.Optional;
 

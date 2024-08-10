@@ -1,6 +1,6 @@
 package com.example.online_shop_api.Configs;
 
-import com.example.online_shop_api.Services.JwtService;
+import com.example.online_shop_api.Service.JwtService;
 import com.example.online_shop_api.UserDetailsServiceImpl;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

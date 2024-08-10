@@ -1,4 +1,4 @@
-package com.example.online_shop_api.Services;
+package com.example.online_shop_api.Service;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
