@@ -75,6 +75,20 @@ public class UserDetailsServiceImplTests {
     }
 
     @Test
+    void testLoadEmployeeByUsername_EmployeeFoundByUsername() {
+        Employee employee = new Employee();
+        String username = "testUsername";
+        employee.setUsername(username);
+        employee.setEnabled(true);
+        when(employeeRepository.findByUsername(username)).thenReturn(Optional.of(employee));
+
+        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
+        assertNotNull(userDetails);
+        assertEquals("testUsername", userDetails.getUsername());
+    }
+
+    @Test
     void testLoadEmployeeByUsername_NotEnabled_EmployeeFoundByEmail() {
         String email = "test@abv.bg";
         Employee employee = new Employee();
@@ -86,6 +100,8 @@ public class UserDetailsServiceImplTests {
            userDetailsService.loadUserByUsername(email);
         });
     }
+
+
 
     @Test
     void testLoadUserByUsername_UserNotFound() {
