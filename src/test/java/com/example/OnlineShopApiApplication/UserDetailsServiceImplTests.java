@@ -47,6 +47,19 @@ public class UserDetailsServiceImplTests {
     }
 
     @Test
+    void testLoadUserByUsername_UserFoundByUsername() {
+        User user = new User();
+        String username = "testUsername";
+        user.setUsername(username);
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
+
+        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
+        assertNotNull(userDetails);
+        assertEquals("testUsername", userDetails.getUsername());
+    }
+
+    @Test
     void testLoadEmployeeByUsername_EmployeeFoundByEmail() {
         String email = "test@abv.bg";
         Employee employee = new Employee();
