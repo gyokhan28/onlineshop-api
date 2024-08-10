@@ -34,13 +34,10 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
           restore-keys: ${{ runner.os }}-gradle
       - name: Set up MySQL
-        env:
-          DB_DATABASE: online-shop-test
-          DB_USER: root
-          DB_PASSWORD: root
         run: |
           sudo /etc/init.d/mysql start
-
+          sudo mysql -e "SET PASSWORD FOR 'root'@'localhost' = '';"
+          sudo mysql -e "FLUSH PRIVILEGES;"
       - name: Make gradlew executable
         run: chmod +x ./gradlew
       - name: Build project
