@@ -33,6 +33,14 @@ jobs:
           path: ~/.gradle/caches
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
           restore-keys: ${{ runner.os }}-gradle
+      - name: Set up MySQL
+        env:
+          DB_DATABASE: online-shop-test
+          DB_USER: root
+          DB_PASSWORD: ""
+        run: |
+          sudo /etc/init.d/mysql start
+          mysql -e 'CREATE DATABASE ${{ env.DB_DATABASE }};' -u${{ env.DB_USER }} -p${{ env.DB_PASSWORD }}
       - name: Make gradlew executable
         run: chmod +x ./gradlew
       - name: Build project
