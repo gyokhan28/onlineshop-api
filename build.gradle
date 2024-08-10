@@ -62,6 +62,8 @@ jacocoTestReport {
                     '**/Entity/*',
                     '**/Mapper/*',
                     '**/Static/*',
+                    '**/Repository/*',
+                    '**/Exceptions/*',
             ]) })
     )
 }
@@ -73,6 +75,6 @@ sonar {
         property "sonar.organization", "gyokhan28"
         property "sonar.host.url", "https://sonarcloud.io"
         property "sonar.coverage.jacoco.xmlReportPaths", "${buildDir}/reports/jacoco/test/jacocoTestReport.xml"
-//        property 'sonar.exclusions', "**/Dto/*,**/Entity/*,**/Repository/*,**/Mapper/*,**/Exceptions/*,**/Static/*"
+        property 'sonar.exclusions', "**/Dto/*,**/Entity/*,**/Repository/*,**/Mapper/*,**/Exceptions/*,**/Static/*"
     }
 }
