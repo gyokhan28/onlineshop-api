@@ -14,6 +14,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@ToString
 public class ProductRequestDto {
     @Size(min = 2, max = 50, message = "Product name must be between 2 and 50 symbols")
     private String name;
@@ -25,12 +26,7 @@ public class ProductRequestDto {
     @Min(value = 1, message = "Quantity must be at least 1")
     private int quantity;
 
-    @NotBlank(message = "You must upload product picture")
-    private String imageLocation;
-
-//    private String productType; // will be creating different products of this
-
-    private LocalDate expiryDate;  // TODO - make sure date is not expired
+    private LocalDate expiryDate; // TODO - make sure date is not expired
     private LocalDate bestBefore; // TODO - make sure date is not expired
     private Material material;
     private Brand brand;
