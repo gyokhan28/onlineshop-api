@@ -68,6 +68,7 @@ jacocoTestReport {
                         '**/Controller/*',
                         '**/Configs/*',
                         '**/SecurityConfig.java',
+                        '**/ApplicationConfig.java',
                         '**/Service/JwtService.java'
                 ])
             })
