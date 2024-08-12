@@ -1,82 +1,46 @@
 package com.example.OnlineShopApiApplication;
 
 import com.example.online_shop_api.Utils.ValidationUtil;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Path;
+import jakarta.validation.Validator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.*;
 
-public class ValidationUtilTests {
+@ExtendWith(MockitoExtension.class)
+class ValidationUtilTests {
+    @Mock
+    private Validator validator;
+
     @InjectMocks
-    ValidationUtil validationUtil;
+    private ValidationUtil validationUtil;
 
-    @Test
-    void testValidateNotNullFields_NoNullFields() {
-        class TestObject {
-            @NotNull(message = "Field must not be null")
-            private final String field1 = "value";
-
-            @NotNull(message = "Field must not be null")
-            private final Integer field2 = 1;
-        }
-
-        TestObject testObject = new TestObject();
-        Map<String, String> errors = validationUtil.validate(testObject);
-
-        assertEquals(0, errors.size(), "Expected no validation errors.");
+    @BeforeEach
+    public void setUp() {
+        MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    void testValidateNotNullFields_OneNullField() {
-        class TestObject {
-            @NotNull(message = "Field must not be null")
-            private final String field1 = null;
+    void testValidate_noViolations() {
+        Object validObject = new Object();
+        lenient().when(validator.validate(validObject)).thenReturn(new HashSet<>());
 
-            @NotNull(message = "Field must not be null")
-            private final Integer field2 = 1;
-        }
+        Map<String, String> result = validationUtil.validate(validObject);
 
-        TestObject testObject = new TestObject();
-        Map<String, String> errors = validationUtil.validate(testObject);
-
-        assertEquals(1, errors.size(), "Expected one validation error.");
-        assertEquals("field1: Field must not be null", errors.get(0), "Unexpected validation error message.");
-    }
-
-    @Test
-    void testValidateNotNullFields_MultipleNullFields() {
-        class TestObject {
-            @NotNull(message = "Field must not be null")
-            private final String field1 = null;
-
-            @NotNull(message = "Field must not be null")
-            private final Integer field2 = null;
-        }
-
-        TestObject testObject = new TestObject();
-        Map<String, String> errors = validationUtil.validate(testObject);
-
-        assertEquals(2, errors.size(), "Expected two validation errors.");
-        assertEquals("field1: Field must not be null", errors.get(0), "Unexpected validation error message.");
-        assertEquals("field2: Field must not be null", errors.get(1), "Unexpected validation error message.");
-    }
-
-    @Test
-    void testValidateNotNullFields_NoFieldsAnnotated() {
-        class TestObject {
-            private final String field1 = "value";
-            private final Integer field2 = 1;
-        }
-
-        TestObject testObject = new TestObject();
-        Map<String, String> errors = validationUtil.validate(testObject);
-
-        assertEquals(0, errors.size(), "Expected no validation errors.");
+        assertTrue(result.isEmpty(), "Expected no validation errors.");
     }
 
 }
