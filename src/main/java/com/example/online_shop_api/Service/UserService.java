@@ -133,11 +133,11 @@ public class UserService {
         return myUserDetails.getUser();
     }
 
-    private List<ProductResponseDto> getBasketProducts(Order basketOrder) throws Exception {
+    private List<BasketProductResponseDTO> getBasketProducts(Order basketOrder) throws Exception {
         List<OrderProduct> products = orderProductRepository.findAllByOrderId(basketOrder.getId());
-        List<ProductResponseDto> responseList = new ArrayList<>();
+        List<BasketProductResponseDTO> responseList = new ArrayList<>();
         for (OrderProduct op : products) {
-            ProductResponseDto responseProduct = ProductMapper.toDto(op.getProduct());
+            BasketProductResponseDTO responseProduct = ProductMapper.toDto(op.getProduct());
 
             BigDecimal price = op.getProduct().getPrice();
             BigDecimal quantity = BigDecimal.valueOf(op.getQuantity());
@@ -167,7 +167,7 @@ public class UserService {
 
         Optional<Order> basketOrder = productService.getBasketOrder(user);
         if (basketOrder.isPresent()) {
-            List<ProductResponseDto> basketProducts = getBasketProducts(basketOrder.get());
+            List<BasketProductResponseDTO> basketProducts = getBasketProducts(basketOrder.get());
             List<OrderProduct> orderProducts = orderProductRepository.findAllByOrder_Id(basketOrder.get().getId());
             BigDecimal totalPrice = calculateTotalPrice(orderProducts);
             basketResponse.setProducts(basketProducts);
@@ -302,7 +302,7 @@ public class UserService {
         }
         List<OrderProduct> orderProductList = orderProductRepository.findAllByOrder_Id(orderId);
         BigDecimal totalPrice = calculateTotalPrice(orderProductList);
-        List<ProductResponseDto> basketProducts = getBasketProducts(basketOrder);
+        List<BasketProductResponseDTO> basketProducts = getBasketProducts(basketOrder);
         return ResponseEntity.ok(new BasketResponse(basketProducts, totalPrice));
 
     }

@@ -9,6 +9,6 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 public class BasketResponse {
-    private List<ProductResponseDto> products;
+    private List<BasketProductResponseDTO> products;
     private BigDecimal totalPrice;
 }

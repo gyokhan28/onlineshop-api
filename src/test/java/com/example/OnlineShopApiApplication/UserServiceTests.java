@@ -851,12 +851,12 @@ public class UserServiceTests {
         assertEquals(BigDecimal.valueOf(400), basketResponse.getTotalPrice());  // (100 * 2) + (200 * 1)
 
         // Verify the basket products
-        ProductResponseDto productResponse1 = basketResponse.getProducts().get(0);
+        BasketProductResponseDTO productResponse1 = basketResponse.getProducts().get(0);
         assertEquals(product1.getId(), productResponse1.getId());
         assertEquals(orderProduct1.getQuantity(), productResponse1.getQuantity());
         assertEquals(product1.getPrice().multiply(BigDecimal.valueOf(orderProduct1.getQuantity())), productResponse1.getSubtotal());
 
-        ProductResponseDto productResponse2 = basketResponse.getProducts().get(1);
+        BasketProductResponseDTO productResponse2 = basketResponse.getProducts().get(1);
         assertEquals(product2.getId(), productResponse2.getId());
         assertEquals(orderProduct2.getQuantity(), productResponse2.getQuantity());
         assertEquals(product2.getPrice().multiply(BigDecimal.valueOf(orderProduct2.getQuantity())), productResponse2.getSubtotal());

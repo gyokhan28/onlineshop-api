@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @Data
-public class ProductResponseDto {
+public class BasketProductResponseDTO {
     private Long id;
     private String name;
     private BigDecimal price;
