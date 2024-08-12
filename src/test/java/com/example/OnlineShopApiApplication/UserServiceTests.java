@@ -152,7 +152,7 @@ public class UserServiceTests {
         when(encoder.encode(userRequestDto.getPassword())).thenReturn("encodedPassword");
         when(cityRepository.findById(1L)).thenReturn(Optional.of(new City()));
 
-        ResponseEntity<String> response = userService.registerNewUser(userRequestDto, bindingResult);
+        ResponseEntity<?> response = userService.registerNewUser(userRequestDto, bindingResult);
 
         assertEquals(ResponseEntity.ok("Account created successfully!"), response);
 
@@ -191,7 +191,7 @@ public class UserServiceTests {
 
         when(userRepository.findByEmail(userRequestDto.getEmail())).thenReturn(Optional.of(new User()));
 
-        ResponseEntity<String> response = userService.registerNewUser(userRequestDto, bindingResult);
+        ResponseEntity<?> response = userService.registerNewUser(userRequestDto, bindingResult);
 
         assertEquals(ResponseEntity.badRequest().body("Email already in use. Please use a different email!"), response);
     }
@@ -204,7 +204,7 @@ public class UserServiceTests {
         when(userRepository.findByEmail(userRequestDto.getEmail())).thenReturn(Optional.empty());
         when(userRepository.findByUsername(userRequestDto.getUsername())).thenReturn(Optional.of(new User()));
 
-        ResponseEntity<String> response = userService.registerNewUser(userRequestDto, bindingResult);
+        ResponseEntity<?> response = userService.registerNewUser(userRequestDto, bindingResult);
 
         assertEquals(ResponseEntity.badRequest().body("Username already in use. Please use a different username!"), response);
     }
@@ -218,7 +218,7 @@ public class UserServiceTests {
 
         assertThrows(PasswordsNotMatchingException.class, () -> userService.validateNewUser(userRequestDto));
 
-        ResponseEntity<String> actualResponse = userService.registerNewUser(userRequestDto, bindingResult);
+        ResponseEntity<?> actualResponse = userService.registerNewUser(userRequestDto, bindingResult);
         ResponseEntity<String> expectedResponse = ResponseEntity.badRequest().body("Passwords don't match");
 
         assertEquals(expectedResponse, actualResponse);
@@ -234,7 +234,7 @@ public class UserServiceTests {
         when(bindingResult.hasErrors()).thenReturn(true);
         when(bindingResult.getAllErrors()).thenReturn(errors);
 
-        ResponseEntity<String> response = userService.registerNewUser(userRequestDto, bindingResult);
+        ResponseEntity<?> response = userService.registerNewUser(userRequestDto, bindingResult);
 
         assertEquals(ResponseEntity.badRequest().body(errors.toString()), response);
     }
@@ -267,7 +267,7 @@ public class UserServiceTests {
 
         assertThrows(CityNotFoundException.class, () -> userService.validateNewUser(userRequestDto));
 
-        ResponseEntity<String> actualResponse = userService.registerNewUser(userRequestDto, bindingResult);
+        ResponseEntity<?> actualResponse = userService.registerNewUser(userRequestDto, bindingResult);
         ResponseEntity<String> expectedResponse = ResponseEntity.badRequest().body("City doesn't exist");
 
         assertEquals(expectedResponse, actualResponse);
@@ -289,11 +289,14 @@ public class UserServiceTests {
     void testRegisterNewUser_ValidationErrors() {
         BindingResult bindingResult = mock(BindingResult.class);
         when(bindingResult.hasErrors()).thenReturn(false);
-        when(validationUtil.validateNotNullFields(userRequestDto)).thenReturn(Collections.singletonList("firstName was not entered"));
 
-        ResponseEntity<String> response = userService.registerNewUser(userRequestDto, bindingResult);
+        Map<String, String> errors = new HashMap<>();
+        errors.put("firstName", "firstName was not entered");
+        when(validationUtil.validate(userRequestDto)).thenReturn(errors);
 
-        assertEquals(ResponseEntity.badRequest().body("firstName was not entered"), response);
+        ResponseEntity<?> response = userService.registerNewUser(userRequestDto, bindingResult);
+
+        assertEquals(ResponseEntity.badRequest().body(errors), response);
     }
 
     @Test

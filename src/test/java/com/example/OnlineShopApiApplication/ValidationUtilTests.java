@@ -4,18 +4,16 @@ import com.example.online_shop_api.Utils.ValidationUtil;
 import jakarta.validation.constraints.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ValidationUtilTests {
-    private ValidationUtil validationUtil;
-
-    @BeforeEach
-    public void setUp(){
-        validationUtil = new ValidationUtil();
-    }
+    @InjectMocks
+    ValidationUtil validationUtil;
 
     @Test
     void testValidateNotNullFields_NoNullFields() {
@@ -28,7 +26,7 @@ public class ValidationUtilTests {
         }
 
         TestObject testObject = new TestObject();
-        List<String> errors = validationUtil.validateNotNullFields(testObject);
+        Map<String, String> errors = validationUtil.validate(testObject);
 
         assertEquals(0, errors.size(), "Expected no validation errors.");
     }
@@ -44,7 +42,7 @@ public class ValidationUtilTests {
         }
 
         TestObject testObject = new TestObject();
-        List<String> errors = validationUtil.validateNotNullFields(testObject);
+        Map<String, String> errors = validationUtil.validate(testObject);
 
         assertEquals(1, errors.size(), "Expected one validation error.");
         assertEquals("field1: Field must not be null", errors.get(0), "Unexpected validation error message.");
@@ -61,7 +59,7 @@ public class ValidationUtilTests {
         }
 
         TestObject testObject = new TestObject();
-        List<String> errors = validationUtil.validateNotNullFields(testObject);
+        Map<String, String> errors = validationUtil.validate(testObject);
 
         assertEquals(2, errors.size(), "Expected two validation errors.");
         assertEquals("field1: Field must not be null", errors.get(0), "Unexpected validation error message.");
@@ -76,7 +74,7 @@ public class ValidationUtilTests {
         }
 
         TestObject testObject = new TestObject();
-        List<String> errors = validationUtil.validateNotNullFields(testObject);
+        Map<String, String> errors = validationUtil.validate(testObject);
 
         assertEquals(0, errors.size(), "Expected no validation errors.");
     }

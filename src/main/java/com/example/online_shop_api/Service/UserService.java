@@ -27,6 +27,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -95,13 +96,13 @@ public class UserService {
         }
     }
 
-    public ResponseEntity<String> registerNewUser(@Valid @RequestBody UserRequestDto userRequestDto, BindingResult bindingResult) {
+    public ResponseEntity<?> registerNewUser(@Valid @RequestBody UserRequestDto userRequestDto, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return ResponseEntity.badRequest().body(bindingResult.getAllErrors().toString());
         }
-        List<String> validationErrors = validationUtil.validateNotNullFields(userRequestDto);
+        Map<String, String> validationErrors = validationUtil.validate(userRequestDto);
         if (!validationErrors.isEmpty()) {
-            return ResponseEntity.badRequest().body(String.join(", ", validationErrors));
+            return ResponseEntity.badRequest().body(validationErrors);
         }
         try {
             validateNewUser(userRequestDto);
