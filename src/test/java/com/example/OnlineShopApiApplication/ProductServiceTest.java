@@ -1,10 +1,17 @@
 package com.example.OnlineShopApiApplication;
 
+import com.example.online_shop_api.Dto.Request.AddProductRequest;
 import com.example.online_shop_api.Dto.Request.FoodRequestDto;
 import com.example.online_shop_api.Dto.Request.ProductRequestDto;
 import com.example.online_shop_api.Dto.Response.ProductResponseDto;
+import com.example.online_shop_api.Entity.ProductHelpers.Brand;
+import com.example.online_shop_api.Entity.ProductHelpers.Color;
+import com.example.online_shop_api.Entity.ProductHelpers.Material;
 import com.example.online_shop_api.Entity.Products.Food;
 import com.example.online_shop_api.Entity.Products.Product;
+import com.example.online_shop_api.Repository.BrandRepository;
+import com.example.online_shop_api.Repository.ColorRepository;
+import com.example.online_shop_api.Repository.MaterialRepository;
 import com.example.online_shop_api.Repository.ProductRepository;
 import com.example.online_shop_api.Service.MinioService;
 import com.example.online_shop_api.Service.ProductService;
@@ -22,8 +29,7 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class ProductServiceTest {
@@ -32,11 +38,18 @@ public class ProductServiceTest {
     @Mock
     ModelMapper modelMapper;
     @Mock
+    MaterialRepository materialRepository;
+    @Mock
+    ColorRepository colorRepository;
+    @Mock
+    BrandRepository brandRepository;
+    @Mock
     MinioService minioService;
     @Mock
     ValidationUtil validationUtil;
     @InjectMocks
     ProductService productService;
+
     @Test
     void testGetProduct_Success() throws Exception {
         Product product = new Product();
@@ -117,6 +130,7 @@ public class ProductServiceTest {
         assertEquals("Product created successfully", response.getBody());
         verify(productRepository).save(mockProduct);
     }
+
     @Test
     void testAddNewProduct_InvalidProductType() {
         String invalidProductType = "InvalidType";
@@ -127,6 +141,7 @@ public class ProductServiceTest {
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
         assertEquals("Product type not found", response.getBody());
     }
+
     @Test
     void testAddNewProduct_ValidationErrors() {
         String productType = "Food";
@@ -143,6 +158,7 @@ public class ProductServiceTest {
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertEquals(mockErrors, response.getBody());
     }
+
     @Test
     void testAddNewProduct_InternalServerError() throws Exception {
         String productType = "Food";
@@ -155,5 +171,52 @@ public class ProductServiceTest {
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
         assertEquals("An error occurred", response.getBody());
     }
+
+    @Test
+    void testAddNewProduct_UnknownProductType() {
+        String productType = "InvalidType";
+
+        ResponseEntity<?> response = productService.addNewProduct(productType);
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertEquals("Product type not found", response.getBody());
+    }
+
+    @Test
+    void testAddNewProduct_CorrectProductType() {
+        String validProductType = "Railing";
+
+        when(materialRepository.findAll()).thenReturn(someMaterialsList());
+        when(colorRepository.findAll()).thenReturn(someColorsList());
+        when(brandRepository.findAll()).thenReturn(someBrandsList());
+
+        ResponseEntity<?> response = productService.addNewProduct(validProductType);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+
+        AddProductRequest request = (AddProductRequest) response.getBody();
+        assertEquals(validProductType, request.getProductType());
+        assertNotNull(request.getMaterials());
+        assertNotNull(request.getColors());
+        assertNotNull(request.getBrands());
+
+        verify(materialRepository, times(1)).findAll();
+        verify(colorRepository, times(1)).findAll();
+        verify(brandRepository, times(1)).findAll();
+    }
+
+    private List<Material> someMaterialsList() {
+        return new ArrayList<>();
+    }
+
+    private List<Color> someColorsList() {
+        return new ArrayList<>();
+    }
+
+    private List<Brand> someBrandsList() {
+        return new ArrayList<>();
+    }
+
 
 }

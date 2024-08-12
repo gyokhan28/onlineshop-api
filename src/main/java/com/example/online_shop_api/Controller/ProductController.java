@@ -13,6 +13,11 @@ public class ProductController {
 
     private final ProductService productService;
 
+    @GetMapping("/add")
+    public ResponseEntity<?> addNewProduct(@RequestParam("productType") String productType){
+        return productService.addNewProduct(productType);
+    }
+
     @PostMapping("/add")
     public ResponseEntity<?> addNewProduct(@RequestParam("productType") String productType,
                                            @RequestBody ProductRequestDto productRequestDto) {

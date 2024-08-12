@@ -1,6 +1,7 @@
 package com.example.online_shop_api.Entity.Products;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
