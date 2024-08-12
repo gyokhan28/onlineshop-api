@@ -842,7 +842,6 @@ public class UserServiceTests {
         when(productService.getBasketOrder(currentUser)).thenReturn(Optional.of(basketOrder));
         when(orderProductRepository.findAllByOrderId(basketOrder.getId())).thenReturn(orderProducts);
         when(orderProductRepository.findAllByOrder_Id(basketOrder.getId())).thenReturn(orderProducts);
-        when(minioService.listFilesInDirectoryFullPath(anyString())).thenReturn(Collections.emptyList());
 
         ResponseEntity<BasketResponse> response = userService.getBasket(authentication);
 
@@ -863,8 +862,6 @@ public class UserServiceTests {
         assertEquals(product2.getId(), productResponse2.getId());
         assertEquals(orderProduct2.getQuantity(), productResponse2.getQuantity());
         assertEquals(product2.getPrice().multiply(BigDecimal.valueOf(orderProduct2.getQuantity())), productResponse2.getSubtotal());
-
-        verify(minioService, times(2)).listFilesInDirectoryFullPath(anyString());
     }
 }
 

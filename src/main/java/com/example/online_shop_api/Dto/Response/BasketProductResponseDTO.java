@@ -10,7 +10,6 @@ public class BasketProductResponseDTO {
     private Long id;
     private String name;
     private BigDecimal price;
-    private List<String> imageUrls;
     private int quantity;
     private BigDecimal subtotal;
 }

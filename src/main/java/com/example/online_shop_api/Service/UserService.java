@@ -45,7 +45,6 @@ public class UserService {
     private final ProductService productService;
     private final ProductRepository productRepository;
     private final OrderStatusRepository orderStatusRepository;
-    private final MinioService minioService;
 
     private boolean isEmailInDB(String email) {
         return userRepository.findByEmail(email).isPresent();
@@ -147,8 +146,6 @@ public class UserService {
             responseProduct.setId(op.getProduct().getId());
             responseProduct.setSubtotal(subTotal);
             responseProduct.setQuantity(op.getQuantity());
-            responseProduct.setImageUrls(minioService.listFilesInDirectoryFullPath(String.valueOf(op.getProduct().getId())));
-
             responseList.add(responseProduct);
         }
         return responseList;

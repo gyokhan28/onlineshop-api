@@ -12,7 +12,6 @@ public class ProductMapper {
         responseDto.setQuantity(product.getQuantity());
         responseDto.setName(product.getName());
         responseDto.setPrice(product.getPrice());
-        responseDto.setImageUrls(product.getImageUrls());
         return responseDto;
     }
 }
