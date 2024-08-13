@@ -17,6 +17,7 @@ import com.example.online_shop_api.Static.RoleType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
 
@@ -29,7 +30,7 @@ public class EmployeeService {
 
     private final EmployeeRepository employeeRepository;
     private final RoleRepository roleRepository;
-    //private final BCryptPasswordEncoder encoder;
+    private final BCryptPasswordEncoder encoder;
     private final JobTypeRepository jobTypeRepository;
 
     public ResponseEntity<List<EmployeeResponseDto>> getAllEmployees() {
@@ -91,12 +92,11 @@ public class EmployeeService {
         try {
             Employee employee = EmployeeMapper.toEntity(employeeRequestDto);
             employee.setRole(optionalRole.get());
-            //employee.setPassword(encoder.encode(employeeRequestDto.getPassword()));
+            employee.setPassword(encoder.encode(employeeRequestDto.getPassword()));
             employee.setJobType(optionalJobType.get());
             //new employee accounts will be disabled -> after admin approval, they will be enabled.
             employee.setEnabled(false);
             employeeRepository.save(employee);
-            EmployeeMapper.toDto(employee);
         } catch (Exception exception) {
             throw new ServerErrorException("An internal error occurred. Please try again. " + exception.getMessage());
         }

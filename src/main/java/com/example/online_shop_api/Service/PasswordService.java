@@ -7,7 +7,7 @@ import com.example.online_shop_api.MyUserDetails;
 import com.example.online_shop_api.Repository.EmployeeRepository;
 import com.example.online_shop_api.Repository.UserRepository;
 import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -60,6 +60,9 @@ public class PasswordService {
     }
 
     public ResponseEntity<String> changePassword(String currentPassword, String newPassword, String repeatNewPassword, Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("There's no logged in user.");
+        }
         MyUserDetails myUserDetails = (MyUserDetails) authentication.getPrincipal();
         if (!isCurrentPasswordCorrect(myUserDetails, currentPassword)) {
             return ResponseEntity.badRequest().body("Incorrect current password!");

@@ -1,13 +1,14 @@
 package com.example.online_shop_api.Controller;
 
 import com.example.online_shop_api.Dto.LoginDtos.LoginDto;
-import com.example.online_shop_api.Dto.LoginDtos.LoginResponse;
 import com.example.online_shop_api.Dto.Request.EmployeeRequestDto;
 import com.example.online_shop_api.Dto.Request.UserRequestDto;
 import com.example.online_shop_api.Entity.Employee;
 import com.example.online_shop_api.Entity.User;
 import com.example.online_shop_api.Service.AuthenticationService;
 import com.example.online_shop_api.Service.JwtService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -38,14 +39,25 @@ public class AuthenticationController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> authenticate(@RequestBody LoginDto loginDto) {
+    public ResponseEntity<Void> authenticate(@RequestBody LoginDto loginDto, HttpServletResponse response) {
         UserDetails authenticatedUser = authenticationService.authenticate(loginDto);
         String jwtToken = jwtService.generateToken(authenticatedUser);
 
-        LoginResponse loginResponse = new LoginResponse();
-        loginResponse.setToken(jwtToken);
-        loginResponse.setExpiresIn(jwtService.getExpirationTime());
+//        LoginResponse loginResponse = new LoginResponse();
+//        loginResponse.setToken(jwtToken);
+//        loginResponse.setExpiresIn(jwtService.getExpirationTime());
 
-        return ResponseEntity.ok(loginResponse);
+        long expirationTimeInSeconds = jwtService.getExpirationTime() / 1000;
+
+        Cookie jwtCookie = new Cookie("jwtToken", jwtToken);
+        jwtCookie.setHttpOnly(true);
+        jwtCookie.setSecure(true);
+        jwtCookie.setPath("/");
+        jwtCookie.setMaxAge((int) expirationTimeInSeconds);
+
+        response.addCookie(jwtCookie);
+
+//        return ResponseEntity.ok(loginResponse);
+        return ResponseEntity.ok().build();
     }
 }
