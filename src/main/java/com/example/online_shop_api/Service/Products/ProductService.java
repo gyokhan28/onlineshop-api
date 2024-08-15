@@ -66,23 +66,17 @@ public class ProductService {
     productRepository.delete(product);
   }
   public Optional<Order> getBasketOrder(User user) {
-    OrderStatus basketOrderStatus = OrderStatus.builder()
-            .id(OrderStatusType.BASKET.getId())
-            .name(OrderStatusType.BASKET.name())
-            .build();
-
-    List<Order> basketOrders = getUserOrdersByOrderStatus(user, basketOrderStatus);
+    List<Order> basketOrders = getUserOrdersByOrderStatus(
+            user, new OrderStatus(OrderStatusType.BASKET.getId(), OrderStatusType.BASKET.name())
+    );
 
     if (basketOrders.size() > 1) {
       throw new ServerErrorException("Critical server error. More than one basket for user with userID: " + user.getId());
     }
 
-    if (basketOrders.size() == 1) {
-      return Optional.ofNullable(basketOrders.get(0));
-    }
-
-    return Optional.empty();
+    return basketOrders.stream().findFirst();
   }
+
   private List<Order> getUserOrdersByOrderStatus(User user, OrderStatus orderStatus) {
     return orderRepository.findAllByUser_IdAndStatus_Id(user.getId(), orderStatus.getId());
   }
