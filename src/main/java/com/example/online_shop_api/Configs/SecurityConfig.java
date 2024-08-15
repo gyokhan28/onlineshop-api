@@ -30,16 +30,13 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .securityContext(securityContext -> securityContext.requireExplicitSave(false)) // Disable CSRF protection
-                .authorizeHttpRequests(authorizeRequests -> authorizeRequests
-//                                .requestMatchers("/auth/**").permitAll()
-//                                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-//                                .anyRequest().authenticated()
-                                .anyRequest().permitAll()
-                )
-                .sessionManagement(sessionManagement -> sessionManagement
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
+                .authorizeHttpRequests()
+                .requestMatchers("/auth/**","/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                .anyRequest().authenticated()
+                .and()
+                .sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .csrf(csrf -> csrf.disable()) // Disable CSRF protection
