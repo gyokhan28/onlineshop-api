@@ -29,8 +29,8 @@ public class Decoration extends Product {
     @JoinColumn(name = "brand_id")
     private Brand brand;
 
-    public Decoration(String name, BigDecimal price, int quantity, Material material, Brand brand, List<String> imageUrls) {
-        super(name, price, quantity, imageUrls);
+    public Decoration(String name, BigDecimal price, int quantity, List<String> imageUrls, Material material, Brand brand) {
+        super(name, price, quantity,imageUrls);
         this.material = material;
         this.brand = brand;
     }

@@ -1,6 +1,5 @@
 package com.example.online_shop_api.Entity.Products;
 
-import com.example.online_shop_api.StringListConverter;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -28,7 +27,6 @@ public class Product {
   protected BigDecimal price;
   protected int quantity;
 
-  @Convert(converter = StringListConverter.class)
   @Column(name = "image_urls", columnDefinition = "TEXT")
   protected List<String> imageUrls;
 

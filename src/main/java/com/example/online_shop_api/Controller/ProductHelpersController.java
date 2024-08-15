@@ -17,12 +17,12 @@ import java.util.List;
 public class ProductHelpersController {
   private final ProductHelpersService productHelpersService;
 
-  @GetMapping("/getAllBrand")
+  @GetMapping("/get-all-brands")
   public List<Brand> getAllBrand() {
     return productHelpersService.getAllBrand();
   }
 
-  @GetMapping("/getAllColors")
+  @GetMapping("/get-all-colors")
   public List<Color> getAllColors() {
     return productHelpersService.getAllColors();
   }
