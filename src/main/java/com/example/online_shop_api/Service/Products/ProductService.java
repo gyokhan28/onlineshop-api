@@ -86,13 +86,6 @@ public class ProductService {
   private List<Order> getUserOrdersByOrderStatus(User user, OrderStatus orderStatus) {
     return orderRepository.findAllByUser_IdAndStatus_Id(user.getId(), orderStatus.getId());
   }
-  public ResponseEntity<?> getProduct(Long id) {
-    Product product = productRepository.findById(id).orElseThrow(() -> new RuntimeException());
-
-    ProductResponseDto productResponseDto = modelMapper.map(product, ProductResponseDto.class);
-
-    return ResponseEntity.ok(productResponseDto);
-  }
 
   private Product mapToSpecificProduct(ProductCreationRequestDto request) {
     String productType = normalizeProductType(request.getProductType());
