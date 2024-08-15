@@ -1,17 +1,13 @@
 package com.example.online_shop_api.Entity.Products;
 
 import com.example.online_shop_api.Entity.ProductHelpers.Material;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
@@ -30,8 +26,8 @@ public class Sanitary extends Product {
     private Material material;
 
 
-    public Sanitary(String name, BigDecimal price, int quantity, boolean isBiodegradable, boolean isReusable, Material material, List<String> imageUrls) {
-        super(name, price, quantity, imageUrls);
+    public Sanitary(String name, BigDecimal price, int quantity, boolean isBiodegradable, boolean isReusable, Material material) {
+        super(name, price, quantity);
         this.isBiodegradable = isBiodegradable;
         this.isReusable = isReusable;
         this.material = material;

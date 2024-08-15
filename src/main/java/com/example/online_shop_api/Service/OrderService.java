@@ -24,16 +24,14 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class OrderService {
 
-    private final ProductRepository productRepository;
     private final OrderProductRepository orderProductRepository;
-    private final UserRepository userRepository;
     private final OrderRepository orderRepository;
     private final OrderStatusRepository orderStatusRepository;
 
     public ResponseEntity<List<OrderResponseDto>> showOrders() {
         List<OrderResponseDto> responseList = new ArrayList<>();
         List<Order> orderList = orderRepository.findAll();
-        for(Order o:orderList){
+        for (Order o : orderList) {
             responseList.add(OrderMapper.toDto(o));
         }
         return ResponseEntity.ok(responseList);
@@ -59,6 +57,7 @@ public class OrderService {
         }
         return ResponseEntity.ok(false);
     }
+
     public ResponseEntity<?> viewSingleOrder(Long orderId) {
         Optional<Order> orderOptional = orderRepository.findById(orderId);
         if (orderOptional.isEmpty()) {
