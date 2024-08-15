@@ -8,8 +8,9 @@ import com.example.online_shop_api.Exceptions.*;
 import com.example.online_shop_api.Mapper.UserMapper;
 import com.example.online_shop_api.MyUserDetails;
 import com.example.online_shop_api.Repository.*;
+import com.example.online_shop_api.Repository.Products.ProductRepository;
 import com.example.online_shop_api.Service.MinioService;
-import com.example.online_shop_api.Service.ProductService;
+import com.example.online_shop_api.Service.Products.ProductService;
 import com.example.online_shop_api.Service.UserService;
 import com.example.online_shop_api.Static.OrderStatusType;
 import com.example.online_shop_api.Utils.ValidationUtil;
@@ -35,7 +36,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @AutoConfigureMockMvc(addFilters = false)
-public class UserServiceTests {
+ class UserServiceTests {
     @InjectMocks
     private UserRequestDto userRequestDto;
     @Mock
@@ -331,7 +332,7 @@ public class UserServiceTests {
     }
 
     @Test
-    public void testBuyNowSuccess() {
+     void testBuyNowSuccess() {
         Product product = new Product();
         product.setId(1L);
         product.setPrice(BigDecimal.TEN);
@@ -398,7 +399,7 @@ public class UserServiceTests {
     }
 
     @Test
-    public void testEditUserProfile_EmailInUse() {
+     void testEditUserProfile_EmailInUse() {
         when(bindingResult.hasErrors()).thenReturn(false);
         User currentUser = new User();
         MyUserDetails userDetails = new MyUserDetails(currentUser);
@@ -421,7 +422,7 @@ public class UserServiceTests {
     }
 
     @Test
-    public void testEditUserProfile_PhoneNumberInUse() {
+     void testEditUserProfile_PhoneNumberInUse() {
         // Setup
         when(bindingResult.hasErrors()).thenReturn(false);
         User currentUser = new User();
@@ -626,7 +627,7 @@ public class UserServiceTests {
         ResponseEntity<?> response = userService.updateQuantity(productId, quantity, authentication);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertEquals("Product with id " + productId + " not found!", response.getBody());
+        assertEquals("Product with ID: " + productId + " not found!", response.getBody()+"!") ;
     }
 
     @Test

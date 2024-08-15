@@ -30,7 +30,6 @@ dependencies {
     implementation("io.minio:minio:8.5.11")
     implementation 'org.flywaydb:flyway-core'
     implementation 'org.flywaydb:flyway-mysql'
-    implementation group: 'org.modelmapper', name: 'modelmapper', version: '2.1.1'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation group: 'org.springframework.security', name: 'spring-security-test', version: '6.3.1'

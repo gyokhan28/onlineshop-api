@@ -12,6 +12,7 @@ import com.example.online_shop_api.Entity.ProductHelpers.Color;
 import com.example.online_shop_api.Entity.Products.Accessory;
 import com.example.online_shop_api.Entity.Products.Product;
 import com.example.online_shop_api.Exceptions.ProductNotFoundException;
+import com.example.online_shop_api.Repository.OrderRepository;
 import com.example.online_shop_api.Repository.Products.ProductRepository;
 import com.example.online_shop_api.Service.Products.ProductService;
 import java.math.BigDecimal;
@@ -32,6 +33,9 @@ class ProductServiceTests {
   private ProductService productService;
   @Mock private ProductRepository productRepository;
   @Mock private ModelMapper modelMapper;
+  @Mock private  OrderRepository orderRepository;
+
+
 
   private Product testProduct;
   private ProductResponseDto testProductResponseDto;
@@ -40,7 +44,7 @@ class ProductServiceTests {
 
   @BeforeEach
   public void setUp() {
-    productService = new ProductService(productRepository, modelMapper);
+    productService = new ProductService(productRepository,orderRepository, modelMapper);
 
     testProduct =
         Product.builder()

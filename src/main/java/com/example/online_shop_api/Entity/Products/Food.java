@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
@@ -23,8 +24,8 @@ public class Food extends Product {
     @NotNull
     private LocalDate expiryDate;
 
-    public Food(String name, BigDecimal price, int quantity, LocalDate expiryDate) {
-        super(name, price, quantity);
+    public Food(String name, BigDecimal price, int quantity, List<String> imageUrls, LocalDate expiryDate) {
+        super(name, price, quantity,imageUrls);
         this.expiryDate = expiryDate;
     }
 }

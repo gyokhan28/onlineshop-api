@@ -10,6 +10,8 @@ import com.example.online_shop_api.Mapper.ProductMapper;
 import com.example.online_shop_api.Mapper.UserMapper;
 import com.example.online_shop_api.MyUserDetails;
 import com.example.online_shop_api.Repository.*;
+import com.example.online_shop_api.Repository.Products.ProductRepository;
+import com.example.online_shop_api.Service.Products.ProductService;
 import com.example.online_shop_api.Static.OrderStatusType;
 import com.example.online_shop_api.Static.RoleType;
 import com.example.online_shop_api.Utils.ValidationUtil;
@@ -124,8 +126,7 @@ public class UserService {
     private List<OrderResponseDto> getUserOrders(User user) {
         List<Order> currentUserOrders = orderRepository.findOrdersByUserIdAndStatusNotBasket(user.getId());
         return currentUserOrders.stream()
-                .map(OrderMapper::toDto)
-                .collect(Collectors.toList());
+                .map(OrderMapper::toDto).toList();
     }
 
     private User getCurrentUser(Authentication authentication) {
@@ -133,7 +134,7 @@ public class UserService {
         return myUserDetails.getUser();
     }
 
-    private List<BasketProductResponseDTO> getBasketProducts(Order basketOrder) throws Exception {
+    private List<BasketProductResponseDTO> getBasketProducts(Order basketOrder) {
         List<OrderProduct> products = orderProductRepository.findAllByOrderId(basketOrder.getId());
         List<BasketProductResponseDTO> responseList = new ArrayList<>();
         for (OrderProduct op : products) {
@@ -252,7 +253,7 @@ public class UserService {
     private void updateProductQuantity(Order order, Long productId, int newQuantity) {
         Optional<Product> optionalProduct = productRepository.findById(productId);
         if (optionalProduct.isEmpty()) {
-            throw new ProductNotFoundException("Product with id " + productId + " not found!");
+            throw new ProductNotFoundException(productId );
         }
         if (newQuantity < 0) {
             throw new QuantityNotAvailableException("The quantity cannot be negative number");
