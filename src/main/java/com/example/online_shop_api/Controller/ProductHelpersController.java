@@ -26,7 +26,7 @@ public class ProductHelpersController {
   public List<Color> getAllColors() {
     return productHelpersService.getAllColors();
   }
-  @GetMapping("/getAllMaterials")
+  @GetMapping("/get-all-materials")
   public List<Material> getAllMaterials() {
     return productHelpersService.getAllMaterials();
   }
