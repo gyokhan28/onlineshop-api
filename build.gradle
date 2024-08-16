@@ -46,6 +46,7 @@ dependencies {
     implementation group: 'io.jsonwebtoken', name: 'jjwt-api', version: '0.11.5'
     runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-impl', version: '0.11.5'
     runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: '0.11.5'
+    runtimeOnly 'com.h2database:h2' // TODO - is it needed?
 }
 
 tasks.named('test') {
@@ -71,6 +72,7 @@ jacocoTestReport {
                         '**/Dto/*',
                         '**/Entity/*',
                         '**/Mapper/*',
+                        '**/Repository/*',
                         '**/Exceptions/*',
                         '**/Static/*',
                         '**/ApplicationConfig/*',
@@ -86,13 +88,12 @@ jacocoTestReport {
 }
 
 tasks.check.dependsOn jacocoTestCoverageVerification
-
 sonar {
     properties {
         property "sonar.projectKey", "gyokhan28_onlineshop-api"
         property "sonar.organization", "gyokhan28"
         property "sonar.host.url", "https://sonarcloud.io"
         property "sonar.coverage.jacoco.xmlReportPaths", "${buildDir}/reports/jacoco/test/jacocoTestReport.xml"
-        property "sonar.exclusions", "**/Dto/**,**/Entity/**,**/Mapper/**,**/Static/**,**/ApplicationConfig/**,**/Controller/**,**/Exceptions/**,**/Configs/**,**/Service/JwtService.java,**/SecurityConfig.java,**/ApplicationConfig.java,**/MyUserDetails.java"
+        property "sonar.exclusions", "**/Dto/**,**/Entity/**,**/Mapper/**,**/Static/**,**/ApplicationConfig/**,**/Controller/**,**/Exceptions/**,**/Configs/**,**/Service/JwtService.java,**/SecurityConfig.java,**/ApplicationConfig.java,**/MyUserDetails.java,**/Repository/**"
     }
 }

@@ -8,7 +8,7 @@ import org.springframework.context.event.EventListener;
 
 import javax.sql.DataSource;
 
-@Configuration
+//@Configuration
 public class FlywayConfiguration {
 
     private final DataSource dataSource;
