@@ -32,7 +32,14 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/auth/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                        .anyRequest().authenticated()
+                        .requestMatchers("/user/register", "/employee/register").permitAll()
+                        .requestMatchers("/user/**", "/password/**").hasAnyAuthority("ROLE_USER", "ROLE_EMPLOYEE", "ROLE_ADMIN")
+                        .requestMatchers("/orders/show/**").hasAnyAuthority("ROLE_USER","ROLE_EMPLOYEE", "ROLE_ADMIN")
+                        .requestMatchers("/orders/change-status","/orders/show").hasAnyAuthority("ROLE_EMPLOYEE","ROLE_ADMIN")
+                        .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
+                        //TODO - finish the rest of the endpoints
+                        .requestMatchers("/orders/change-status").hasAnyAuthority("ROLE_EMPLOYEE", "ROLE_ADMIN")
+                        .anyRequest().permitAll()
                 )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)

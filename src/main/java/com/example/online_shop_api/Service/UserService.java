@@ -79,6 +79,9 @@ public class UserService {
         if (!isValidCityId(userRequestDto.getCityId())) {
             throw new CityNotFoundException("City doesn't exist");
         }
+        if (isPhoneNumberInDB(userRequestDto.getPhoneNumber())){
+            throw new PhoneInUseException("Phone number is already in use!");
+        }
     }
 
     public String addNewUser(UserRequestDto userRequestDto) {
@@ -106,7 +109,7 @@ public class UserService {
         try {
             validateNewUser(userRequestDto);
         } catch (EmailInUseException | UsernameInUseException | PasswordsNotMatchingException |
-                 CityNotFoundException e) {
+                 CityNotFoundException | PhoneInUseException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
         return ResponseEntity.ok(addNewUser(userRequestDto));
