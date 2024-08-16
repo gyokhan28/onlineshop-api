@@ -442,7 +442,7 @@ public class UserService {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
         userRepository.save(user);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(new SuccessResponse("Profile updated successfully"));
     }
 
     private void updateUserFields(User user, UserEditResponse userEditResponse) {
@@ -466,6 +466,9 @@ public class UserService {
     }
 
     private void updateEmail(User user, String email) {
+        if (user.getEmail().equalsIgnoreCase(email)) {
+            return;
+        }
         if (email != null) {
             if (!isEmailInDB(email)) {
                 user.setEmail(email);
@@ -494,6 +497,9 @@ public class UserService {
     }
 
     private void updatePhoneNumber(User user, String phoneNumber) {
+        if (user.getPhoneNumber().equalsIgnoreCase(phoneNumber)) {
+            return;
+        }
         if (phoneNumber != null) {
             if (!isPhoneNumberInDB(phoneNumber)) {
                 user.setPhoneNumber(phoneNumber);

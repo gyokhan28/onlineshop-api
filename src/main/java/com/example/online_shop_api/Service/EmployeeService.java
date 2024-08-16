@@ -133,6 +133,7 @@ public class EmployeeService {
         Employee employee = getCurrentEmployee(authentication);
         return ResponseEntity.ok(EmployeeMapper.toResponse(employee));
     }
+
     private Employee getCurrentEmployee(Authentication authentication) {
         MyUserDetails myUserDetails = (MyUserDetails) authentication.getPrincipal();
         return myUserDetails.getEmployee();
@@ -145,11 +146,11 @@ public class EmployeeService {
         Employee employee = getCurrentEmployee(authentication);
         try {
             updateEmployeeFields(employee, employeeEditResponse);
-        } catch (EmailInUseException | PhoneInUseException e){
+        } catch (EmailInUseException | PhoneInUseException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
         employeeRepository.save(employee);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(new SuccessResponse("Profile updated successfully"));
     }
 
     private void updateEmployeeFields(Employee employee, EmployeeEditResponse employeeEditResponse) {
@@ -172,6 +173,9 @@ public class EmployeeService {
     }
 
     private void updateEmail(Employee employee, String email) {
+        if (employee.getEmail().equalsIgnoreCase(email)) {
+            return;
+        }
         if (email != null) {
             if (!isEmailInDB(email)) {
                 employee.setEmail(email);
@@ -182,6 +186,9 @@ public class EmployeeService {
     }
 
     private void updatePhoneNumber(Employee employee, String phoneNumber) {
+        if (employee.getPhoneNumber().equalsIgnoreCase(phoneNumber)) {
+            return;
+        }
         if (phoneNumber != null) {
             if (!isPhoneNumberInDB(phoneNumber)) {
                 employee.setPhoneNumber(phoneNumber);
