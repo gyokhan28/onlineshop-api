@@ -28,18 +28,6 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final EmployeeRepository employeeRepository;
 
-    public User signup(UserRequestDto input) {
-        User user = UserMapper.toEntity(input);
-        user.setPassword(passwordEncoder.encode(input.getPassword()));
-        return userRepository.save(user);
-    }
-
-    public Employee signup(EmployeeRequestDto input) {
-        Employee employee = EmployeeMapper.toEntity(input);
-        employee.setPassword(passwordEncoder.encode(input.getPassword()));
-        return employeeRepository.save(employee);
-    }
-
     public UserDetails authenticate(LoginDto loginDto) {
         try {
             Authentication authentication = new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword());
