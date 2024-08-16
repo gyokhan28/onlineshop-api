@@ -47,8 +47,8 @@ public class UserController {
     }
 
     @GetMapping("/orders")
-    public ResponseEntity<List<UserOrdersResponse>> getCurrentUserOrders(Long userId) {
-        return userService.getCurrentUserOrders(userId);
+    public ResponseEntity<List<UserOrdersResponse>> getCurrentUserOrders(Authentication authentication) {
+        return userService.getCurrentUserOrders(authentication);
     }
 
     @PutMapping("/cancel-order/{id}")

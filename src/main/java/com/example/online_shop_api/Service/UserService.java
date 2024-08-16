@@ -338,13 +338,8 @@ public class UserService {
         return response;
     }
 
-    public ResponseEntity<List<UserOrdersResponse>> getCurrentUserOrders(Long userId) {
-        Optional<User> optionalUser = userRepository.findById(userId);
-        User user;
-        if (optionalUser.isEmpty()) {
-            return null;
-        }
-        user = optionalUser.get();
+    public ResponseEntity<List<UserOrdersResponse>> getCurrentUserOrders(Authentication authentication) {
+        User user = getCurrentUser(authentication);
         List<Order> currentUSerOrders = orderRepository.findOrdersByUserIdAndStatusNotBasket(user.getId());
         List<UserOrdersResponse> responseList = new ArrayList<>();
 
