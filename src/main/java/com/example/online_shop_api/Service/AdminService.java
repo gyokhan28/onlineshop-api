@@ -1,6 +1,8 @@
 package com.example.online_shop_api.Service;
 
+import com.example.online_shop_api.Dto.Response.EmployeeResponseDto;
 import com.example.online_shop_api.Entity.Employee;
+import com.example.online_shop_api.Mapper.EmployeeMapper;
 import com.example.online_shop_api.Repository.EmployeeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -17,8 +19,10 @@ public class AdminService {
 
     private final EmployeeRepository employeeRepository;
 
-    public ResponseEntity<List<Employee>> getAllEmployees() {
-        return ResponseEntity.ok(employeeRepository.findByRole_IdNot(1L));
+    public ResponseEntity<List<EmployeeResponseDto>> getAllEmployees() {
+        List<Employee> employeeList = employeeRepository.findByRole_IdNot(1L);
+
+        return ResponseEntity.ok(EmployeeMapper.toDtoList(employeeList));
     }
 
     public ResponseEntity<String> updateEmployeeStatusAndSalary(Long employeeId, Boolean isEnabled, String salary) {
