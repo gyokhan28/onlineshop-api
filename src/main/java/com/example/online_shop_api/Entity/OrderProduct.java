@@ -19,6 +19,7 @@ public class OrderProduct {
     @Column(name = "id", nullable = false)
     private Long id;
 
+    @ToString.Exclude
     @ManyToOne
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;

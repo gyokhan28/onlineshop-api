@@ -1,12 +1,9 @@
 package com.example.online_shop_api.Mapper;
 
 import com.example.online_shop_api.Dto.Request.UserRequestDto;
-import com.example.online_shop_api.Dto.Response.UserEditResponse;
+import com.example.online_shop_api.Dto.Response.AdressResponseDto;
 import com.example.online_shop_api.Dto.Response.UserResponseDto;
-import com.example.online_shop_api.Entity.Address;
-import com.example.online_shop_api.Entity.City;
 import com.example.online_shop_api.Entity.User;
-import com.example.online_shop_api.Static.BulgarianCity;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -22,7 +19,8 @@ public class UserMapper {
         userResponseDto.setCreatedAt(user.getCreatedAt());
         userResponseDto.setPhoneNumber(user.getPhoneNumber());
         userResponseDto.setPhoneNumber(user.getPhoneNumber());
-        userResponseDto.setAddress(user.getAddress());
+        AdressResponseDto adressResponseDto = user.getAddress() != null ? AddressMapper.toDto(user.getAddress()) : null;
+        userResponseDto.setAddress(adressResponseDto);
 
         return userResponseDto;
     }
