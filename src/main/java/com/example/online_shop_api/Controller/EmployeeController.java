@@ -32,10 +32,4 @@ public class EmployeeController {
     public ResponseEntity<?> registerNewEmployee(@RequestBody @Valid EmployeeRequestDto employeeRequestDto, BindingResult bindingResult) {
         return employeeService.registerNewEmployee(employeeRequestDto, bindingResult);
     }
-
-//    @GetMapping("/profile")
-//    public ResponseEntity<MyUserDetails> showProfile(Authentication authentication) {
-//        return employeeService.showEmployeeProfile(authentication);
-//    }
-
 }

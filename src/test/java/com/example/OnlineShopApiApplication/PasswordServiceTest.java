@@ -15,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -93,6 +94,7 @@ class PasswordServiceTest {
     @Test
     void testChangePasswordSuccess() {
         when(myUserDetails.getUser()).thenReturn(user);
+        when(authentication.isAuthenticated()).thenReturn(true);
         when(authentication.getPrincipal()).thenReturn(myUserDetails);
         when(bCryptPasswordEncoder.matches("currentPassword", user.getPassword())).thenReturn(true);
         when(bCryptPasswordEncoder.encode("newPassword")).thenReturn("encodedNewPassword");
@@ -108,6 +110,7 @@ class PasswordServiceTest {
     @Test
     void testChangePasswordIncorrectCurrentPassword() {
         when(myUserDetails.getUser()).thenReturn(user);
+        when(authentication.isAuthenticated()).thenReturn(true);
         when(authentication.getPrincipal()).thenReturn(myUserDetails);
         when(bCryptPasswordEncoder.matches("currentPassword", user.getPassword())).thenReturn(false);
 
@@ -120,6 +123,7 @@ class PasswordServiceTest {
     @Test
     void testChangePasswordMismatchedNewPasswords() {
         when(myUserDetails.getUser()).thenReturn(user);
+        when(authentication.isAuthenticated()).thenReturn(true);
         when(authentication.getPrincipal()).thenReturn(myUserDetails);
         when(bCryptPasswordEncoder.matches("currentPassword", user.getPassword())).thenReturn(true);
 
@@ -132,6 +136,7 @@ class PasswordServiceTest {
     @Test
     void testChangePasswordEmptyNewPassword() {
         when(myUserDetails.getUser()).thenReturn(user);
+        when(authentication.isAuthenticated()).thenReturn(true);
         when(authentication.getPrincipal()).thenReturn(myUserDetails);
         when(bCryptPasswordEncoder.matches("currentPassword", user.getPassword())).thenReturn(true);
 
@@ -144,6 +149,7 @@ class PasswordServiceTest {
     @Test
     void testChangePasswordShortNewPassword() {
         when(myUserDetails.getUser()).thenReturn(user);
+        when(authentication.isAuthenticated()).thenReturn(true);
         when(authentication.getPrincipal()).thenReturn(myUserDetails);
         when(bCryptPasswordEncoder.matches("currentPassword", user.getPassword())).thenReturn(true);
 

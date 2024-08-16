@@ -9,6 +9,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "job_types")
+@Builder
 public class JobType {
     @Id
     @Column(name = "id", nullable = false)

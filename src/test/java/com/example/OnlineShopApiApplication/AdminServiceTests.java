@@ -1,7 +1,10 @@
 package com.example.OnlineShopApiApplication;
 
+import com.example.online_shop_api.Dto.Response.EmployeeResponseDto;
 import com.example.online_shop_api.Entity.Employee;
+import com.example.online_shop_api.Entity.JobType;
 import com.example.online_shop_api.Entity.Role;
+import com.example.online_shop_api.Mapper.EmployeeMapper;
 import com.example.online_shop_api.Repository.EmployeeRepository;
 import com.example.online_shop_api.Service.AdminService;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,6 +51,10 @@ public class AdminServiceTests {
                 .password("TestPassword")
                 .isEnabled(false)
                 .role(testRole)
+                .jobType(JobType.builder()
+                        .id(2L)
+                        .name("CASHIER")
+                        .build())
                 .build();
     }
 
@@ -61,15 +68,19 @@ public class AdminServiceTests {
                 .email("test2@mail.bg")
                 .password("TestPassword2")
                 .role(testRole)
+                .jobType(JobType.builder()
+                        .id(2L)
+                        .name("CASHIER")
+                        .build())
                 .build();
 
         List<Employee> employeeList = Arrays.asList(testEmployee, testEmployee2);
 
         when(employeeRepository.findByRole_IdNot(1L)).thenReturn(employeeList);
-        ResponseEntity<List<Employee>> response = adminService.getAllEmployees();
+        ResponseEntity<List<EmployeeResponseDto>> response = adminService.getAllEmployees();
 
         assertEquals(200, response.getStatusCodeValue());
-        assertEquals(employeeList, response.getBody());
+        assertEquals(EmployeeMapper.toDtoList(employeeList), response.getBody());
         assertEquals(2, response.getBody().size());
 
         verify(employeeRepository, times(1)).findByRole_IdNot(1L);

@@ -32,12 +32,20 @@ dependencies {
     implementation 'org.flywaydb:flyway-mysql'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation group: 'org.springframework.security', name: 'spring-security-test', version: '6.3.1'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     compileOnly 'org.projectlombok:lombok:1.18.32'
     annotationProcessor 'org.projectlombok:lombok:1.18.32'
     testCompileOnly 'org.projectlombok:lombok:1.18.32'
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.32'
+    testImplementation 'org.testcontainers:junit-jupiter'
+    testImplementation 'org.testcontainers:mysql'
+    testImplementation 'io.rest-assured:rest-assured'
+    testImplementation group: 'org.springframework.security', name: 'spring-security-test', version: '6.3.1'  // TODO - test and remove if needed
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+    implementation group: 'io.jsonwebtoken', name: 'jjwt-api', version: '0.11.5'
+    runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-impl', version: '0.11.5'
+    runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: '0.11.5'
 }
 
 tasks.named('test') {
@@ -78,6 +86,7 @@ jacocoTestReport {
 }
 
 tasks.check.dependsOn jacocoTestCoverageVerification
+
 sonar {
     properties {
         property "sonar.projectKey", "gyokhan28_onlineshop-api"

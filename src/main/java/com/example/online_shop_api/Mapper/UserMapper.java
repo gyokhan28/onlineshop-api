@@ -62,7 +62,7 @@ public class UserMapper {
                 .build();
     }
 
-    public static UserEditResponse toResponse(User user){
+    public static UserEditResponse toResponse(User user) {
         UserEditResponse response = new UserEditResponse();
         response.setFirstName(user.getFirstName());
         response.setLastName(user.getLastName());
