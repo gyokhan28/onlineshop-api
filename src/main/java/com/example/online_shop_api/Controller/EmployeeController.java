@@ -1,11 +1,13 @@
 package com.example.online_shop_api.Controller;
 
 import com.example.online_shop_api.Dto.Request.EmployeeRequestDto;
+import com.example.online_shop_api.Dto.Response.EmployeeEditResponse;
 import com.example.online_shop_api.Dto.Response.EmployeeResponseDto;
 import com.example.online_shop_api.Service.EmployeeService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,5 +33,15 @@ public class EmployeeController {
     @PostMapping("/register")
     public ResponseEntity<?> registerNewEmployee(@RequestBody @Valid EmployeeRequestDto employeeRequestDto, BindingResult bindingResult) {
         return employeeService.registerNewEmployee(employeeRequestDto, bindingResult);
+    }
+
+    @GetMapping("/profile/edit")
+    public ResponseEntity<EmployeeEditResponse> getCurrentEmployeeData(Authentication authentication) {
+        return employeeService.getCurrentEmployeeToRequest(authentication);
+    }
+
+    @PostMapping("/profile/edit")
+    public ResponseEntity<?> editProfile(@RequestBody @Valid EmployeeEditResponse employeeEditResponse, BindingResult bindingResult, Authentication authentication) {
+        return employeeService.editEmployeeProfile(bindingResult, employeeEditResponse, authentication);
     }
 }

@@ -61,8 +61,8 @@ public class UserController {
         return userService.getCurrentUserToRequest(authentication);
     }
 
-    @PutMapping("/profile/edit")
-    public ResponseEntity<?> editProfile(BindingResult bindingResult, @RequestBody @Valid UserEditResponse userEditResponse, Authentication authentication) {
+    @PostMapping("/profile/edit")
+    public ResponseEntity<?> editProfile(@RequestBody @Valid UserEditResponse userEditResponse, BindingResult bindingResult, Authentication authentication) {
         return userService.editUserProfile(bindingResult, userEditResponse, authentication);
     }
 }

@@ -1,6 +1,7 @@
 package com.example.online_shop_api.Service;
 
 import com.example.online_shop_api.Dto.Request.EmployeeRequestDto;
+import com.example.online_shop_api.Dto.Response.EmployeeEditResponse;
 import com.example.online_shop_api.Dto.Response.EmployeeResponseDto;
 import com.example.online_shop_api.Dto.Response.ErrorResponse;
 import com.example.online_shop_api.Dto.Response.SuccessResponse;
@@ -9,17 +10,21 @@ import com.example.online_shop_api.Entity.JobType;
 import com.example.online_shop_api.Entity.Role;
 import com.example.online_shop_api.Exceptions.*;
 import com.example.online_shop_api.Mapper.EmployeeMapper;
+import com.example.online_shop_api.MyUserDetails;
 import com.example.online_shop_api.Repository.EmployeeRepository;
 import com.example.online_shop_api.Repository.JobTypeRepository;
 import com.example.online_shop_api.Repository.RoleRepository;
 import com.example.online_shop_api.Static.JobTypeEnum;
 import com.example.online_shop_api.Static.RoleType;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 import java.util.Optional;
@@ -81,7 +86,7 @@ public class EmployeeService {
         if (isUsernameInDB(employeeRequestDto.getUsername())) {
             throw new UsernameInUseException("Username already in use. Please use a different username");
         }
-        if(!arePasswordsMatching(employeeRequestDto)) {
+        if (!arePasswordsMatching(employeeRequestDto)) {
             throw new PasswordsNotMatchingException("Passwords don't match");
         }
 
@@ -115,10 +120,74 @@ public class EmployeeService {
     private boolean isPhoneNumberInDB(String phoneNumber) {
         return employeeRepository.findByPhoneNumber(phoneNumber).isPresent();
     }
-    private boolean isUsernameInDB(String username){
+
+    private boolean isUsernameInDB(String username) {
         return employeeRepository.findByUsername(username).isPresent();
     }
+
     private boolean arePasswordsMatching(EmployeeRequestDto employeeRequestDto) {
         return employeeRequestDto.getPassword().equals(employeeRequestDto.getRepeatedPassword());
+    }
+
+    public ResponseEntity<EmployeeEditResponse> getCurrentEmployeeToRequest(Authentication authentication) {
+        Employee employee = getCurrentEmployee(authentication);
+        return ResponseEntity.ok(EmployeeMapper.toResponse(employee));
+    }
+    private Employee getCurrentEmployee(Authentication authentication) {
+        MyUserDetails myUserDetails = (MyUserDetails) authentication.getPrincipal();
+        return myUserDetails.getEmployee();
+    }
+
+    public ResponseEntity<?> editEmployeeProfile(BindingResult bindingResult, @RequestBody @Valid EmployeeEditResponse employeeEditResponse, Authentication authentication) {
+        if (bindingResult.hasErrors()) {
+            return ResponseEntity.badRequest().body(bindingResult.getAllErrors());
+        }
+        Employee employee = getCurrentEmployee(authentication);
+        try {
+            updateEmployeeFields(employee, employeeEditResponse);
+        } catch (EmailInUseException | PhoneInUseException e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+        employeeRepository.save(employee);
+        return ResponseEntity.ok().build();
+    }
+
+    private void updateEmployeeFields(Employee employee, EmployeeEditResponse employeeEditResponse) {
+        updateFirstName(employee, employeeEditResponse.getFirstName());
+        updateLastName(employee, employeeEditResponse.getLastName());
+        updateEmail(employee, employeeEditResponse.getEmail());
+        updatePhoneNumber(employee, employeeEditResponse.getPhoneNumber());
+    }
+
+    private void updateFirstName(Employee employee, String firstName) {
+        if (firstName != null) {
+            employee.setFirstName(firstName);
+        }
+    }
+
+    private void updateLastName(Employee employee, String lastName) {
+        if (lastName != null) {
+            employee.setLastName(lastName);
+        }
+    }
+
+    private void updateEmail(Employee employee, String email) {
+        if (email != null) {
+            if (!isEmailInDB(email)) {
+                employee.setEmail(email);
+            } else {
+                throw new EmailInUseException("Email already in use!");
+            }
+        }
+    }
+
+    private void updatePhoneNumber(Employee employee, String phoneNumber) {
+        if (phoneNumber != null) {
+            if (!isPhoneNumberInDB(phoneNumber)) {
+                employee.setPhoneNumber(phoneNumber);
+            } else {
+                throw new PhoneInUseException("Phone number already in use!");
+            }
+        }
     }
 }
