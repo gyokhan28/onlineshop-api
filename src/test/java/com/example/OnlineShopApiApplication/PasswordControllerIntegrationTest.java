@@ -6,7 +6,6 @@ import com.example.online_shop_api.MyUserDetails;
 import com.example.online_shop_api.OnlineShopApiApplication;
 import com.example.online_shop_api.Repository.EmployeeRepository;
 import com.example.online_shop_api.Repository.UserRepository;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,27 +16,16 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.testcontainers.containers.MySQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.Statement;
-
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@Testcontainers
-@SpringBootTest(classes = OnlineShopApiApplication.class) // Specify the configuration class
+@SpringBootTest(classes = OnlineShopApiApplication.class)
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
 class PasswordControllerIntegrationTest {
 
     @Autowired
@@ -49,33 +37,18 @@ class PasswordControllerIntegrationTest {
     @Autowired
     private EmployeeRepository employeeRepository;
 
-    @Container
-    static MySQLContainer<?> mySqlContainer = new MySQLContainer("mysql:latest");
-
-    @DynamicPropertySource
-    static void configureProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", mySqlContainer::getJdbcUrl);
-        registry.add("spring.datasource.username", mySqlContainer::getUsername);
-        registry.add("spring.datasource.password", mySqlContainer::getPassword);
-    }
+    private static MyUserDetails myUserDetailsForUser;
 
     @BeforeAll
-    static void beforeAll() {
-        mySqlContainer.start();
-    }
-
-    @AfterAll
-    static void afterAll() {
-        mySqlContainer.stop();
+    static void setup(@Autowired UserRepository userRepository) {
+        User user = userRepository.findByUsername("user").orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        myUserDetailsForUser = new MyUserDetails(user);
     }
 
     @BeforeEach
-    void setUp() {
-        User user = userRepository.findByUsername("user").orElseThrow(() -> new UsernameNotFoundException("User not found"));
-        MyUserDetails myUserDetails = new MyUserDetails(user);
-
+    void setupSecurityContext() {
         SecurityContextHolder.getContext().setAuthentication(
-                new UsernamePasswordAuthenticationToken(myUserDetails, null, myUserDetails.getAuthorities()));
+                new UsernamePasswordAuthenticationToken(myUserDetailsForUser, null, myUserDetailsForUser.getAuthorities()));
     }
 
     @Test
@@ -169,38 +142,4 @@ class PasswordControllerIntegrationTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("Incorrect current password!"));
     }
-
-    @Test
-    void testUsersInDatabase() throws Exception {
-        String jdbcUrl = mySqlContainer.getJdbcUrl();
-        String username = mySqlContainer.getUsername();
-        String password = mySqlContainer.getPassword();
-
-        boolean userFound = false;
-        boolean user2Found = false;
-
-        try (Connection connection = DriverManager.getConnection(jdbcUrl, username, password);
-             Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery("SELECT * FROM users")) {
-
-            while (resultSet.next()) {
-                String userName = resultSet.getString("username");
-                if ("user".equals(userName)) {
-                    userFound = true;
-                } else if ("user2".equals(userName)) {
-                    user2Found = true;
-                }
-            }
-
-            assertTrue(userFound, "User 'user' should be present in the database");
-            assertTrue(user2Found, "User 'user2' should be present in the database");
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail("Exception occurred while checking users in the database: " + e.getMessage());
-        }
-
-
-//        Thread.sleep(300000); // 5 minutes delay so that DB can be tested manually
-    }
-
 }

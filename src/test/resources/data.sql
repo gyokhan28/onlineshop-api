@@ -157,9 +157,9 @@ INSERT INTO `address` (`id`, `additional_information`, `street_name`, `city_id`)
 (NULL, 'This is where the admin lives', 'Admin str.', '33'),
 (NULL, 'Second floor - green door ', 'Ivan Ivanov 22', '38'),
 (NULL, 'Ground floor - behind the building', '6 Септември', '33');
-INSERT INTO `product` (`product`, `id`, `image_urls`, `is_deleted`, `name`, `price`, `quantity`, `best_before`, `expiry_date`, `is_non_slip`, `is_outdoor`, `is_biodegradable`, `is_reusable`, `brand_id`, `color_id`, `material_id`) VALUES
-('Drink', NULL, '\'localhost:8082/api/image/download/1/Screenshot 2024-07-20 212004.png,localhost:8082/api/image/download/1/Screenshot 2024-07-20 212033.png,localhost:8082/api/image/download/1/trattoria-bankia.jpg\'', b'0', 'Voda Bankq', '0.90', '200', '2027-09-30', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-('Drink', NULL, '\'localhost:8082/api/image/download/2/0010475_boza-magi-1l_550.jpeg,localhost:8082/api/image/download/2/448505897_2471743453214720_6003364360989055017_n.jpg,localhost:8082/api/image/download/2/boza-drink-near-me-Toronto_1024x1024.jpg,localhost:8082/api/image/download/2/boza.jpg,localhost:8082/api/image/download/2/images.jpeg\'', b'0', 'Бозичка', '0.90', '200', '2027-09-30', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `product` (`product`, `id`, `is_deleted`, `name`, `price`, `quantity`, `best_before`, `expiry_date`, `is_non_slip`, `is_outdoor`, `is_biodegradable`, `is_reusable`, `brand_id`, `color_id`, `material_id`) VALUES
+('Drink', NULL, b'0', 'Voda Bankq', '0.90', '200', '2027-09-30', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+('Drink', NULL, b'0', 'Бозичка', '0.90', '200', '2027-09-30', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 INSERT INTO `orders` (`id`, `order_cancel_date_time`, `order_date_time`, `order_delivery_date_time`, `status_id`, `user_id`) VALUES
 (NULL, NULL, '2024-07-17 22:51:47.000000', '2024-07-20 20:32:43.000000', '3', '1'),
 (NULL, NULL, '2024-07-20 22:51:47.000000', NULL, '2', '1');
