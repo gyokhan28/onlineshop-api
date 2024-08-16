@@ -1,6 +1,7 @@
 package com.example.online_shop_api.Mapper;
 
 import com.example.online_shop_api.Dto.Request.EmployeeRequestDto;
+import com.example.online_shop_api.Dto.Response.EmployeeEditResponse;
 import com.example.online_shop_api.Dto.Response.EmployeeResponseDto;
 import com.example.online_shop_api.Entity.Employee;
 import org.springframework.stereotype.Component;
@@ -73,5 +74,13 @@ public class EmployeeMapper {
             return Period.between(birthDate, currentDate).getYears();
         }
         return 0;
+    }
+    public static EmployeeEditResponse toResponse(Employee employee) {
+        EmployeeEditResponse response = new EmployeeEditResponse();
+        response.setFirstName(employee.getFirstName());
+        response.setLastName(employee.getLastName());
+        response.setEmail(employee.getEmail());
+        response.setPhoneNumber(employee.getPhoneNumber());
+        return response;
     }
 }

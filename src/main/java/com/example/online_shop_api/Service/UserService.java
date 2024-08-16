@@ -123,14 +123,15 @@ public class UserService {
 
     private List<OrderResponseDto> getUserOrders(User user) {
         List<Order> currentUserOrders = orderRepository.findOrdersByUserIdAndStatusNotBasket(user.getId());
-        return currentUserOrders.stream()
-                .map(OrderMapper::toDto)
-                .collect(Collectors.toList());
-    }
-
-    private User getCurrentUser(Authentication authentication) {
-        MyUserDetails myUserDetails = (MyUserDetails) authentication.getPrincipal();
-        return myUserDetails.getUser();
+        List<OrderResponseDto> userOrders = new ArrayList<>();
+        for (Order o : currentUserOrders) {
+            OrderResponseDto order = OrderMapper.toDto(o);
+            List<OrderProduct> orderProducts = orderProductRepository.findAllByOrder_Id(o.getId());
+            BigDecimal price = calculateTotalPrice(orderProducts);
+            order.setPrice(price);
+            userOrders.add(order);
+        }
+        return userOrders;
     }
 
     private List<BasketProductResponseDTO> getBasketProducts(Order basketOrder) throws Exception {
@@ -424,14 +425,22 @@ public class UserService {
         return ResponseEntity.ok(UserMapper.toResponse(user));
     }
 
-    public ResponseEntity<?> editUserProfile(BindingResult bindingResult, @Valid UserEditResponse userEditResponse, Authentication authentication) {
+    private User getCurrentUser(Authentication authentication) {
+        MyUserDetails myUserDetails = (MyUserDetails) authentication.getPrincipal();
+        return myUserDetails.getUser();
+    }
+
+    public ResponseEntity<?> editUserProfile(BindingResult bindingResult, @RequestBody @Valid UserEditResponse userEditResponse, Authentication authentication) {
         if (bindingResult.hasErrors()) {
             return ResponseEntity.badRequest().body(bindingResult.getAllErrors());
         }
 
         User user = getCurrentUser(authentication);
-        updateUserFields(user, userEditResponse);
-
+        try {
+            updateUserFields(user, userEditResponse);
+        } catch (EmailInUseException | PhoneInUseException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
         userRepository.save(user);
         return ResponseEntity.ok().build();
     }
@@ -489,7 +498,7 @@ public class UserService {
             if (!isPhoneNumberInDB(phoneNumber)) {
                 user.setPhoneNumber(phoneNumber);
             } else {
-                throw new EmailInUseException("Phone number already in use!");
+                throw new PhoneInUseException("Phone number already in use!");
             }
         }
     }
