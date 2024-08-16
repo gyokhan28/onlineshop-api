@@ -94,7 +94,6 @@ class PasswordServiceTest {
     @Test
     void testChangePasswordSuccess() {
         when(myUserDetails.getUser()).thenReturn(user);
-        when(authentication.isAuthenticated()).thenReturn(true);
         when(authentication.getPrincipal()).thenReturn(myUserDetails);
         when(bCryptPasswordEncoder.matches("currentPassword", user.getPassword())).thenReturn(true);
         when(bCryptPasswordEncoder.encode("newPassword")).thenReturn("encodedNewPassword");
@@ -110,7 +109,6 @@ class PasswordServiceTest {
     @Test
     void testChangePasswordIncorrectCurrentPassword() {
         when(myUserDetails.getUser()).thenReturn(user);
-        when(authentication.isAuthenticated()).thenReturn(true);
         when(authentication.getPrincipal()).thenReturn(myUserDetails);
         when(bCryptPasswordEncoder.matches("currentPassword", user.getPassword())).thenReturn(false);
 
@@ -123,7 +121,6 @@ class PasswordServiceTest {
     @Test
     void testChangePasswordMismatchedNewPasswords() {
         when(myUserDetails.getUser()).thenReturn(user);
-        when(authentication.isAuthenticated()).thenReturn(true);
         when(authentication.getPrincipal()).thenReturn(myUserDetails);
         when(bCryptPasswordEncoder.matches("currentPassword", user.getPassword())).thenReturn(true);
 
@@ -136,7 +133,7 @@ class PasswordServiceTest {
     @Test
     void testChangePasswordEmptyNewPassword() {
         when(myUserDetails.getUser()).thenReturn(user);
-        when(authentication.isAuthenticated()).thenReturn(true);
+//        when(authentication.isAuthenticated()).thenReturn(true);
         when(authentication.getPrincipal()).thenReturn(myUserDetails);
         when(bCryptPasswordEncoder.matches("currentPassword", user.getPassword())).thenReturn(true);
 
@@ -149,7 +146,7 @@ class PasswordServiceTest {
     @Test
     void testChangePasswordShortNewPassword() {
         when(myUserDetails.getUser()).thenReturn(user);
-        when(authentication.isAuthenticated()).thenReturn(true);
+//        when(authentication.isAuthenticated()).thenReturn(true);
         when(authentication.getPrincipal()).thenReturn(myUserDetails);
         when(bCryptPasswordEncoder.matches("currentPassword", user.getPassword())).thenReturn(true);
 

@@ -20,6 +20,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 
@@ -34,7 +35,8 @@ import static org.mockito.Mockito.*;
 public class EmployeeServiceTests {
     @InjectMocks
     EmployeeService employeeService;
-
+    @Mock
+    BCryptPasswordEncoder bCryptPasswordEncoder;
     @Mock
     EmployeeRepository employeeRepository;
     @Mock
@@ -258,7 +260,7 @@ public class EmployeeServiceTests {
     @Test
     void testRegisterNewEmployee_Success() {
         EmployeeRequestDto employeeRequestDto = new EmployeeRequestDto();
-        String username = "test";
+        String username = "test123";
         employeeRequestDto.setUsername(username);
         employeeRequestDto.setPassword("aaa");
         employeeRequestDto.setRepeatedPassword("aaa");
