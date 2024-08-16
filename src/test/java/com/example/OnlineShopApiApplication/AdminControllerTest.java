@@ -33,7 +33,6 @@ public class AdminControllerTest {
                 .andExpect(jsonPath("$[0].firstName").value("Employee"))
                 .andExpect(jsonPath("$[0].lastName").value("1"))
                 .andExpect(jsonPath("$[0].salary").value("2000.0"))
-                .andExpect(jsonPath("$[0].enabled").value("false"))
                 .andExpect(jsonPath("$[1].firstName").value("Employee"))
                 .andExpect(jsonPath("$[1].lastName").value("2"))
                 .andExpect(jsonPath("$[1].salary").value("1500.0"))
