@@ -54,6 +54,11 @@ tasks.named('test') {
     finalizedBy 'jacocoTestReport'
 }
 
+// Enable Xlint options for more detailed compiler warnings
+//tasks.withType(JavaCompile) {
+//    options.compilerArgs << "-Xlint:deprecation" << "-Xlint:unchecked"
+//}
+
 jacoco {
     toolVersion = "0.8.11"
     reportsDirectory = layout.buildDirectory.dir('reports/jacoco')

@@ -36,8 +36,8 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 @AutoConfigureMockMvc(addFilters = false)
 public class UserServiceTests {
-    @InjectMocks
     private UserRequestDto userRequestDto;
+
     @Mock
     UserRepository userRepository;
     @Mock
@@ -76,6 +76,7 @@ public class UserServiceTests {
 
     @BeforeEach
     public void setUp() {
+        userRequestDto = new UserRequestDto();
         userRequestDto.setFirstName("testFirstName");
         userRequestDto.setLastName("testLastName");
         userRequestDto.setUsername("testUserName");
@@ -114,6 +115,9 @@ public class UserServiceTests {
         userRequestDto.setPassword("pass123");
         userRequestDto.setRepeatedPassword("pass123");
         User user = new User();
+        Address address = new Address();
+        user.setAddress(address);
+
         mockedStaticUserMapper.when(() -> UserMapper.toEntity(Mockito.any(UserRequestDto.class))).thenReturn(user);
 
         when(encoder.encode("pass123")).thenReturn("encodedPassword");
@@ -123,6 +127,8 @@ public class UserServiceTests {
         assertEquals("Account created successfully!", actualResult);
         verify(addressRepository, times(1)).save(user.getAddress());
         verify(userRepository, times(1)).save(user);
+
+        assertEquals("encodedPassword", user.getPassword());
     }
 
     @Test
@@ -238,6 +244,7 @@ public class UserServiceTests {
 
         assertEquals(ResponseEntity.badRequest().body(errors.toString()), response);
     }
+
     @Test
     void testAddNewUser_ThrowsServerErrorException() {
         userRequestDto.setEmail("test@mail.bg");
@@ -246,7 +253,6 @@ public class UserServiceTests {
         userRequestDto.setRepeatedPassword("pass123");
 
         mockedStaticUserMapper.when(() -> UserMapper.toEntity(Mockito.any(UserRequestDto.class))).thenThrow(new RuntimeException("Mapping error"));
-
 
         ServerErrorException thrownException = assertThrows(ServerErrorException.class, () -> {
             userService.addNewUser(userRequestDto);
@@ -363,16 +369,17 @@ public class UserServiceTests {
         when(orderProductRepository.findAllByOrder_Id(basketOrder.getId())).thenReturn(orderProductList);
         when(userRepository.findById(testUser.getId())).thenReturn(Optional.of(testUser));
 
-        ResponseEntity<BuyNowResponse> response = (ResponseEntity<BuyNowResponse>) userService.buyNow(testUser.getId());
-
-        assertNotNull(response);
-        assertEquals(200, response.getStatusCodeValue());
-        BuyNowResponse buyNowResponse = (BuyNowResponse) response.getBody();
-        assertNotNull(buyNowResponse);
-        assertTrue(buyNowResponse.isSuccess());
-        assertNull(buyNowResponse.getErrors());
-        assertEquals(BigDecimal.valueOf(50), response.getBody().getTotalPrice());
-        assertEquals(1L, buyNowResponse.getOrderId());
+        ResponseEntity<?> responseEntity = userService.buyNow(testUser.getId());
+        if (responseEntity.getBody() instanceof BuyNowResponse buyNowResponse) {
+            assertNotNull(buyNowResponse);
+            assertEquals(HttpStatus.OK.value(), responseEntity.getStatusCode().value());
+            assertTrue(buyNowResponse.isSuccess());
+            assertNull(buyNowResponse.getErrors());
+            assertEquals(BigDecimal.valueOf(50), buyNowResponse.getTotalPrice());
+            assertEquals(1L, buyNowResponse.getOrderId());
+        } else {
+            fail("Expected BuyNowResponse but got " + responseEntity.getBody().getClass().getName());
+        }
     }
 
     @Test

@@ -79,7 +79,7 @@ public class AdminServiceTests {
         when(employeeRepository.findByRole_IdNot(1L)).thenReturn(employeeList);
         ResponseEntity<List<EmployeeResponseDto>> response = adminService.getAllEmployees();
 
-        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(200, response.getStatusCode().value());
         assertEquals(EmployeeMapper.toDtoList(employeeList), response.getBody());
         assertEquals(2, response.getBody().size());
 
