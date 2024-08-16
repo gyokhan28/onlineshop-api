@@ -7,7 +7,7 @@ import com.example.online_shop_api.MyUserDetails;
 import com.example.online_shop_api.Repository.EmployeeRepository;
 import com.example.online_shop_api.Repository.UserRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -15,11 +15,12 @@ import org.springframework.stereotype.Service;
 
 @Service
 @AllArgsConstructor
+@RequiredArgsConstructor
 public class PasswordService {
 
-    private EmployeeRepository employeeRepository;
-    private UserRepository userRepository;
-    private BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final EmployeeRepository employeeRepository;
+    private final UserRepository userRepository;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     public boolean isUser(MyUserDetails myUserDetails) {
         return myUserDetails.getUser() != null;
@@ -60,9 +61,6 @@ public class PasswordService {
     }
 
     public ResponseEntity<String> changePassword(String currentPassword, String newPassword, String repeatNewPassword, Authentication authentication) {
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("There's no logged in user.");
-        }
         MyUserDetails myUserDetails = (MyUserDetails) authentication.getPrincipal();
         if (!isCurrentPasswordCorrect(myUserDetails, currentPassword)) {
             return ResponseEntity.badRequest().body("Incorrect current password!");

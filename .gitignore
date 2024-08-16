@@ -39,4 +39,5 @@ Docker/db
 ### STORAGE ###
 Docker/storage
 
+### Gradle ###
 .gradle/
