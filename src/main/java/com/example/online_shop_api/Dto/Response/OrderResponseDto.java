@@ -15,5 +15,5 @@ public class OrderResponseDto {
     private LocalDateTime orderCancelDateTime;
     private String status;
     private List<OrderProductResponseDto> orderProducts;
-//    private BigDecimal price;
+    private BigDecimal price;
 }

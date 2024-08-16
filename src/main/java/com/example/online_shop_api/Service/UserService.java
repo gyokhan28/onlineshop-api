@@ -340,6 +340,9 @@ public class UserService {
 
     public ResponseEntity<List<UserOrdersResponse>> getCurrentUserOrders(Authentication authentication) {
         User user = getCurrentUser(authentication);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
         List<Order> currentUSerOrders = orderRepository.findOrdersByUserIdAndStatusNotBasket(user.getId());
         List<UserOrdersResponse> responseList = new ArrayList<>();
 

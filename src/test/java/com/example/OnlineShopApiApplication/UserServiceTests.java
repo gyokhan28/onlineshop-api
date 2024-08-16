@@ -32,6 +32,7 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
 @ExtendWith(MockitoExtension.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -50,6 +51,8 @@ public class UserServiceTests {
     AddressRepository addressRepository;
     @Mock
     OrderStatusRepository orderStatusRepository;
+    @Mock
+    Authentication authentication;
     @Spy
     @InjectMocks
     private UserService userService;
@@ -63,8 +66,6 @@ public class UserServiceTests {
     private ProductService productService;
     @Mock
     private MinioService minioService;
-    @Mock
-    private Authentication authentication;
     @Mock
     private User user;
     @Mock
@@ -386,6 +387,8 @@ public class UserServiceTests {
     public void testEditUserProfile_Success() {
         when(bindingResult.hasErrors()).thenReturn(false);
         User currentUser = new User();
+        currentUser.setEmail("existing.email@example.com");
+        currentUser.setPhoneNumber("1234567");
         MyUserDetails userDetails = new MyUserDetails(currentUser);
         when(authentication.getPrincipal()).thenReturn(userDetails);
         when(userRepository.save(any(User.class))).thenReturn(currentUser);
@@ -400,56 +403,48 @@ public class UserServiceTests {
 
         ResponseEntity<?> response = userService.editUserProfile(bindingResult, userEditResponse, authentication);
 
-        assertEquals(ResponseEntity.ok().build(), response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        SuccessResponse responseBody = (SuccessResponse) response.getBody();
+        assertEquals("Profile updated successfully", responseBody.getMessage());
         verify(userRepository, times(1)).save(any(User.class));
     }
 
     @Test
     public void testEditUserProfile_EmailInUse() {
-        when(bindingResult.hasErrors()).thenReturn(false);
-        User currentUser = new User();
-        MyUserDetails userDetails = new MyUserDetails(currentUser);
-        when(authentication.getPrincipal()).thenReturn(userDetails);
-
-        doAnswer(invocation -> {
-            User user = invocation.getArgument(0);
-            if (user.getEmail().equals("existing.email@example.com")) {
-                throw new EmailInUseException("Email already in use!");
-            }
-            return null;
-        }).when(userRepository).save(any(User.class));
-
         UserEditResponse userEditResponse = new UserEditResponse();
-        userEditResponse.setEmail("existing.email@example.com");
+        userEditResponse.setEmail("new@example.com");
 
-        assertThrows(EmailInUseException.class, () -> {
-            userService.editUserProfile(bindingResult, userEditResponse, authentication);
-        });
+        when(bindingResult.hasErrors()).thenReturn(false);
+        when(authentication.getPrincipal()).thenReturn(myUserDetails);
+        when(myUserDetails.getUser()).thenReturn(user);
+
+        when(user.getEmail()).thenReturn("existing@example.com");
+        when(userRepository.findByEmail("new@example.com")).thenReturn(Optional.of(user));
+
+        ResponseEntity<?> response = userService.editUserProfile(bindingResult, userEditResponse, authentication);
+
+        assertEquals(BAD_REQUEST, response.getStatusCode());
+        assertEquals("Email already in use!", response.getBody());
     }
 
     @Test
     public void testEditUserProfile_PhoneNumberInUse() {
-        // Setup
-        when(bindingResult.hasErrors()).thenReturn(false);
-        User currentUser = new User();
-        MyUserDetails userDetails = new MyUserDetails(currentUser);
-        when(authentication.getPrincipal()).thenReturn(userDetails);
-
-        doAnswer(invocation -> {
-            User user = invocation.getArgument(0);
-            if (user.getPhoneNumber().equals("1234567890")) {
-                throw new PhoneInUseException("Phone number already in use!");
-            }
-            return null;
-        }).when(userRepository).save(any(User.class));
-
         UserEditResponse userEditResponse = new UserEditResponse();
         userEditResponse.setPhoneNumber("1234567890");
 
-        assertThrows(PhoneInUseException.class, () -> {
-            userService.editUserProfile(bindingResult, userEditResponse, authentication);
-        });
+        when(bindingResult.hasErrors()).thenReturn(false);
+        when(authentication.getPrincipal()).thenReturn(myUserDetails);
+        when(myUserDetails.getUser()).thenReturn(user);
 
+
+        when(user.getPhoneNumber()).thenReturn("0987654321");
+        when(user.getEmail()).thenReturn("existing@example.com");
+        when(userRepository.findByPhoneNumber("1234567890")).thenReturn(Optional.of(user));
+
+        ResponseEntity<?> response = userService.editUserProfile(bindingResult, userEditResponse, authentication);
+
+        assertEquals(BAD_REQUEST, response.getStatusCode());
+        assertEquals("Phone number already in use!", response.getBody());
     }
 
     @Test
@@ -632,7 +627,7 @@ public class UserServiceTests {
 
         ResponseEntity<?> response = userService.updateQuantity(productId, quantity, authentication);
 
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals(BAD_REQUEST, response.getStatusCode());
         assertEquals("Product with id " + productId + " not found!", response.getBody());
     }
 
@@ -645,7 +640,7 @@ public class UserServiceTests {
 
         ResponseEntity<?> response = userService.updateQuantity(productId, quantity, authentication);
 
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals(BAD_REQUEST, response.getStatusCode());
         assertEquals("Order not found!", response.getBody());
     }
 
@@ -661,7 +656,7 @@ public class UserServiceTests {
 
         ResponseEntity<?> response = userService.updateQuantity(productId, quantity, authentication);
 
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals(BAD_REQUEST, response.getStatusCode());
         assertEquals("The quantity cannot be negative number", response.getBody());
     }
 
@@ -688,7 +683,7 @@ public class UserServiceTests {
 
         ResponseEntity<?> response = userService.updateQuantity(productId, newQuantity, authentication);
 
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals(BAD_REQUEST, response.getStatusCode());
         assertEquals("The quantity that you are trying to set is not available!", response.getBody());
     }
 
@@ -729,11 +724,17 @@ public class UserServiceTests {
     void testGetCurrentUserOrders_UserNotFound() {
         Long userId = 1L;
 
-        Mockito.when(userRepository.findById(userId)).thenReturn(Optional.empty());
+        MyUserDetails myUserDetails = Mockito.mock(MyUserDetails.class);
+        User user = Mockito.mock(User.class);
+        Mockito.when(myUserDetails.getUser()).thenReturn(user);
+        Mockito.when(user.getId()).thenReturn(userId);
+        Mockito.when(authentication.getPrincipal()).thenReturn(myUserDetails);
 
-        ResponseEntity<List<UserOrdersResponse>> response = userService.getCurrentUserOrders(userId);
+        ResponseEntity<List<UserOrdersResponse>> response = userService.getCurrentUserOrders(authentication);
 
-        assertNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertTrue(response.getBody().isEmpty());
     }
 
     @Test
@@ -759,14 +760,15 @@ public class UserServiceTests {
 
         List<Order> orders = Arrays.asList(order1, order2);
 
-        Mockito.when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-
         Mockito.when(orderRepository.findOrdersByUserIdAndStatusNotBasket(userId)).thenReturn(orders);
 
         Mockito.when(orderProductRepository.findAllByOrder_Id(order1.getId())).thenReturn(new ArrayList<>());
         Mockito.when(orderProductRepository.findAllByOrder_Id(order2.getId())).thenReturn(new ArrayList<>());
 
-        ResponseEntity<List<UserOrdersResponse>> response = userService.getCurrentUserOrders(userId);
+        Mockito.when(authentication.getPrincipal()).thenReturn(myUserDetails);
+        Mockito.when(myUserDetails.getUser()).thenReturn(user);
+
+        ResponseEntity<List<UserOrdersResponse>> response = userService.getCurrentUserOrders(authentication);
         assertNotNull(response);
         assertEquals(HttpStatus.OK, response.getStatusCode());
 
