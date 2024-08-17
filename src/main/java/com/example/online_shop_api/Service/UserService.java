@@ -195,13 +195,11 @@ public class UserService {
         return errors;
     }
 
-    public ResponseEntity<?> buyNow(Long userId) {
-        Optional<User> optionalUser = userRepository.findById(userId);
-        if (optionalUser.isEmpty()) {
+    public ResponseEntity<?> buyNow(Authentication authentication) {
+        User user = getCurrentUser(authentication);
+        if (user == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User not found");
         }
-        User user = optionalUser.get();
-
         Optional<Order> optionalBasketOrder = productService.getBasketOrder(user);
         if (optionalBasketOrder.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).body("The basket of user " + user.getId() + " is empty!");

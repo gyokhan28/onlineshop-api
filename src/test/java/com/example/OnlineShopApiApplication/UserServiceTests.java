@@ -339,6 +339,9 @@ public class UserServiceTests {
 
     @Test
     public void testBuyNowSuccess() {
+        Authentication authentication = mock(Authentication.class);
+        MyUserDetails userDetails = mock(MyUserDetails.class);
+
         Product product = new Product();
         product.setId(1L);
         product.setPrice(BigDecimal.TEN);
@@ -368,9 +371,10 @@ public class UserServiceTests {
         List<OrderProduct> orderProductList = List.of(op1);
 
         when(orderProductRepository.findAllByOrder_Id(basketOrder.getId())).thenReturn(orderProductList);
-        when(userRepository.findById(testUser.getId())).thenReturn(Optional.of(testUser));
+        when(authentication.getPrincipal()).thenReturn(userDetails);
+        when(userDetails.getUser()).thenReturn(testUser);
 
-        ResponseEntity<?> responseEntity = userService.buyNow(testUser.getId());
+        ResponseEntity<?> responseEntity = userService.buyNow(authentication);
         if (responseEntity.getBody() instanceof BuyNowResponse buyNowResponse) {
             assertNotNull(buyNowResponse);
             assertEquals(HttpStatus.OK.value(), responseEntity.getStatusCode().value());

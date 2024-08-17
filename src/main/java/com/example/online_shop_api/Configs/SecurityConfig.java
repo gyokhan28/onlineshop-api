@@ -33,13 +33,18 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/auth/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/user/register", "/employee/register").permitAll()
-                        .requestMatchers("/user/**", "/password/**").hasAnyAuthority("ROLE_USER", "ROLE_EMPLOYEE", "ROLE_ADMIN")
-                        .requestMatchers("/orders/show/**").hasAnyAuthority("ROLE_USER","ROLE_EMPLOYEE", "ROLE_ADMIN")
-                        .requestMatchers("/orders/change-status","/orders/show").hasAnyAuthority("ROLE_EMPLOYEE","ROLE_ADMIN")
+                        .requestMatchers("/user/basket/**", "/user/cancel-order/**", "/user/profile", "/user/profile/**", "/user/orders").hasAuthority("ROLE_USER")
+                        .requestMatchers("/password/**").hasAnyAuthority("ROLE_USER", "ROLE_EMPLOYEE", "ROLE_ADMIN")
+                        .requestMatchers("/products/{id}", "/products/get-all").permitAll()
+                        .requestMatchers("/products/**").hasAnyAuthority("ROLE_EMPLOYEE", "ROLE_ADMIN")
+                        .requestMatchers("/orders/show/{id}").hasAnyAuthority("ROLE_USER", "ROLE_EMPLOYEE", "ROLE_ADMIN")
+                        .requestMatchers("/orders/**").hasAnyAuthority("ROLE_EMPLOYEE", "ROLE_ADMIN")
                         .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
-                        //TODO - finish the rest of the endpoints
+                        .requestMatchers("/employee/profile/**", "/employee/get-all-except-admins").hasAuthority("ROLE_EMPLOYEE")
+                        .requestMatchers("/employee/get-all").hasAnyAuthority("ROLE_ADMIN")
                         .requestMatchers("/orders/change-status").hasAnyAuthority("ROLE_EMPLOYEE", "ROLE_ADMIN")
-                        .anyRequest().permitAll()
+                        .requestMatchers("/api/image/**").hasAnyAuthority("ROLE_EMPLOYEE", "ROLE_ADMIN")
+                        .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)

@@ -35,8 +35,8 @@ public class UserController {
     }
 
     @GetMapping("/basket/buy")
-    public ResponseEntity<?> buyNow(@RequestParam("userId") Long userId) {
-        return userService.buyNow(userId);
+    public ResponseEntity<?> buyNow(Authentication authentication) {
+        return userService.buyNow(authentication);
     }
 
     @PutMapping("/basket/update-quantity")
