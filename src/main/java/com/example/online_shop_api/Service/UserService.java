@@ -79,7 +79,7 @@ public class UserService {
         if (!isValidCityId(userRequestDto.getCityId())) {
             throw new CityNotFoundException("City doesn't exist");
         }
-        if (isPhoneNumberInDB(userRequestDto.getPhoneNumber())){
+        if (isPhoneNumberInDB(userRequestDto.getPhoneNumber())) {
             throw new PhoneInUseException("Phone number is already in use!");
         }
     }
@@ -291,7 +291,12 @@ public class UserService {
 
     public ResponseEntity<?> updateQuantity(Long productId, int quantity, Authentication authentication) throws Exception {
         User user = getCurrentUser(authentication);
-        Optional<Order> optionalBasketOrder = productService.getBasketOrder(user);
+        Optional<Order> optionalBasketOrder;
+        try {
+            optionalBasketOrder = productService.getBasketOrder(user);
+        } catch (ServerErrorException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
         if (optionalBasketOrder.isEmpty()) {
             return ResponseEntity.badRequest().body("Order not found!");
         }
@@ -306,7 +311,6 @@ public class UserService {
         BigDecimal totalPrice = calculateTotalPrice(orderProductList);
         List<BasketProductResponseDTO> basketProducts = getBasketProducts(basketOrder);
         return ResponseEntity.ok(new BasketResponse(basketProducts, totalPrice));
-
     }
 
     private String formatDeliveryAddress(User user) {
