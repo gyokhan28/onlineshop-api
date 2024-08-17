@@ -36,6 +36,5 @@ public class ProductRequestDto {
     private Boolean isReusable;
     private Boolean isNonSlip;
     private Boolean isOutdoor;
-
 }
 

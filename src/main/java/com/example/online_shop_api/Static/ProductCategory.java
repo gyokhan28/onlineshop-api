@@ -9,7 +9,7 @@ public enum ProductCategory {
     DRINK(2),
     SANITARY(3),
     RAILING(4),
-    ACCESSORIES(5),
+    ACCESSORY(5),
     DECORATION(6),
     OTHERS(7);
 
