@@ -11,7 +11,7 @@ import java.util.List;
 @Component
 public class OrderMapper {
 
-    public static OrderResponseDto toDto (Order order){
+    public static OrderResponseDto toDto(Order order) {
         OrderResponseDto dto = new OrderResponseDto();
         dto.setId(order.getId());
         dto.setUserResponseDto(UserMapper.toDto(order.getUser()));

@@ -7,11 +7,11 @@ import lombok.Data;
 
 import java.util.List;
 
-@Data
-public class AddProductRequest {
-    private String productType;
-    private ProductRequestDto productRequestDto;
-    private List<Material> materials;
-    private List<Color> colors;
-    private List<Brand> brands;
-}
+//@Data
+//public class AddProductRequest {
+//    private String productType;
+//    private ProductRequestDto productRequestDto;
+//    private List<Material> materials;
+//    private List<Color> colors;
+//    private List<Brand> brands;
+//}

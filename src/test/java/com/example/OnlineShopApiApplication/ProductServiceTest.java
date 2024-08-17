@@ -1,6 +1,5 @@
 package com.example.OnlineShopApiApplication;
 
-import com.example.online_shop_api.Dto.Request.AddProductRequest;
 import com.example.online_shop_api.Dto.Request.FoodRequestDto;
 import com.example.online_shop_api.Dto.Request.ProductRequestDto;
 import com.example.online_shop_api.Dto.Response.ProductResponseDto;
@@ -18,8 +17,7 @@ import com.example.online_shop_api.Service.ProductService;
 import com.example.online_shop_api.Utils.ValidationUtil;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
@@ -33,6 +31,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class ProductServiceTest {
+    private ProductRequestDto productRequestDto = new ProductRequestDto();
     @Mock
     private ProductRepository productRepository;
     @Mock
@@ -113,9 +112,8 @@ public class ProductServiceTest {
     }
 
     @Test
-    void testAddNewProduct_Success() throws Exception {
+    void testAddNewProduct_Success() {
         String productType = "Food";
-        ProductRequestDto productRequestDto = new ProductRequestDto();
 
         FoodRequestDto specificDto = new FoodRequestDto();
         Food mockProduct = new Food();
@@ -145,7 +143,6 @@ public class ProductServiceTest {
     @Test
     void testAddNewProduct_ValidationErrors() {
         String productType = "Food";
-        ProductRequestDto productRequestDto = new ProductRequestDto();
 
         FoodRequestDto specificDto = new FoodRequestDto();
         Map<String, String> mockErrors = Map.of("field", "error");
@@ -174,9 +171,11 @@ public class ProductServiceTest {
 
     @Test
     void testAddNewProduct_UnknownProductType() {
+        productRequestDto = new ProductRequestDto();
+
         String productType = "InvalidType";
 
-        ResponseEntity<?> response = productService.addNewProduct(productType);
+        ResponseEntity<?> response = productService.addNewProduct(productType, productRequestDto);
 
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
         assertEquals("Product type not found", response.getBody());
@@ -184,26 +183,26 @@ public class ProductServiceTest {
 
     @Test
     void testAddNewProduct_CorrectProductType() {
-        String validProductType = "Railing";
+        String productType = "Food";
+        ProductRequestDto productRequestDto = new ProductRequestDto();
 
-        when(materialRepository.findAll()).thenReturn(someMaterialsList());
-        when(colorRepository.findAll()).thenReturn(someColorsList());
-        when(brandRepository.findAll()).thenReturn(someBrandsList());
+        FoodRequestDto foodRequestDto = new FoodRequestDto();
+        Food food = new Food();
 
-        ResponseEntity<?> response = productService.addNewProduct(validProductType);
+        when(modelMapper.map(eq(productRequestDto), eq(FoodRequestDto.class))).thenReturn(foodRequestDto);
+        when(modelMapper.map(eq(foodRequestDto), eq(Food.class))).thenReturn(food);
+        when(validationUtil.validate(any())).thenReturn(new HashMap<>());
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
+        ResponseEntity<?> response = productService.addNewProduct(productType, productRequestDto);
 
-        AddProductRequest request = (AddProductRequest) response.getBody();
-        assertEquals(validProductType, request.getProductType());
-        assertNotNull(request.getMaterials());
-        assertNotNull(request.getColors());
-        assertNotNull(request.getBrands());
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertEquals("Product created successfully", response.getBody());
 
-        verify(materialRepository, times(1)).findAll();
-        verify(colorRepository, times(1)).findAll();
-        verify(brandRepository, times(1)).findAll();
+        ArgumentCaptor<Product> productCaptor = ArgumentCaptor.forClass(Product.class);
+        verify(productRepository).save(productCaptor.capture());
+
+        assertNotNull(productCaptor.getValue());
+        assertEquals(Food.class, productCaptor.getValue().getClass());
     }
 
     private List<Material> someMaterialsList() {

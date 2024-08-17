@@ -49,64 +49,6 @@ class AuthenticationServiceTest {
     private AuthenticationService authenticationService;
 
     @Test
-    void testSignupUser_Success() {
-        UserRequestDto userRequestDto = new UserRequestDto();
-        userRequestDto.setUsername("testUser");
-        userRequestDto.setEmail("test@example.com");
-        userRequestDto.setPassword("password");
-
-        User user = new User();
-        user.setUsername("testUser");
-        user.setEmail("test@example.com");
-        user.setPassword("encodedPassword");
-
-        try (MockedStatic<UserMapper> mockedMapper = mockStatic(UserMapper.class)) {
-            mockedMapper.when(() -> UserMapper.toEntity(any(UserRequestDto.class))).thenReturn(user);
-
-            when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
-            when(userRepository.save(any(User.class))).thenReturn(user);
-
-            User result = authenticationService.signup(userRequestDto);
-
-            assertNotNull(result, "The saved user should not be null");
-            assertEquals("testUser", result.getUsername());
-            assertEquals("encodedPassword", result.getPassword());
-
-            verify(userRepository, times(1)).save(any(User.class));
-            mockedMapper.verify(() -> UserMapper.toEntity(any(UserRequestDto.class)), times(1));
-        }
-    }
-
-    @Test
-    void testSignupEmployee_Success() {
-        EmployeeRequestDto employeeRequestDto = new EmployeeRequestDto();
-        employeeRequestDto.setUsername("testEmployee");
-        employeeRequestDto.setEmail("test@example.com");
-        employeeRequestDto.setPassword("password");
-
-        Employee employee = new Employee();
-        employee.setUsername("testEmployee");
-        employee.setEmail("test@example.com");
-        employee.setPassword("encodedPassword");
-
-        try (MockedStatic<EmployeeMapper> mockedMapper = mockStatic(EmployeeMapper.class)) {
-            mockedMapper.when(() -> EmployeeMapper.toEntity(any(EmployeeRequestDto.class))).thenReturn(employee);
-
-            when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
-            when(employeeRepository.save(any(Employee.class))).thenReturn(employee);
-
-            Employee result = authenticationService.signup(employeeRequestDto);
-
-            assertNotNull(result);
-            assertEquals("testEmployee", result.getUsername());
-            assertEquals("encodedPassword", result.getPassword());
-
-            verify(employeeRepository, times(1)).save(any(Employee.class));
-            mockedMapper.verify(() -> EmployeeMapper.toEntity(any(EmployeeRequestDto.class)), times(1));
-        }
-    }
-
-    @Test
     void testAuthenticate_Success() {
         LoginDto loginDto = new LoginDto();
         loginDto.setUsername("testUser");

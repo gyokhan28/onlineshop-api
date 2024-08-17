@@ -3,7 +3,10 @@ package com.example.online_shop_api.Dto.Request;
 import com.example.online_shop_api.Entity.ProductHelpers.Brand;
 import com.example.online_shop_api.Entity.ProductHelpers.Color;
 import com.example.online_shop_api.Entity.ProductHelpers.Material;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -15,16 +18,12 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @Builder
 @ToString
-public class ProductRequestDto {
-    @Size(min = 2, max = 50, message = "Product name must be between 2 and 50 symbols")
+public class UpdateProductRequestDto {
     private String name;
 
-    @NotNull(message = "You must enter a price")
-    @DecimalMin(value = "0.10", message = "Price must be greater than or equal to 0.10")
     private BigDecimal price;
 
-    @Min(value = 1, message = "Quantity must be at least 1")
-    private int quantity;
+    private Integer quantity;
 
     private LocalDate expiryDate; // TODO - make sure date is not expired
     private LocalDate bestBefore; // TODO - make sure date is not expired
@@ -36,6 +35,4 @@ public class ProductRequestDto {
     private Boolean isReusable;
     private Boolean isNonSlip;
     private Boolean isOutdoor;
-
 }
-
