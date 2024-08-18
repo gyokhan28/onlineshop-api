@@ -13,7 +13,30 @@ services:
       #- MYSQL_PASSWORD=user_password
     volumes: 
       - ./db:/var/lib/mysql
-
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+  
+  myapp:
+    build:
+      context: ..
+      dockerfile: Docker/Dockerfile
+    ports:
+      - "8082:8082"
+    depends_on:
+      mysqldb:
+        condition: service_healthy
+    environment:
+      - MYSQL_HOST=mysqldb
+      #SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/
+      #SPRING_DATASOURCE_USERNAME: dbuser
+      #SPRING_DATASOURCE_PASSWORD: dbpassword
+    networks:
+      - springapimysql-net
+  
   phpmyadmin:
     depends_on:
       - mysqldb
