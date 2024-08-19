@@ -112,7 +112,7 @@ public class UserService {
                  CityNotFoundException | PhoneInUseException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
-        return ResponseEntity.ok(addNewUser(userRequestDto));
+        return ResponseEntity.ok(new SuccessResponse("Registration created successfully"));
     }
 
     public ResponseEntity<UserProfileResponse> viewProfile(Authentication authentication) {

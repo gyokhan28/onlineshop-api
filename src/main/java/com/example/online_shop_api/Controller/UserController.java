@@ -2,6 +2,8 @@ package com.example.online_shop_api.Controller;
 
 import com.example.online_shop_api.Dto.Request.UserRequestDto;
 import com.example.online_shop_api.Dto.Response.*;
+import com.example.online_shop_api.Entity.City;
+import com.example.online_shop_api.Repository.CityRepository;
 import com.example.online_shop_api.Service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +20,12 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+    private final CityRepository cityRepository;
 
+    @GetMapping("/register")
+    public ResponseEntity<List<City>> getAllCities(){
+        return ResponseEntity.ok(cityRepository.findAll());
+    }
     @PostMapping("/register")
     public ResponseEntity<?> registerNewUser(@Valid @RequestBody UserRequestDto userRequestDto, BindingResult bindingResult) {
         return userService.registerNewUser(userRequestDto, bindingResult);

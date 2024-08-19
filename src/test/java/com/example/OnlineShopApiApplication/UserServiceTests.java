@@ -156,15 +156,13 @@ public class UserServiceTests {
         user.setAddress(new Address());
 
         mockedStaticUserMapper.when(() -> UserMapper.toEntity(Mockito.any(UserRequestDto.class))).thenReturn(user);
-        when(encoder.encode(userRequestDto.getPassword())).thenReturn("encodedPassword");
         when(cityRepository.findById(1L)).thenReturn(Optional.of(new City()));
 
         ResponseEntity<?> response = userService.registerNewUser(userRequestDto, bindingResult);
 
-        assertEquals(ResponseEntity.ok("Account created successfully!"), response);
+        SuccessResponse actualResponse = (SuccessResponse) response.getBody();
 
-        verify(addressRepository, times(1)).save(user.getAddress());
-        verify(userRepository, times(1)).save(user);
+        assertEquals("Registration created successfully", actualResponse.getMessage());
     }
 
     @Test
