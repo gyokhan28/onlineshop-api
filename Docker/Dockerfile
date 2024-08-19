@@ -23,6 +23,10 @@ WORKDIR /App
 
 COPY --from=build /App/build/libs/*.jar app.jar
 
+COPY Docker/entrypoint.sh /App/entrypoint.sh
+
+RUN chmod +x /App/entrypoint.sh
+
 EXPOSE 8082
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["/App/entrypoint.sh"]

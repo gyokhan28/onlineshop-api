@@ -28,8 +28,6 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation group: 'org.modelmapper', name: 'modelmapper', version: '3.2.1'
     implementation("io.minio:minio:8.5.11")
-    implementation 'org.flywaydb:flyway-core'
-    implementation 'org.flywaydb:flyway-mysql'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'

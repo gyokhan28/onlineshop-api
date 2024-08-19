@@ -26,11 +26,14 @@ services:
       dockerfile: Docker/Dockerfile
     ports:
       - "8082:8082"
+    volumes:
+      - ./flag/:/App/data/
     depends_on:
       mysqldb:
         condition: service_healthy
     environment:
       - MYSQL_HOST=mysqldb
+      - LOAD_TEST_DATA=true  # Set this to "true" to load the data.sql
       #SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/
       #SPRING_DATASOURCE_USERNAME: dbuser
       #SPRING_DATASOURCE_PASSWORD: dbpassword

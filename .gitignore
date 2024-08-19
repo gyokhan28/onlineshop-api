@@ -35,9 +35,12 @@ build/
 
 ### DB ###
 Docker/db
+Docker/flag
 
 ### STORAGE ###
 Docker/storage
 
 ### Gradle ###
 .gradle/
+
+out/
