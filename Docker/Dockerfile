@@ -23,9 +23,11 @@ WORKDIR /App
 
 COPY --from=build /App/build/libs/*.jar app.jar
 
-COPY Docker/entrypoint.sh /App/entrypoint.sh
+COPY Docker/entrypoint.sh entrypoint.sh
 
-RUN chmod +x /App/entrypoint.sh
+RUN sed -i 's/\r$//' entrypoint.sh
+
+RUN chmod +x entrypoint.sh
 
 EXPOSE 8082
 
