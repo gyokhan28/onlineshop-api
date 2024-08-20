@@ -4,13 +4,15 @@ import com.example.online_shop_api.Dto.Request.FoodRequestDto;
 import com.example.online_shop_api.Dto.Request.ProductRequestDto;
 import com.example.online_shop_api.Dto.Request.UpdateProductRequestDto;
 import com.example.online_shop_api.Dto.Response.ProductResponseDto;
+import com.example.online_shop_api.Entity.Order;
+import com.example.online_shop_api.Entity.OrderStatus;
 import com.example.online_shop_api.Entity.Products.Food;
 import com.example.online_shop_api.Entity.Products.Product;
-import com.example.online_shop_api.Repository.BrandRepository;
-import com.example.online_shop_api.Repository.ColorRepository;
-import com.example.online_shop_api.Repository.MaterialRepository;
-import com.example.online_shop_api.Repository.ProductRepository;
+import com.example.online_shop_api.Entity.User;
+import com.example.online_shop_api.Exceptions.ServerErrorException;
+import com.example.online_shop_api.Repository.*;
 import com.example.online_shop_api.Service.MinioService;
+import com.example.online_shop_api.Service.OrderService;
 import com.example.online_shop_api.Service.ProductService;
 import com.example.online_shop_api.Utils.ValidationUtil;
 import jakarta.validation.ConstraintViolation;
@@ -37,7 +39,11 @@ public class ProductServiceTest {
     @Mock
     private ProductRepository productRepository;
     @Mock
+    OrderRepository orderRepository;
+    @Mock
     ModelMapper modelMapper;
+    @Mock
+    OrderService orderService;
     @Mock
     Validator validator;
     @Mock
@@ -309,5 +315,78 @@ public class ProductServiceTest {
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
         assertEquals("An error occurred: An error occurred", response.getBody());
+    }
+
+    @Test
+    void testGetBasketOrder_OneBasketOrder() {
+        // Arrange
+        User user = new User();
+        user.setId(1L);
+
+        OrderStatus basketOrderStatus = new OrderStatus();
+        basketOrderStatus.setId(1L);
+        basketOrderStatus.setName("BASKET");
+
+        Order order = new Order();
+        order.setId(1L);
+        order.setStatus(basketOrderStatus);
+        order.setUser(user);
+
+        List<Order> basketOrders = Collections.singletonList(order);
+
+        when(orderRepository.findAllByUser_IdAndStatus_Id(user.getId(), 0L)).thenReturn(basketOrders);
+
+        Optional<Order> result = productService.getBasketOrder(user);
+
+        assertTrue(result.isPresent(), "The result should be present when there is one basket order");
+        assertEquals(order, result.get(), "The result should be the order returned from the repository");
+    }
+
+    @Test
+    void testGetBasketOrder_NoBasketOrder() {
+        User user = new User();
+        user.setId(1L);
+
+        OrderStatus basketOrderStatus = new OrderStatus();
+        basketOrderStatus.setId(1L);
+        basketOrderStatus.setName("BASKET");
+
+        lenient().when(orderRepository.findAllByUser_IdAndStatus_Id(user.getId(), 0L))
+                .thenReturn(Collections.emptyList());
+
+        Optional<Order> result = productService.getBasketOrder(user);
+
+        assertFalse(result.isPresent(), "The result should be empty when there are no basket orders");
+    }
+
+    @Test
+    void testGetBasketOrder_MoreThanOneBasketOrder() {
+        User user = new User();
+        user.setId(1L);
+
+        OrderStatus basketOrderStatus = new OrderStatus();
+        basketOrderStatus.setId(1L);
+        basketOrderStatus.setName("BASKET");
+
+        Order order1 = new Order();
+        order1.setId(1L);
+        order1.setStatus(basketOrderStatus);
+        order1.setUser(user);
+
+        Order order2 = new Order();
+        order2.setId(2L);
+        order2.setStatus(basketOrderStatus);
+        order2.setUser(user);
+
+        List<Order> basketOrders = Arrays.asList(order1, order2);
+
+        lenient().when(orderRepository.findAllByUser_IdAndStatus_Id(user.getId(), 0L))
+                .thenReturn(basketOrders);
+
+        ServerErrorException exception = assertThrows(ServerErrorException.class, () -> {
+            productService.getBasketOrder(user);
+        });
+
+        assertEquals("Critical server error. More than one basket for user with userID: " + user.getId(), exception.getMessage());
     }
 }
