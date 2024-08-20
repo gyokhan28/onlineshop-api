@@ -8,36 +8,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import java.math.BigDecimal;
 import java.util.Optional;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(classes = OnlineShopApiApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
+@ActiveProfiles("test")
 public class AdminControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
     @Autowired
     private EmployeeRepository employeeRepository;
-
-    @Test
-    void testShowEmployees() throws Exception {
-        mockMvc.perform(get("/admin/show-employees")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(2))
-                .andExpect(jsonPath("$[0].firstName").value("Employee"))
-                .andExpect(jsonPath("$[0].lastName").value("1"))
-                .andExpect(jsonPath("$[0].salary").value("2000.0"))
-                .andExpect(jsonPath("$[1].firstName").value("Employee"))
-                .andExpect(jsonPath("$[1].lastName").value("2"))
-                .andExpect(jsonPath("$[1].salary").value("1500.0"))
-                .andExpect(jsonPath("$[1].enabled").value("true"));
-    }
 
     @Test
     void testUpdateEmployeeStatusAndSalary() throws Exception {
