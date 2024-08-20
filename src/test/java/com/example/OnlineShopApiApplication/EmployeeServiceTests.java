@@ -1,6 +1,7 @@
 package com.example.OnlineShopApiApplication;
 
 import com.example.online_shop_api.Dto.Request.EmployeeRequestDto;
+import com.example.online_shop_api.Dto.Response.EmployeeEditResponse;
 import com.example.online_shop_api.Dto.Response.EmployeeResponseDto;
 import com.example.online_shop_api.Dto.Response.ErrorResponse;
 import com.example.online_shop_api.Dto.Response.SuccessResponse;
@@ -8,6 +9,7 @@ import com.example.online_shop_api.Entity.Employee;
 import com.example.online_shop_api.Entity.JobType;
 import com.example.online_shop_api.Entity.Role;
 import com.example.online_shop_api.Mapper.EmployeeMapper;
+import com.example.online_shop_api.MyUserDetails;
 import com.example.online_shop_api.Repository.EmployeeRepository;
 import com.example.online_shop_api.Repository.JobTypeRepository;
 import com.example.online_shop_api.Repository.RoleRepository;
@@ -20,6 +22,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
@@ -35,6 +38,8 @@ import static org.mockito.Mockito.*;
 public class EmployeeServiceTests {
     @InjectMocks
     EmployeeService employeeService;
+    @Mock
+    MyUserDetails myUserDetails;
     @Mock
     BCryptPasswordEncoder bCryptPasswordEncoder;
     @Mock
@@ -289,4 +294,102 @@ public class EmployeeServiceTests {
         assertEquals("123-123", employeeRequestDto.getPhoneNumber());
         assertEquals("CASHIER", employeeRequestDto.getJobType());
     }
+
+    @Test
+    void testEditEmployeeProfile_newFirstName(){
+        String newFirstName = "newName";
+        EmployeeEditResponse employeeEditResponse = new EmployeeEditResponse();
+        employeeEditResponse.setFirstName(newFirstName);
+
+        Employee employee = new Employee();
+        employee.setEmail("employee@test.bg");
+        employee.setPhoneNumber("123123123");
+        when(bindingResult.hasErrors()).thenReturn(false);
+
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(myUserDetails);
+        when(myUserDetails.getEmployee()).thenReturn(employee);
+
+        ResponseEntity<?> response = employeeService.editEmployeeProfile(bindingResult, employeeEditResponse, authentication);
+
+        SuccessResponse expectedResponse = new SuccessResponse("Profile updated successfully");
+        SuccessResponse actualResponse = (SuccessResponse) response.getBody();
+        assertEquals(expectedResponse.getMessage(), actualResponse.getMessage());
+        assertEquals(newFirstName, employee.getFirstName());
+        verify(employeeRepository, times(1)).save(employee); //
+    }
+
+    @Test
+    void testEditEmployeeProfile_newLastName(){
+        String newLastname = "newName";
+        EmployeeEditResponse employeeEditResponse = new EmployeeEditResponse();
+        employeeEditResponse.setLastName(newLastname);
+
+        Employee employee = new Employee();
+        employee.setEmail("employee@test.bg");
+        employee.setPhoneNumber("123123123");
+        when(bindingResult.hasErrors()).thenReturn(false);
+
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(myUserDetails);
+        when(myUserDetails.getEmployee()).thenReturn(employee);
+
+        ResponseEntity<?> response = employeeService.editEmployeeProfile(bindingResult, employeeEditResponse, authentication);
+
+        SuccessResponse expectedResponse = new SuccessResponse("Profile updated successfully");
+        SuccessResponse actualResponse = (SuccessResponse) response.getBody();
+        assertEquals(expectedResponse.getMessage(), actualResponse.getMessage());
+        assertEquals(newLastname, employee.getLastName());
+        verify(employeeRepository, times(1)).save(employee); //
+    }
+
+    @Test
+    void testEditEmployeeProfile_newEmail(){
+        String newEmail = "newEmail@mail.bg";
+        EmployeeEditResponse employeeEditResponse = new EmployeeEditResponse();
+        employeeEditResponse.setEmail(newEmail);
+
+        Employee employee = new Employee();
+        employee.setEmail("employee@test.bg");
+        employee.setPhoneNumber("123123123");
+        when(bindingResult.hasErrors()).thenReturn(false);
+
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(myUserDetails);
+        when(myUserDetails.getEmployee()).thenReturn(employee);
+
+        ResponseEntity<?> response = employeeService.editEmployeeProfile(bindingResult, employeeEditResponse, authentication);
+
+        SuccessResponse expectedResponse = new SuccessResponse("Profile updated successfully");
+        SuccessResponse actualResponse = (SuccessResponse) response.getBody();
+        assertEquals(expectedResponse.getMessage(), actualResponse.getMessage());
+        assertEquals(newEmail, employee.getEmail());
+        verify(employeeRepository, times(1)).save(employee); //
+    }
+
+    @Test
+    void testEditEmployeeProfile_newPhoneNumber(){
+        String newPhoneNumber = "321-123";
+        EmployeeEditResponse employeeEditResponse = new EmployeeEditResponse();
+        employeeEditResponse.setPhoneNumber(newPhoneNumber);
+
+        Employee employee = new Employee();
+        employee.setEmail("employee@test.bg");
+        employee.setPhoneNumber("123123123");
+        when(bindingResult.hasErrors()).thenReturn(false);
+
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(myUserDetails);
+        when(myUserDetails.getEmployee()).thenReturn(employee);
+
+        ResponseEntity<?> response = employeeService.editEmployeeProfile(bindingResult, employeeEditResponse, authentication);
+
+        SuccessResponse expectedResponse = new SuccessResponse("Profile updated successfully");
+        SuccessResponse actualResponse = (SuccessResponse) response.getBody();
+        assertEquals(expectedResponse.getMessage(), actualResponse.getMessage());
+        assertEquals(newPhoneNumber, employee.getPhoneNumber());
+        verify(employeeRepository, times(1)).save(employee); //
+    }
+
+
 }
