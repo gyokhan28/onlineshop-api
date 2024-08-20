@@ -2,10 +2,8 @@ package com.example.OnlineShopApiApplication;
 
 import com.example.online_shop_api.Dto.Request.FoodRequestDto;
 import com.example.online_shop_api.Dto.Request.ProductRequestDto;
+import com.example.online_shop_api.Dto.Request.UpdateProductRequestDto;
 import com.example.online_shop_api.Dto.Response.ProductResponseDto;
-import com.example.online_shop_api.Entity.ProductHelpers.Brand;
-import com.example.online_shop_api.Entity.ProductHelpers.Color;
-import com.example.online_shop_api.Entity.ProductHelpers.Material;
 import com.example.online_shop_api.Entity.Products.Food;
 import com.example.online_shop_api.Entity.Products.Product;
 import com.example.online_shop_api.Repository.BrandRepository;
@@ -15,9 +13,13 @@ import com.example.online_shop_api.Repository.ProductRepository;
 import com.example.online_shop_api.Service.MinioService;
 import com.example.online_shop_api.Service.ProductService;
 import com.example.online_shop_api.Utils.ValidationUtil;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.*;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
@@ -36,6 +38,8 @@ public class ProductServiceTest {
     private ProductRepository productRepository;
     @Mock
     ModelMapper modelMapper;
+    @Mock
+    Validator validator;
     @Mock
     MaterialRepository materialRepository;
     @Mock
@@ -205,17 +209,105 @@ public class ProductServiceTest {
         assertEquals(Food.class, productCaptor.getValue().getClass());
     }
 
-    private List<Material> someMaterialsList() {
-        return new ArrayList<>();
+    @Test
+    void testValidateProduct_NoViolations() {
+        ProductRequestDto validProductRequestDto = new ProductRequestDto(); // Запълнете с валидни данни
+        when(validator.validate(validProductRequestDto)).thenReturn(Set.of());
+
+        String result = productService.validateProduct(validProductRequestDto);
+
+        assertEquals(null, result, "The result should be null when there are no violations");
     }
 
-    private List<Color> someColorsList() {
-        return new ArrayList<>();
+    @Test
+    void testValidateProduct_WithViolations() {
+        ProductRequestDto invalidProductRequestDto = new ProductRequestDto();
+
+        Set<ConstraintViolation<ProductRequestDto>> violations = new HashSet<>();
+
+        ConstraintViolation<ProductRequestDto> violation1 = mock(ConstraintViolation.class);
+        ConstraintViolation<ProductRequestDto> violation2 = mock(ConstraintViolation.class);
+
+        when(violation1.getPropertyPath()).thenReturn(mock(jakarta.validation.Path.class));
+        when(violation1.getPropertyPath().toString()).thenReturn("name");
+        when(violation1.getMessage()).thenReturn("must not be empty");
+
+        when(violation2.getPropertyPath()).thenReturn(mock(jakarta.validation.Path.class));
+        when(violation2.getPropertyPath().toString()).thenReturn("price");
+        when(violation2.getMessage()).thenReturn("must be positive");
+
+        violations.add(violation1);
+        violations.add(violation2);
+
+        when(validator.validate(invalidProductRequestDto)).thenReturn(violations);
+
+        String result = productService.validateProduct(invalidProductRequestDto);
+
+        assertTrue(result.contains("name: must not be empty"), "The result should contain 'name: must not be empty'");
+        assertTrue(result.contains("price: must be positive"), "The result should contain 'price: must be positive'");
     }
 
-    private List<Brand> someBrandsList() {
-        return new ArrayList<>();
+    @Test
+    void testUpdateProduct_ProductNotFound() {
+        Long productId = 1L;
+        UpdateProductRequestDto updateProductRequestDto = new UpdateProductRequestDto();
+        when(productRepository.findById(productId)).thenReturn(Optional.empty());
+
+        ResponseEntity<?> response = productService.updateProduct(updateProductRequestDto, productId);
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertEquals("Product with id " + productId + " not found", response.getBody());
     }
 
+    @Test
+    void testUpdateProduct_ValidationErrors() {
+        Long productId = 1L;
+        UpdateProductRequestDto updateProductRequestDto = new UpdateProductRequestDto();
+        Product existingProduct = new Product();
 
+        Set<ConstraintViolation<ProductRequestDto>> violations = new HashSet<>();
+        ConstraintViolation<ProductRequestDto> violation = mock(ConstraintViolation.class);
+        when(violation.getPropertyPath()).thenReturn(mock(jakarta.validation.Path.class));
+        when(violation.getPropertyPath().toString()).thenReturn("name");
+        when(violation.getMessage()).thenReturn("must not be empty");
+        violations.add(violation);
+
+        when(productRepository.findById(productId)).thenReturn(Optional.of(existingProduct));
+        when(validator.validate(any(ProductRequestDto.class))).thenReturn(violations);
+
+        ResponseEntity<?> response = productService.updateProduct(updateProductRequestDto, productId);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("Validation errors: name: must not be empty", response.getBody());
+    }
+
+    @Test
+    void testUpdateProduct_Success() {
+        Long productId = 1L;
+        UpdateProductRequestDto updateProductRequestDto = new UpdateProductRequestDto();
+        Product existingProduct = new Product();
+
+        when(productRepository.findById(productId)).thenReturn(Optional.of(existingProduct));
+        when(validator.validate(any(ProductRequestDto.class))).thenReturn(new HashSet<>());
+
+        ResponseEntity<?> response = productService.updateProduct(updateProductRequestDto, productId);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("Product updated successfully", response.getBody());
+        verify(productRepository).save(existingProduct);
+    }
+
+    @Test
+    void testUpdateProduct_Exception() {
+        Long productId = 1L;
+        UpdateProductRequestDto updateProductRequestDto = new UpdateProductRequestDto();
+        when(productRepository.findById(productId)).thenReturn(Optional.of(new Product()));
+
+        doThrow(new RuntimeException("An error occurred")).when(productRepository).save(any(Product.class));
+
+        ResponseEntity<?> response = productService.updateProduct(updateProductRequestDto, productId);
+
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        assertEquals("An error occurred: An error occurred", response.getBody());
+    }
 }
